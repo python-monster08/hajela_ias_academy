@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Course Details - Hajela's IAS Academy (HIA){% endblock %}
+
+{% block content %}
+    <!-- Header Start -->
+    <div class="container-fluid bg-primary py-5 mb-5 page-header">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 text-center">
+                    <h1 class="display-3 text-white animated slideInDown">Course Details</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-center">
+                            <li class="breadcrumb-item"><a class="text-white" href="{% url 'index' %}">Home</a></li>
+                            <li class="breadcrumb-item"><a class="text-white" href="#">Courses</a></li>
+                            <li class="breadcrumb-item text-white active" aria-current="page">Course Details</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Header End -->
+
+    <!-- Course Detail Start -->
+    <div class="container-xxl py-5">
+        <div class="container">
+            <div class="row g-5">
+                <!-- Left Side: Carousel for Images and Video -->
+                <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div id="courseCarousel" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            <div class="carousel-item active">
+                                <img src="{% static 'assets/img/course-1.jpg' %}" class="d-block w-100" alt="Course Image 1">
+                            </div>
+                            <div class="carousel-item">
+                                <img src="{% static 'assets/img/course-2.jpg' %}" class="d-block w-100" alt="Course Image 2">
+                            </div>
+                            <div class="carousel-item">
+                                <div class="position-relative">
+                                    <img src="{% static 'assets/img/course-3.jpg' %}" class="d-block w-100" alt="Course Video">
+                                </div>
+                            </div>
+                        </div>
+                        <a class="carousel-control-prev" href="#courseCarousel" role="button" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </a>
+                        <a class="carousel-control-next" href="#courseCarousel" role="button" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right Side: Course Information -->
+                <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.3s">
+                    <h2 class="mb-4">Course Title</h2>
+                    <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus sed nunc in arcu cursus mollis. Donec a eros at libero pretium pulvinar.</p>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item"><strong>Registered Students:</strong> 1200</li>
+                        <li class="list-group-item"><strong>Price:</strong> ₹ 15,000</li>
+                        <li class="list-group-item"><strong>Start Date:</strong> September 1, 2024</li>
+                        <li class="list-group-item"><strong>End Date:</strong> December 1, 2024</li>
+                        <li class="list-group-item"><strong>Category:</strong> UPSC Coaching</li>
+                        <li class="list-group-item"><strong>Lecturer:</strong> Dr. Rajesh Kumar</li>
+                    </ul>
+                    <!-- Star Rating -->
+                    <div class="rating mb-4">
+                        <h5 class="mb-3">Rating:</h5>
+                        <div class="d-flex align-items-center">
+                            <div class="rating-stars">
+                                <i class="fa fa-star text-warning"></i>
+                                <i class="fa fa-star text-warning"></i>
+                                <i class="fa fa-star text-warning"></i>
+                                <i class="fa fa-star-half-alt text-warning"></i>
+                                <i class="fa fa-star text-secondary"></i>
+                            </div>
+                            <span class="ms-3">(4.5 out of 5)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Course Detail End -->
+
+    <!-- Comments and Rating Section Start -->
+    <div class="container-xxl py-5 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 wow fadeInUp" data-wow-delay="0.5s">
+                    <h3 class="mb-4">Comments & Ratings</h3>
+                    <!-- Existing Comments -->
+                    <div class="comment mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <strong>John Doe</strong>
+                            <span class="ms-3 text-muted">August 20, 2024</span>
+                            <div class="rating-stars ms-auto">
+                                <i class="fa fa-star text-warning"></i>
+                                <i class="fa fa-star text-warning"></i>
+                                <i class="fa fa-star text-warning"></i>
+                                <i class="fa fa-star-half-alt text-warning"></i>
+                                <i class="fa fa-star text-secondary"></i>
+                            </div>
+                        </div>
+                        <p class="mb-0">This course was very informative and well-structured. I highly recommend it to anyone looking to prepare for UPSC exams.</p>
+                    </div>
+                    <div class="comment mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <strong>Jane Smith</strong>
+                            <span class="ms-3 text-muted">August 18, 2024</span>
+                            <div class="rating-stars ms-auto">
+                                <i class="fa fa-star text-warning"></i>
+                                <i class="fa fa-star text-warning"></i>
+                                <i class="fa fa-star text-warning"></i>
+                                <i class="fa fa-star text-warning"></i>
+                                <i class="fa fa-star text-warning"></i>
+                            </div>
+                        </div>
+                        <p class="mb-0">Great course! The lecturer was knowledgeable and provided excellent resources.</p>
+                    </div>
+                    <!-- Add a Comment and Rating Form -->
+                    <form id="ratingForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="commentName" placeholder="Your Name">
+                                    <label for="commentName">Your Name</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="email" class="form-control" id="commentEmail" placeholder="Your Email">
+                                    <label for="commentEmail">Your Email</label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <textarea class="form-control" placeholder="Leave a comment here" id="commentText" style="height: 100px"></textarea>
+                                    <label for="commentText">Your Comment</label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <h5 class="mb-3">Your Rating:</h5>
+                                <div class="rating-stars input-rating d-flex justify-content-center" id="userRating">
+                                    <i class="fa fa-star text-secondary" data-value="1"></i>
+                                    <i class="fa fa-star text-secondary" data-value="2"></i>
+                                    <i class="fa fa-star text-secondary" data-value="3"></i>
+                                    <i class="fa fa-star text-secondary" data-value="4"></i>
+                                    <i class="fa fa-star text-secondary" data-value="5"></i>
+                                </div>
+                                <input type="hidden" id="ratingValue" name="ratingValue" value="0">
+                            </div>
+                            <div class="col-12 text-center">
+                                <button class="btn btn-primary btn-md px-5" type="submit">Submit Comment & Rating</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Comments and Rating Section End -->
+
+    <!-- Similar Courses Section Start -->
+    <div class="container-xxl py-5">
+        <div class="container">
+            <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+                <h6 class="section-title bg-white text-center text-primary px-3">Similar Courses</h6>
+                <h1 class="mb-5">You Might Also Like</h1>
+            </div>
+            <div id="similarCoursesCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <div class="row g-4 justify-content-center">
+                            <div class="col-lg-4 col-md-6">
+                                <div class="course-item bg-light p-4">
+                                    <img class="img-fluid mb-4" src="{% static 'assets/img/course-2.jpg' %}" alt="">
+                                    <h5 class="mb-3">Advanced IAS Preparation</h5>
+                                    <p class="mb-4">Deep dive into advanced topics and strategies for IAS exam preparation.</p>
+                                    <a href="#" class="btn btn-primary">Learn More</a>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-6">
+                                <div class="course-item bg-light p-4">
+                                    <img class="img-fluid mb-4" src="{% static 'assets/img/course-3.jpg' %}" alt="">
+                                    <h5 class="mb-3">UPSC Comprehensive Course</h5>
+                                    <p class="mb-4">A full course covering all aspects of the UPSC examination.</p>
+                                    <a href="#" class="btn btn-primary">Learn More</a>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-6">
+                                <div class="course-item bg-light p-4">
+                                    <img class="img-fluid mb-4" src="{% static 'assets/img/course-1.jpg' %}" alt="">
+                                    <h5 class="mb-3">MPPSC Target Course</h5>
+                                    <p class="mb-4">Focused preparation for the Madhya Pradesh Public Service Commission exam.</p>
+                                    <a href="#" class="btn btn-primary">Learn More</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="row g-4 justify-content-center">
+                            <div class="col-lg-4 col-md-6">
+                                <div class="course-item bg-light p-4">
+                                    <img class="img-fluid mb-4" src="{% static 'assets/img/course-2.jpg' %}" alt="">
+                                    <h5 class="mb-3">History Masterclass</h5>
+                                    <p class="mb-4">A detailed course focusing on the history segment of the UPSC exams.</p>
+                                    <a href="#" class="btn btn-primary">Learn More</a>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-6">
+                                <div class="course-item bg-light p-4">
+                                    <img class="img-fluid mb-4" src="{% static 'assets/img/course-3.jpg' %}" alt="">
+                                    <h5 class="mb-3">Geography Mastery</h5>
+                                    <p class="mb-4">Comprehensive course to master geography for competitive exams.</p>
+                                    <a href="#" class="btn btn-primary">Learn More</a>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-6">
+                                <div class="course-item bg-light p-4">
+                                    <img class="img-fluid mb-4" src="{% static 'assets/img/course-1.jpg' %}" alt="">
+                                    <h5 class="mb-3">Economics Excellence</h5>
+                                    <p class="mb-4">Focused preparation on economics for UPSC and state exams.</p>
+                                    <a href="#" class="btn btn-primary">Learn More</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <a class="carousel-control-prev" href="#similarCoursesCarousel" role="button" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </a>
+                <a class="carousel-control-next" href="#similarCoursesCarousel" role="button" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    <!-- Similar Courses Section End -->
+{% endblock %}
+
+{% block custom_js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const stars = document.querySelectorAll('#userRating .fa-star');
+            const ratingValueInput = document.getElementById('ratingValue');
+            let userRating = 0;
+
+            stars.forEach((star, index) => {
+                star.addEventListener('mousemove', function (e) {
+                    resetStars();
+                    let starValue = index + 1;
+                    if (e.offsetX < star.offsetWidth / 2) {
+                        highlightStars(starValue - 0.5);
+                    } else {
+                        highlightStars(starValue);
+                    }
+                });
+
+                star.addEventListener('click', function (e) {
+                    if (e.offsetX < star.offsetWidth / 2) {
+                        userRating = index + 0.5;
+                    } else {
+                        userRating = index + 1;
+                    }
+                    ratingValueInput.value = userRating;
+                    highlightStars(userRating);
+                });
+
+                star.addEventListener('mouseout', function () {
+                    highlightStars(userRating);
+                });
+            });
+
+            function resetStars() {
+                stars.forEach(star => {
+                    star.classList.remove('text-warning');
+                    star.classList.add('text-secondary');
+                });
+            }
+
+            function highlightStars(rating) {
+                stars.forEach((star, index) => {
+                    if (rating >= index + 1) {
+                        star.classList.remove('text-secondary');
+                        star.classList.add('text-warning');
+                    } else if (rating === index + 0.5) {
+                        star.classList.remove('fa-star');
+                        star.classList.add('fa-star-half-alt');
+                        star.classList.remove('text-secondary');
+                        star.classList.add('text-warning');
+                    } else {
+                        star.classList.add('fa-star');
+                        star.classList.remove('fa-star-half-alt');
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock custom_js %}
