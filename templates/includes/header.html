@@ -26,13 +26,13 @@
             <a href="{% url 'contact' %}" class="nav-item nav-link">Contact</a>
             {% if user.is_authenticated %}
             <div class="nav-item dropdown">
-                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Course Categories</a>
+                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Our Modules</a>
                 <div class="dropdown-menu fade-down m-0">
-                    <a href="#" class="dropdown-item">MPPSC Foundation</a>
-                    <a href="#" class="dropdown-item">MPPSC Prelims</a>
-                    <a href="#" class="dropdown-item">MPPSC Mains</a>
-                    <a href="#" class="dropdown-item">UPSC Prelims</a>
-                    <a href="#" class="dropdown-item">UPSC Mains</a>
+                    <a href="{% url 'add-simple-type-question' %}" class="dropdown-item">Add Question</a>
+                    <a href="{% url 'upload-file' %}" class="dropdown-item">Upload Excel File</a>
+                    <a href="{% url 'generate-questions-document' %}" class="dropdown-item">Generate Class Plus Doc</a>
+                    <a href="{% url 'generate_questions' %}" class="dropdown-item">Generate Word Doc</a>
+                    <a href="{% url 'add-simple-type-question' %}" class="dropdown-item">UPSC Mains</a>
                 </div>
             </div>
             <a href="{% url 'logout' %}" class="nav-item nav-link">Logout</a>

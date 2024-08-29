@@ -1,4 +1,186 @@
 {% extends 'base.html' %}
+{% load static %}
+{% block title %}Add Question - Hajela's IAS Academy (HIA){% endblock %}
+
+{% block content %}
+    <!-- Header Start -->
+    <div class="container-fluid bg-primary py-5 mb-5 page-header">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 text-center">
+                    <h1 class="display-3 text-white animated slideInDown">Add Question</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-center">
+                            <li class="breadcrumb-item"><a class="text-white" href="{% url 'index' %}">Home</a></li>
+                            <li class="breadcrumb-item"><a class="text-white" href="#">Pages</a></li>
+                            <li class="breadcrumb-item text-white active" aria-current="page">Add Question</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Header End -->
+
+    <!-- Add Question Form Start -->
+    <div class="container-xxl py-5">
+        <div class="container">
+            <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+                <h6 class="section-title bg-white text-center text-primary px-3">Add Question</h6>
+                <h1 class="mb-5">Fill in the details to add a new question</h1>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-12 wow fadeInUp" data-wow-delay="0.5s">
+                    <form id="questionForm" method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <h5 class="text-primary mb-3">Choose Question Type</h5>
+                            <select id="questionType" name="questionType" class="form-select" required>
+                                <option value="simple_type">Simple Type</option>
+                                <option value="r_and_a_type">R & A Type</option>
+                                <option value="list_type_1">List Type 1</option>
+                                <option value="list_type_2">List Type 2</option>
+                            </select>
+                        </div>
+
+                        <!-- Common Fields -->
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="examName" name="exam_name" placeholder="Exam Name" required>
+                                    <label for="examName">Exam Name</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="number" class="form-control" id="year" name="exam_year" placeholder="Year" required>
+                                    <label for="year">Year</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="degreeOfDifficulty" name="degree_of_difficulty" placeholder="Degree of Difficulty" required>
+                                    <label for="degreeOfDifficulty">Degree of Difficulty</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="subjectName" name="subject_name" placeholder="Subject Name" required>
+                                    <label for="subjectName">Subject Name</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="areaName" name="area_name" placeholder="Area Name" required>
+                                    <label for="areaName">Area Name</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="partName" name="part_name" placeholder="Part Name" required>
+                                    <label for="partName">Part Name</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Sections -->
+                        <div id="simple_type" class="form-section d-none">
+                            {{ simple_form.as_p }}
+                        </div>
+                        <div id="r_and_a_type" class="form-section d-none">
+                            {{ r_and_a_form.as_p }}
+                        </div>
+                        <div id="list_type_1" class="form-section d-none">
+                            {{ list_type_1_form.as_p }}
+                        </div>
+                        <div id="list_type_2" class="form-section d-none">
+                            {{ list_type_2_form.as_p }}
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="col-12 mt-4">
+                            <button class="btn btn-primary w-100 py-3" type="submit">Submit Question</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Add Question Form End -->
+{% endblock content %}
+
+{% block custom_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const questionTypeRadios = document.querySelectorAll('input[name="questionType"]');
+        const mcq1Section = document.getElementById('mcq1Section');
+        const rAndNSection = document.getElementById('rAndNSection');
+        const listISection = document.getElementById('listISection');
+        const listIISection = document.getElementById('listIISection');
+    
+        function toggleRequiredFields(section, shouldBeRequired) {
+            const inputs = section.querySelectorAll('input, textarea');
+            inputs.forEach(function(input) {
+                if (shouldBeRequired) {
+                    input.setAttribute('required', 'required');
+                } else {
+                    input.removeAttribute('required');
+                }
+            });
+        }
+    
+        function hideAllSections() {
+            mcq1Section.classList.add('d-none');
+            rAndNSection.classList.add('d-none');
+            listISection.classList.add('d-none');
+            listIISection.classList.add('d-none');
+    
+            toggleRequiredFields(mcq1Section, false);
+            toggleRequiredFields(rAndNSection, false);
+            toggleRequiredFields(listISection, false);
+            toggleRequiredFields(listIISection, false);
+        }
+    
+        questionTypeRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                hideAllSections(); // Hide all sections and remove required attributes
+    
+                if (this.value === 'simple_type') {
+                    mcq1Section.classList.remove('d-none');
+                    toggleRequiredFields(mcq1Section, true);
+                } else if (this.value === 'r_and_a_type') {
+                    rAndNSection.classList.remove('d-none');
+                    toggleRequiredFields(rAndNSection, true);
+                } else if (this.value === 'list_type_1') {
+                    listISection.classList.remove('d-none');
+                    toggleRequiredFields(listISection, true);
+                } else if (this.value === 'list_type_2') {
+                    listIISection.classList.remove('d-none');
+                    toggleRequiredFields(listIISection, true);
+                }
+            });
+        });
+    
+        // Run on page load to ensure the correct fields are visible and required based on the initial state
+        const checkedRadio = document.querySelector('input[name="questionType"]:checked');
+        if (checkedRadio) {
+            checkedRadio.dispatchEvent(new Event('change'));
+        }
+    });
+    
+</script>
+{% endblock %}
+
+
+
+
+
+
+<!--Working code end-->
+
+
+{% comment %} {% extends 'base.html' %}
 
 {% block title %}Add Question - Hajela's IAS Academy (HIA){% endblock %}
 
@@ -396,7 +578,30 @@
         }
     });
 </script>
-{% endblock custom_js %}
+{% endblock custom_js %} {% endcomment %}
+
+
+
+
+
+
+
+
+
+
+
+<!--Working code end-->
+
+
+
+
+
+
+
+
+
+
+
 
 
 

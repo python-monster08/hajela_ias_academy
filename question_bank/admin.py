@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import QuestionBank
 
 class QuestionBankAdmin(admin.ModelAdmin):
-    list_display = ('question_number', 'exam_name', 'exam_year', 'type_of_question', 'marks', 'degree_of_difficulty')
+    list_display = ('question_number', 'exam_name', 'exam_year', 'question_sub_type', 'marks', 'degree_of_difficulty')
     search_fields = ('question_number', 'exam_name', 'subject_name', 'area_name', 'part_name')
     list_filter = ('exam_name', 'exam_year', 'type_of_question', 'degree_of_difficulty')
     ordering = ('exam_year', 'exam_name', 'question_number')
