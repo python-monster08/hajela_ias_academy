@@ -2,11 +2,11 @@ from django.db import models
 
 class QuestionBank(models.Model):
     # Question Information Fields 
-    type_of_question = models.CharField(max_length=100)
+    type_of_question = models.CharField(max_length=100, default='mcq1')
     exam_name = models.CharField(max_length=100)
-    exam_stage = models.CharField(max_length=100)
+    exam_stage = models.CharField(max_length=100, blank=True, null=True)
     exam_year = models.IntegerField(blank=True, null=True)
-    language = models.CharField(max_length=100, default='')
+    language = models.CharField(max_length=100, default='', blank=True, null=True)
     script = models.TextField(blank=True, null=True)
     marks = models.FloatField(default=0.0)
     negative_marks = models.FloatField(default=0.0)

@@ -18,7 +18,7 @@ from docx.shared import Pt
 from django.http import FileResponse, HttpResponse
 from PIL import Image as PILImage
 from django.utils.text import slugify
-
+from io import BytesIO
 
 # ************************* Generate Test Word file Start *********************************************
 
@@ -26,16 +26,18 @@ def clean_text(text):
     """Utility function to clean and format text for the document."""
     return text.strip() if text else ''
 
+
 def generate_questions(request):
     try:
-        # Setup directory and document file to save generated word file
-        base_dir = r'E:\Kamlesh Projects\hia_project\media\generate_questions'
-        os.makedirs(base_dir, exist_ok=True)
+        # Create an in-memory file object
+        buffer = BytesIO()
+
+        # Setup document file to save generated word content
         today = datetime.today().strftime('%Y-%m-%d')
         file_name = f'all_questions_{today}.docx'
-        file_path = os.path.join(base_dir, file_name)
         document = Document()
 
+        # Add content to the document
         for question in QuestionBank.objects.all():
             if question.question_sub_type == 'simple_type':
                 add_simple_type(question, document)
@@ -49,15 +51,50 @@ def generate_questions(request):
             # Add a space between questions
             document.add_paragraph()
 
-        document.save(file_path)
+        # Save the document to the in-memory file object
+        document.save(buffer)
+        buffer.seek(0)
 
         # Return the generated file as a downloadable response
-        response = FileResponse(open(file_path, 'rb'), as_attachment=True, filename=file_name)
+        response = FileResponse(buffer, as_attachment=True, filename=file_name)
         response['Content-Disposition'] = f'attachment; filename={file_name}'
         return response
 
     except Exception as e:
         return HttpResponse(f"An error occurred: {str(e)}", status=500)
+
+# def generate_questions(request):
+#     try:
+#         # Setup directory and document file to save generated word file
+#         base_dir = r'E:\Kamlesh Projects\hia_project\media\generate_questions'
+#         os.makedirs(base_dir, exist_ok=True)
+#         today = datetime.today().strftime('%Y-%m-%d')
+#         file_name = f'all_questions_{today}.docx'
+#         file_path = os.path.join(base_dir, file_name)
+#         document = Document()
+
+#         for question in QuestionBank.objects.all():
+#             if question.question_sub_type == 'simple_type':
+#                 add_simple_type(question, document)
+#             elif question.question_sub_type == 'r_and_a_type':
+#                 add_r_and_a_type(question, document)
+#             elif question.question_sub_type == 'list_type_1':
+#                 add_list_type_1(question, document)
+#             elif question.question_sub_type == 'list_type_2':
+#                 add_list_type_2(question, document)
+            
+#             # Add a space between questions
+#             document.add_paragraph()
+
+#         document.save(file_path)
+
+#         # Return the generated file as a downloadable response
+#         response = FileResponse(open(file_path, 'rb'), as_attachment=True, filename=file_name)
+#         response['Content-Disposition'] = f'attachment; filename={file_name}'
+#         return response
+
+#     except Exception as e:
+#         return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
 def add_simple_type(question, document):
     """Add simple type question to the document."""
@@ -66,7 +103,7 @@ def add_simple_type(question, document):
 
 def add_r_and_a_type(question, document):
     """Add reason and assertion type question to the document."""
-    document.add_paragraph(f"({question.question_number}). {clean_text(question.question_part)}")
+    document.add_paragraph(f"({question.question_number}). {clean_text(question.question_part_first)}")
     document.add_paragraph(f"{clean_text(question.question_part_third)}")
     add_options_and_answers(document, question)
 
@@ -142,7 +179,7 @@ def set_no_border(cell):
 def generate_questions_document(request):
     try:
         # Setup directory and document file to save generated Word file
-        base_dir = r'E:\Kamlesh Projects\hia_project\media\word_file'
+        base_dir = r'E:/Kamlesh Projects/hajeka_Ias_academy-1.0.0/hajela_ias_academy/media/word_file'
         os.makedirs(base_dir, exist_ok=True)
         today = datetime.today().strftime('%Y-%m-%d')
         file_name = f'class_plus_questions_{today}.docx'
@@ -346,7 +383,7 @@ def upload_file(request):
 
                 QuestionBank.objects.create(
                     question_number=str(start_number),
-                    type_of_question=row.get('type_of_question', ''),
+                    type_of_question=row.get('question_type', 'multiple_choice'),
                     exam_name=row.get('exam_name', ''),
                     exam_stage=row.get('exam_stage', ''),
                     exam_year=exam_year,
@@ -357,7 +394,7 @@ def upload_file(request):
                     degree_of_difficulty=row.get('degree_of_difficulty', ''),
                     question_sub_type=row.get('question_sub_type', ''),
                     question_part=row.get('question_part', ''),
-                    question_part_first=row.get('question_part_first', ''),
+                    question_part_first=row.get('question_part_first_part', ''),
                     list_1_name=row.get('list_1_name', ''),
                     list_2_name=row.get('list_2_name', ''),
                     list_1_row1=row.get('list_1_row1', ''),
@@ -376,7 +413,7 @@ def upload_file(request):
                     list_2_row7=row.get('list_2_row7', ''),
                     list_1_row8=row.get('list_1_row8', ''),
                     list_2_row8=row.get('list_2_row8', ''),
-                    question_part_third=row.get('question_part_third', ''),
+                    question_part_third=row.get('question_part_third_part', ''),
                     answer_option_a=row.get('answer_option_a', ''),
                     answer_option_b=row.get('answer_option_b', ''),
                     answer_option_c=row.get('answer_option_c', ''),
@@ -700,6 +737,7 @@ def add_list_type_2_question(request):
 
         # Initialize the QuestionBank object
         question = QuestionBank(
+            type_of_question='mcq1',
             question_sub_type=type_of_question,
             question_part_first=question_part_first,
             correct_answer_choice=correct_answer_choice,
