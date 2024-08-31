@@ -59,8 +59,13 @@
     <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
 
     <!-- JavaScript Libraries -->
+    <!-- Load jQuery first -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+    <!-- Load Bootstrap after jQuery -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom scripts -->
     <script src="{% static 'assets/lib/wow/wow.min.js' %}"></script>
     <script src="{% static 'assets/lib/easing/easing.min.js' %}"></script>
     <script src="{% static 'assets/lib/waypoints/waypoints.min.js' %}"></script>
@@ -69,7 +74,19 @@
     <!-- Template Javascript -->
     <script src="{% static 'assets/js/main.js' %}"></script>
     {% block custom_js %}
-    
+    <!-- Your custom JS script -->
+    <script>
+        $(document).ready(function() {
+            // This script closes the navbar when you click outside of it
+            $(document).on('click', function (event) {
+                var clickOver = $(event.target);
+                var _opened = $(".navbar-collapse").hasClass("show");
+                if (_opened === true && !clickOver.hasClass("navbar-toggler")) {
+                    $(".navbar-toggler").click();
+                }
+            });
+        });
+    </script>
     {% endblock custom_js %}
 </body>
 
