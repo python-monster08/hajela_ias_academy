@@ -77,15 +77,16 @@
     <!-- Your custom JS script -->
     <script>
         $(document).ready(function() {
-            // This script closes the navbar when you click outside of it
-            $(document).on('click', function (event) {
+            $(document).on('click', function(event) {
                 var clickOver = $(event.target);
                 var _opened = $(".navbar-collapse").hasClass("show");
-                if (_opened === true && !clickOver.hasClass("navbar-toggler")) {
+                var isNavbarItem = clickOver.closest('.navbar-nav').length > 0; // Check if the clicked element is within the navbar menu
+        
+                if (_opened === true && !clickOver.hasClass("navbar-toggler") && !isNavbarItem) {
                     $(".navbar-toggler").click();
                 }
             });
-        });
+        });        
     </script>
     {% endblock custom_js %}
 </body>
