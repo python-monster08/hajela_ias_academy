@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load custom_tags %}
 {% block title %}Add List-II Type Question - Hajela's IAS Academy (HIA){% endblock %}
 
 {% block content %}
@@ -35,6 +36,10 @@
                                     <a href="{% url 'add-list-type-1-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-list-type-1-question' %}active{% endif %}">List-I</a>
 
                                     <a href="{% url 'add-list-type-2-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-list-type-2-question' %}active{% endif %}">List-II</a>
+
+                                    <a href="{% url 'add-true-and-false-type-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-true-and-false-type-question' %}active{% endif %}">True & False</a>
+
+                                    <a href="{% url 'add-fill-in-the-blank-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-fill-in-the-blank-question' %}active{% endif %}">Fill in the Blank</a>
                                 </div>
                             </div>
                         </div>
@@ -50,6 +55,7 @@
                                 </div>
                             </div>
                         </div>
+
                         <!-- List-II Specific Fields -->
                         <div class="row g-3">
                             <!-- List-I Heading -->
@@ -136,7 +142,13 @@
                             <label class="form-label">Other Details</label>
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="text" class="form-control" id="correctAnswer" name="correct_answer_choice" placeholder="Correct Answer" required>
+                                    <select class="form-select" id="correctAnswer" name="correct_answer_choice" required>
+                                        <option value="">Select the correct answer</option>
+                                        <option value="a">Option a</option>
+                                        <option value="b">Option b</option>
+                                        <option value="c">Option c</option>
+                                        <option value="d">Option d</option>
+                                    </select>
                                     <label for="correctAnswer">Correct Answer</label>
                                 </div>
                             </div>
@@ -148,7 +160,12 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="text" class="form-control" id="examName" name="exam_name" placeholder="Exam Name" required>
+                                    <select class="form-select" id="examName" name="exam_name" required>
+                                        <option value="">Select Exam Name</option>
+                                        <option value="UPSC">UPSC</option>
+                                        <option value="MPPSC">MPPSC</option>
+                                        <option value="Other">Other</option>
+                                    </select>
                                     <label for="examName">Exam Name</label>
                                 </div>
                             </div>
@@ -172,7 +189,12 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="text" class="form-control" id="degreeOfDifficulty" name="degree_of_difficulty" placeholder="Degree of Difficulty" required>
+                                    <select class="form-select" id="degreeOfDifficulty" name="degree_of_difficulty" required>
+                                        <option value="">Select Degree of Difficulty</option>
+                                        {% for i in 10|to_range %}
+                                            <option value="{{ i }}">{{ i }}</option>
+                                        {% endfor %}
+                                    </select>
                                     <label for="degreeOfDifficulty">Degree of Difficulty</label>
                                 </div>
                             </div>

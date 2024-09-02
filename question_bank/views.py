@@ -63,38 +63,6 @@ def generate_questions(request):
     except Exception as e:
         return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
-# def generate_questions(request):
-#     try:
-#         # Setup directory and document file to save generated word file
-#         base_dir = r'E:\Kamlesh Projects\hia_project\media\generate_questions'
-#         os.makedirs(base_dir, exist_ok=True)
-#         today = datetime.today().strftime('%Y-%m-%d')
-#         file_name = f'all_questions_{today}.docx'
-#         file_path = os.path.join(base_dir, file_name)
-#         document = Document()
-
-#         for question in QuestionBank.objects.all():
-#             if question.question_sub_type == 'simple_type':
-#                 add_simple_type(question, document)
-#             elif question.question_sub_type == 'r_and_a_type':
-#                 add_r_and_a_type(question, document)
-#             elif question.question_sub_type == 'list_type_1':
-#                 add_list_type_1(question, document)
-#             elif question.question_sub_type == 'list_type_2':
-#                 add_list_type_2(question, document)
-            
-#             # Add a space between questions
-#             document.add_paragraph()
-
-#         document.save(file_path)
-
-#         # Return the generated file as a downloadable response
-#         response = FileResponse(open(file_path, 'rb'), as_attachment=True, filename=file_name)
-#         response['Content-Disposition'] = f'attachment; filename={file_name}'
-#         return response
-
-#     except Exception as e:
-#         return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
 def add_simple_type(question, document):
     """Add simple type question to the document."""
@@ -176,6 +144,7 @@ def set_no_border(cell):
         tcBorders.append(border)
     tcPr.append(tcBorders)
 
+
 def generate_questions_document(request):
     try:
         # Setup directory and document file to save generated Word file
@@ -210,9 +179,16 @@ def generate_questions_document(request):
                 for cell in sub_table._cells:
                     set_no_border(cell)
 
+                # Modify the headers to include the list names as desired
                 sub_hdr_cells = sub_table.rows[0].cells
-                sub_hdr_cells[0].text = question.list_1_name
-                sub_hdr_cells[1].text = question.list_2_name
+                sub_hdr_cells[0].text = "LIST - I"
+                sub_hdr_cells[1].text = "LIST - II"
+
+                # Add the list names, if available
+                if question.list_1_name:
+                    sub_hdr_cells[0].text += f"\n({clean_text(question.list_1_name)})"
+                if question.list_2_name:
+                    sub_hdr_cells[1].text += f"\n({clean_text(question.list_2_name)})"
 
                 # Populate sub-table with list options
                 for i in range(1, 9):
@@ -245,7 +221,7 @@ def generate_questions_document(request):
             if question.image:
                 image_path = question.image.path
                 pil_img = PILImage.open(image_path)
-                img_io = io.BytesIO()
+                img_io = BytesIO()
                 pil_img.save(img_io, 'JPEG')
                 img_io.seek(0)
                 paragraph = q_row[1].add_paragraph()
@@ -337,6 +313,7 @@ def generate_questions_document(request):
 
     except Exception as e:
         return HttpResponse(f"An error occurred: {str(e)}", status=500)
+
 
 
 # ************************* Generate Clas Plus Word file Start *********************************************
@@ -452,109 +429,6 @@ def upload_file(request):
         form = UploadFileForm()
     return render(request, 'question_bank/upload.html', {'form': form})
 
-# def upload_file(request):
-#     if request.method == 'POST':
-#         form = UploadFileForm(request.POST, request.FILES)
-#         if form.is_valid():
-#             # Save the uploaded file temporarily
-#             file = request.FILES['file']
-#             fs = FileSystemStorage()
-#             filename = fs.save(file.name, file)
-#             uploaded_file_url = fs.url(filename)
-
-#             # Process the uploaded file
-#             data = pd.read_excel(fs.path(filename))
-
-#             # Replace NaN values with blank strings for text fields and 0 for numeric fields
-#             data = data.fillna({
-#                 'marks': 0,
-#                 'negative_marks': 0,
-#                 'exam_year': 0,
-#             }).fillna('')
-
-#             # Get the maximum question number from the database
-#             max_question_number = QuestionBank.objects.aggregate(Max('question_number'))['question_number__max']
-#             if max_question_number:
-#                 start_number = int(max_question_number) + 1
-#             else:
-#                 start_number = 1
-
-#             # Loop through the rows and create QuestionBank entries
-#             for _, row in data.iterrows():
-#                 while QuestionBank.objects.filter(question_number=str(start_number)).exists():
-#                     start_number += 1
-
-#                 QuestionBank.objects.create(
-#                     question_number=str(start_number),
-#                     type_of_question=row.get('type_of_question', ''),
-#                     exam_name=row.get('exam_name', ''),
-#                     exam_stage=row.get('exam_stage', ''),
-#                     exam_year=int(row['exam_year']),
-#                     language=row.get('language', ''),
-#                     script=row.get('script', ''),
-#                     marks=float(row['marks']),
-#                     negative_marks=float(row['negative_marks']),
-#                     degree_of_difficulty=row.get('degree_of_difficulty', ''),
-#                     question_sub_type=row.get('question_sub_type', ''),
-#                     question_part=row.get('question_part', ''),
-#                     question_part_first=row.get('question_part_first', ''),
-#                     list_1_name=row.get('list_1_name', ''),
-#                     list_2_name=row.get('list_2_name', ''),
-#                     list_1_row1=row.get('list_1_row1', ''),
-#                     list_2_row1=row.get('list_2_row1', ''),
-#                     list_1_row2=row.get('list_1_row2', ''),
-#                     list_2_row2=row.get('list_2_row2', ''),
-#                     list_1_row3=row.get('list_1_row3', ''),
-#                     list_2_row3=row.get('list_2_row3', ''),
-#                     list_1_row4=row.get('list_1_row4', ''),
-#                     list_2_row4=row.get('list_2_row4', ''),
-#                     list_1_row5=row.get('list_1_row5', ''),
-#                     list_2_row5=row.get('list_2_row5', ''),
-#                     list_1_row6=row.get('list_1_row6', ''),
-#                     list_2_row6=row.get('list_2_row6', ''),
-#                     list_1_row7=row.get('list_1_row7', ''),
-#                     list_2_row7=row.get('list_2_row7', ''),
-#                     list_1_row8=row.get('list_1_row8', ''),
-#                     list_2_row8=row.get('list_2_row8', ''),
-#                     question_part_third=row.get('question_part_third', ''),
-#                     answer_option_a=row.get('answer_option_a', ''),
-#                     answer_option_b=row.get('answer_option_b', ''),
-#                     answer_option_c=row.get('answer_option_c', ''),
-#                     answer_option_d=row.get('answer_option_d', ''),
-#                     correct_answer_choice=row.get('correct_answer_choice', ''),
-#                     correct_answer_description=row.get('correct_answer_description', ''),
-#                     subject_name=row.get('subject_name', ''),
-#                     area_name=row.get('area_name', ''),
-#                     part_name=row.get('part_name', ''),
-#                     table_head_a=row.get('table_head_a', ''),
-#                     table_head_b=row.get('table_head_b', ''),
-#                     table_head_c=row.get('table_head_c', ''),
-#                     table_head_d=row.get('table_head_d', ''),
-#                     head_a_data1=row.get('head_a_data1', ''),
-#                     head_a_data2=row.get('head_a_data2', ''),
-#                     head_a_data3=row.get('head_a_data3', ''),
-#                     head_a_data4=row.get('head_a_data4', ''),
-#                     head_b_data1=row.get('head_b_data1', ''),
-#                     head_b_data2=row.get('head_b_data2', ''),
-#                     head_b_data3=row.get('head_b_data3', ''),
-#                     head_b_data4=row.get('head_b_data4', ''),
-#                     head_c_data1=row.get('head_c_data1', ''),
-#                     head_c_data2=row.get('head_c_data2', ''),
-#                     head_c_data3=row.get('head_c_data3', ''),
-#                     head_c_data4=row.get('head_c_data4', ''),
-#                     head_d_data1=row.get('head_d_data1', ''),
-#                     head_d_data2=row.get('head_d_data2', ''),
-#                     head_d_data3=row.get('head_d_data3', ''),
-#                     head_d_data4=row.get('head_d_data4', '')
-#                 )
-#                 start_number += 1
-#             messages.success(request, "File uploaded and data processed successfully!")
-#             return redirect('upload-file')
-#     else:
-#         form = UploadFileForm()
-#     return render(request, 'question_bank/upload.html', {'form': form})
-
-
 # ************************* Upload Excel file End *********************************************
 
 
@@ -563,7 +437,7 @@ def upload_file(request):
 def add_simple_type_question(request):
     if request.method == 'POST':
         # Extract common fields
-        type_of_question = 'simple_type'
+        type_of_question = request.POST.get('questionType', 'simple_type')
         question_part_first = request.POST.get('question_part_first', '')
         correct_answer_choice = request.POST.get('correct_answer_choice', '')
         correct_answer_description = request.POST.get('correct_answer_description', '')
@@ -610,11 +484,10 @@ def add_simple_type_question(request):
 
 
 # ************************* Create R and A Type Question Start *********************************************
-
 def add_r_and_a_type_question(request):
     if request.method == 'POST':
         # Extract common fields
-        type_of_question = 'r_and_a_type'
+        type_of_question = request.POST.get('questionType', 'r_and_a_type')
         question_part_first = request.POST.get('question_part_first', '')
         correct_answer_choice = request.POST.get('correct_answer_choice', '')
         correct_answer_description = request.POST.get('correct_answer_description', '')
@@ -626,6 +499,11 @@ def add_r_and_a_type_question(request):
         subject_name = request.POST.get('subject_name', '')
         area_name = request.POST.get('area_name', '')
         part_name = request.POST.get('part_name', '')
+
+        # Extract R & A specific fields
+        reason = request.POST.get('reason', '')
+        assertion = request.POST.get('assertion', '')
+        question_part_third = request.POST.get('question_part_third', '')
 
         # Initialize the QuestionBank object
         question = QuestionBank(
@@ -641,9 +519,9 @@ def add_r_and_a_type_question(request):
             subject_name=subject_name,
             area_name=area_name,
             part_name=part_name,
-            reason=request.POST.get('reason', ''),
-            assertion=request.POST.get('assertion', ''),
-            question_part_third=request.POST.get('question_part_third', ''),
+            reason=reason,
+            assertion=assertion,
+            question_part_third=question_part_third,
             answer_option_a=request.POST.get('answer_option_a', ''),
             answer_option_b=request.POST.get('answer_option_b', ''),
             answer_option_c=request.POST.get('answer_option_c', ''),
@@ -657,6 +535,8 @@ def add_r_and_a_type_question(request):
         return redirect('add-r-and-a-type-question')  # Redirect back to the form
 
     return render(request, 'question_bank/add_question/r_and_a_type_form.html')
+
+
 # ************************* Create R and A Type Question End *********************************************
 
 
@@ -665,7 +545,7 @@ def add_r_and_a_type_question(request):
 def add_list_type_1_question(request):
     if request.method == 'POST':
         # Extract common fields
-        type_of_question = 'list_type_1'
+        type_of_question = request.POST.get('questionType', 'list_type_1')
         question_part_first = request.POST.get('question_part_first', '')
         correct_answer_choice = request.POST.get('correct_answer_choice', '')
         correct_answer_description = request.POST.get('correct_answer_description', '')
@@ -722,7 +602,7 @@ def add_list_type_1_question(request):
 def add_list_type_2_question(request):
     if request.method == 'POST':
         # Extract common fields
-        type_of_question = 'list_type_2'
+        type_of_question = request.POST.get('questionType', 'list_type_2')
         question_part_first = request.POST.get('question_part_first', '')
         correct_answer_choice = request.POST.get('correct_answer_choice', '')
         correct_answer_description = request.POST.get('correct_answer_description', '')
@@ -780,85 +660,96 @@ def add_list_type_2_question(request):
 # ************************* Create List-II Type Question End *********************************************
 
 
+# ************************* Create True and False Type Question Start *********************************************
+def add_true_and_false_type_question(request):
+    if request.method == 'POST':
+        # Extract fields from the form
+        type_of_question = request.POST.get('questionType', 'true_and_false_type')
+        question_part_first = request.POST.get('question_part_first', '')
+        correct_answer_choice = request.POST.get('correct_answer_choice', '')
+        correct_answer_description = request.POST.get('correct_answer_description', '')
+        exam_name = request.POST.get('exam_name', '')
+        exam_year = request.POST.get('exam_year', None)
+        marks = request.POST.get('marks', 0.0)
+        negative_marks = request.POST.get('negative_marks', 0.0)
+        degree_of_difficulty = request.POST.get('degree_of_difficulty', '')
+        subject_name = request.POST.get('subject_name', '')
+        area_name = request.POST.get('area_name', '')
+        part_name = request.POST.get('part_name', '')
 
-# from django.shortcuts import render, redirect
-# from django.contrib import messages
-# from .models import QuestionBank
+        # Initialize the QuestionBank object with True/False options
+        question = QuestionBank(
+            question_sub_type=type_of_question,
+            question_part=question_part_first,
+            correct_answer_choice=correct_answer_choice,
+            correct_answer_description=correct_answer_description,
+            exam_name=exam_name,
+            exam_year=exam_year if exam_year else None,
+            marks=float(marks),
+            negative_marks=float(negative_marks),
+            degree_of_difficulty=degree_of_difficulty,
+            subject_name=subject_name,
+            area_name=area_name,
+            part_name=part_name,
+            answer_option_a="True",
+            answer_option_b="False",
+        )
 
-# def add_question(request):
-#     if request.method == 'POST':
-#         # Extract common fields
-#         type_of_question = request.POST.get('questionType', '')
-#         question_part_first = request.POST.get('question_part_first', '')
-#         correct_answer_choice = request.POST.get('correct_answer_choice', '')
-#         correct_answer_description = request.POST.get('correct_answer_description', '')
-#         exam_name = request.POST.get('exam_name', '')
-#         exam_year = request.POST.get('exam_year', None)
-#         marks = request.POST.get('marks', 0.0)
-#         negative_marks = request.POST.get('negative_marks', 0.0)
-#         degree_of_difficulty = request.POST.get('degree_of_difficulty', '')
-#         subject_name = request.POST.get('subject_name', '')
-#         area_name = request.POST.get('area_name', '')
-#         part_name = request.POST.get('part_name', '')
+        # Save the question to the database
+        question.save()
 
-#         # Initialize the QuestionBank object
-#         question = QuestionBank(
-#             type_of_question=type_of_question,
-#             question_part_first=question_part_first,
-#             correct_answer_choice=correct_answer_choice,
-#             correct_answer_description=correct_answer_description,
-#             exam_name=exam_name,
-#             exam_year=exam_year if exam_year else None,
-#             marks=float(marks),
-#             negative_marks=float(negative_marks),
-#             degree_of_difficulty=degree_of_difficulty,
-#             subject_name=subject_name,
-#             area_name=area_name,
-#             part_name=part_name,
-#         )
+        messages.success(request, 'True & False Type Question has been added successfully!')
+        return redirect('add-true-and-false-type-question')  # Redirect back to the form
 
-#         # Process question type specific fields
-#         if type_of_question == 'simple_type':
-#             question.answer_option_a = request.POST.get('answer_option_a', '')
-#             question.answer_option_b = request.POST.get('answer_option_b', '')
-#             question.answer_option_c = request.POST.get('answer_option_c', '')
-#             question.answer_option_d = request.POST.get('answer_option_d', '')
+    return render(request, 'question_bank/add_question/true_false_type_form.html')
 
-#         elif type_of_question == 'r_and_a_type':
-#             question.reason = request.POST.get('reason', '')
-#             question.assertion = request.POST.get('assertion', '')
-#             question.question_part_third = request.POST.get('question_part_third', '')
+# ************************* Create True and False Type Question End *********************************************
 
-#         elif type_of_question == 'list_type_1':
-#             question.list_1_row1 = request.POST.get('list_1_row1', '')
-#             question.list_1_row2 = request.POST.get('list_1_row2', '')
-#             question.list_1_row3 = request.POST.get('list_1_row3', '')
-#             question.list_1_row4 = request.POST.get('list_1_row4', '')
-#             question.list_1_row5 = request.POST.get('list_1_row5', '')
-#             question.list_1_row6 = request.POST.get('list_1_row6', '')
-#             question.list_1_row7 = request.POST.get('list_1_row7', '')
-#             question.list_1_row8 = request.POST.get('list_1_row8', '')
-#             question.question_part_third = request.POST.get('question_part_third', '')
 
-#         elif type_of_question == 'list_type_2':
-#             question.list_1_name = request.POST.get('list_1_name', '')
-#             question.list_2_name = request.POST.get('list_2_name', '')
-#             question.list_1_row1 = request.POST.get('list_1_row1', '')
-#             question.list_2_row1 = request.POST.get('list_2_row1', '')
-#             question.list_1_row2 = request.POST.get('list_1_row2', '')
-#             question.list_2_row2 = request.POST.get('list_2_row2', '')
-#             question.list_1_row3 = request.POST.get('list_1_row3', '')
-#             question.list_2_row3 = request.POST.get('list_2_row3', '')
-#             question.list_1_row4 = request.POST.get('list_1_row4', '')
-#             question.list_2_row4 = request.POST.get('list_2_row4', '')
-#             question.list_1_row5 = request.POST.get('list_1_row5', '')
-#             question.list_2_row5 = request.POST.get('list_2_row5', '')
-#             question.question_part_third = request.POST.get('question_part_third', '')
+# ************************* Create Fill in the Blank Type Question Start *********************************************
 
-#         # Save the question to the database
-#         question.save()
+def add_fill_in_the_blank_question(request):
+    if request.method == 'POST':
+        # Extract fields from the form
+        type_of_question = request.POST.get('questionType', 'fill_in_the_blank_type')
+        question_part_first = request.POST.get('question_part_first', '')
+        correct_answer_choice = request.POST.get('correct_answer_choice', '')
+        correct_answer_description = request.POST.get('correct_answer_description', '')
+        exam_name = request.POST.get('exam_name', '')
+        exam_year = request.POST.get('exam_year', None)
+        marks = request.POST.get('marks', 0.0)
+        negative_marks = request.POST.get('negative_marks', 0.0)
+        degree_of_difficulty = request.POST.get('degree_of_difficulty', '')
+        subject_name = request.POST.get('subject_name', '')
+        area_name = request.POST.get('area_name', '')
+        part_name = request.POST.get('part_name', '')
 
-#         messages.success(request, 'Question has been added successfully!')
-#         return redirect('add-question')  # Redirect back to the form
+        # Initialize the QuestionBank object
+        question = QuestionBank(
+            question_sub_type=type_of_question,
+            question_part=question_part_first,
+            correct_answer_choice=correct_answer_choice,
+            correct_answer_description=correct_answer_description,
+            exam_name=exam_name,
+            exam_year=exam_year if exam_year else None,
+            marks=float(marks),
+            negative_marks=float(negative_marks),
+            degree_of_difficulty=degree_of_difficulty,
+            subject_name=subject_name,
+            area_name=area_name,
+            part_name=part_name,
+            answer_option_a=request.POST.get('answer_option_a', ''),
+            answer_option_b=request.POST.get('answer_option_b', ''),
+            answer_option_c=request.POST.get('answer_option_c', ''),
+            answer_option_d=request.POST.get('answer_option_d', ''),
+        )
 
-#     return render(request, 'question_bank/add-question.html')
+        # Save the question to the database
+        question.save()
+
+        messages.success(request, 'Fill in the Blank Question has been added successfully!')
+        return redirect('add-fill-in-the-blank-question')  # Redirect back to the form
+
+    return render(request, 'question_bank/add_question/fill_in_the_blank_form.html')
+
+# ************************* Create Fill in the Blank Type Question end *********************************************
