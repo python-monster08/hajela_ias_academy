@@ -29,6 +29,8 @@
                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Our Modules</a>
                 <div class="dropdown-menu fade-down m-0">
                     <a href="{% url 'add-simple-type-question' %}" class="dropdown-item">Add Question</a>
+                    <a href="{% url 'add-descriptive-type-question' %}" class="dropdown-item">Add Descriptive Question</a>
+                    <a href="{% url 'question_list' %}" class="dropdown-item">All Descriptive Question List</a>
                     <a href="{% url 'upload-file' %}" class="dropdown-item">Upload Excel File</a>
                     <a href="{% url 'generate-questions-document' %}" class="dropdown-item">Generate Class Plus Doc</a>
                     <a href="{% url 'generate_questions' %}" class="dropdown-item">Generate Word Doc</a>

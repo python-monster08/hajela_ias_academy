@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import QuestionBank
+from .models import QuestionBank, DescriptiveTypeQuestion, QuestionImage, QuestionDocument
 
 class QuestionBankAdmin(admin.ModelAdmin):
     list_display = ('question_number', 'exam_name', 'exam_year', 'question_sub_type', 'marks', 'degree_of_difficulty')
@@ -42,3 +42,22 @@ class QuestionBankAdmin(admin.ModelAdmin):
     )
 
 admin.site.register(QuestionBank, QuestionBankAdmin)
+
+
+class QuestionImageInline(admin.TabularInline):
+    model = QuestionImage
+    extra = 1  # Number of empty image fields to display by default
+
+class QuestionDocumentInline(admin.TabularInline):
+    model = QuestionDocument
+    extra = 1  # Number of empty document fields to display by default
+
+@admin.register(DescriptiveTypeQuestion)
+class DescriptiveTypeQuestionAdmin(admin.ModelAdmin):
+    list_display = ('id','question_statement', 'exam_name', 'subject_name', 'area_name', 'created_at')
+    search_fields = ('question_statement', 'exam_name', 'subject_name', 'area_name')
+    list_filter = ('exam_name', 'subject_name', 'created_at')
+    ordering = ('-created_at',)
+
+    # Include the inlines for images and documents
+    inlines = [QuestionImageInline, QuestionDocumentInline]

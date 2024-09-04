@@ -41,6 +41,9 @@
                                     <a href="{% url 'add-true-and-false-type-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-true-and-false-type-question' %}active{% endif %}">True & False</a>
 
                                     <a href="{% url 'add-fill-in-the-blank-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-fill-in-the-blank-question' %}active{% endif %}">Fill in the Blank</a>
+
+                                    <a href="{% url 'add-descriptive-type-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-descriptive-type-question' %}active{% endif %}">Descriptive Question</a>
+
                                 </div>
                             </div>
                         </div>
@@ -49,9 +52,9 @@
                         <!-- Common Fields -->
                         <div class="row g-3">
                             <div class="col-md-12 mb-3">
+                                <label for="question_part_first">Question Part First</label>
                                 <div class="form-floating">
                                     <textarea class="form-control" name="question_part_first" id="question_part_first" placeholder="Question Part First" required></textarea>
-                                    <label for="question_part_first">Question Part First</label>
                                 </div>
                             </div>
                         </div>

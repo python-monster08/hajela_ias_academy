@@ -28,7 +28,6 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['hicareers.org', 'www.hicareers.org','103.191.208.60']
 
-
 # Application definition
 
 INSTALLED_APPS = [

@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ question.question_statement|truncatewords:5 }} - Hajela's IAS Academy (HIA){% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <!-- Blog Post Header -->
+        <div class="text-center mb-5">
+            <h3>{{ question.question_statement|truncatewords:5 }}</h3>
+            <p class="text-muted">Posted on {{ question.created_at|date:"F j, Y" }}</p>
+        </div>
+        <div class="text-center mb-5">
+            <p>{{ question.question_statement }}</p>
+        </div>
+        
+        <!-- Blog Post Content -->
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Exam, Subject, and Other Details -->
+                <div class="mb-4">
+                    <h3>Exam: {{ question.exam_name }}</h3>
+                    <h4>Subject: {{ question.subject_name }}</h4>
+                    <p>Area: {{ question.area_name }}</p>
+                    {% if question.part_name %}
+                        <p>Part: {{ question.part_name }}</p>
+                    {% endif %}
+                    {% if question.topic_name %}
+                        <p>Topic: {{ question.topic_name }}</p>
+                    {% endif %}
+                    <p>{{ question.other_text }}</p>
+                </div>
+
+                <!-- Link to Resources -->
+                {% if question.question_link %}
+                    <div class="mb-4">
+                        <h5>Resource Link:</h5>
+                        <a href="{{ question.question_link }}" target="_blank">{{ question.question_link }}</a>
+                    </div>
+                {% endif %}
+
+                <!-- Video File -->
+                {% if question.question_video %}
+                    <div class="mb-4">
+                        <h5>Video:</h5>
+                        <video width="100%" controls>
+                            <source src="{{ question.question_video.url }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                {% endif %}
+
+                <!-- Display Related Images as Tabs -->
+                {% if question.images.exists %}
+                    <h3>Images:</h3>
+                    <ul class="nav nav-tabs" role="tablist">
+                        {% for image in question.images.all %}
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="image-tab-{{ forloop.counter }}" data-bs-toggle="tab" data-bs-target="#image-{{ forloop.counter }}" type="button" role="tab" aria-controls="image-{{ forloop.counter }}" aria-selected="true">
+                                    <img src="{{ image.image.url }}" alt="Image" class="img-fluid" style="max-width: 100px;">
+                                </button>
+                            </li>
+                        {% endfor %}
+                    </ul>
+
+                    <div class="tab-content mt-3">
+                        {% for image in question.images.all %}
+                            <div class="tab-pane fade" id="image-{{ forloop.counter }}" role="tabpanel" aria-labelledby="image-tab-{{ forloop.counter }}">
+                                <img src="{{ image.image.url }}" alt="Image" class="img-fluid">
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Display Related Documents -->
+                {% if question.documents.exists %}
+                    <h3>Documents:</h3>
+                    <ul>
+                        {% for document in question.documents.all %}
+                            <li><a href="{{ document.document.url }}" download>{{ document.document.url|slice:'-10:' }}</a></li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <!-- Sidebar (Optional) -->
+            <div class="col-lg-4">
+                <!-- Sidebar content (Optional) -->
+                <div class="p-4 mb-3 bg-light rounded">
+                    <h4>Additional Information</h4>
+                    <p>{{ question.other_text }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}All Questions - Hajela's IAS Academy (HIA){% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1>All Descriptive Type Question</h1>
+        <p class="lead">Explore all the questions available</p>
+    </div>
+
+    <div class="row">
+        <!-- Loop through each question and display it as a card -->
+        {% for question in questions %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100">
+                    <!-- Card Image (if available) -->
+                    {% if question.images.first %}
+                        <img src="{{ question.images.first.image.url }}" class="card-img-top" alt="Image">
+                    {% else %}
+                        <img src="{% static 'assets/img/thumbnail.jpeg' %}" class="card-img-top" alt="Default Image" height="200px">
+
+                    {% endif %}
+                    
+                    <div class="card-body">
+                        <!-- Question Title -->
+                        <h5 class="card-title">{{ question.question_statement|truncatewords:10 }}</h5>
+                        
+                        <!-- Short details -->
+                        <p class="card-text">
+                            Exam: {{ question.exam_name }}<br>
+                            Subject: {{ question.subject_name }}<br>
+                            Area: {{ question.area_name }}<br>
+                            {{ question.other_text|truncatewords:10 }}
+                        </p>
+                    </div>
+                    
+                    <!-- Card Footer with link to detailed view -->
+                    <div class="card-footer">
+                        <a href="{% url 'question_blog_view' question.id %}" class="btn btn-primary">Read More</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

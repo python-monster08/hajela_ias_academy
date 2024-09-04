@@ -96,3 +96,31 @@ class QuestionBank(models.Model):
 
     def __str__(self):
         return f"Question {self.question_number} - {self.exam_name} {self.exam_year}"
+
+
+
+class DescriptiveTypeQuestion(models.Model):
+    question_statement = models.TextField()
+    question_images = models.FileField(upload_to='descriptive_questions/images/', blank=True, null=True)
+    question_documents = models.FileField(upload_to='descriptive_questions/documents/', blank=True, null=True)
+    question_video = models.FileField(upload_to='descriptive_questions/videos/', blank=True, null=True)
+    question_link = models.URLField(blank=True, null=True)
+    other_text = models.TextField(blank=True, null=True)
+    exam_name = models.CharField(max_length=255)
+    subject_name = models.CharField(max_length=255)
+    area_name = models.CharField(max_length=255)
+    part_name = models.CharField(max_length=255, blank=True, null=True)
+    topic_name = models.CharField(max_length=255, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.question_statement[:50]
+
+
+class QuestionImage(models.Model):
+    question = models.ForeignKey(DescriptiveTypeQuestion, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='QuestionImage/images/')
+
+class QuestionDocument(models.Model):
+    question = models.ForeignKey(DescriptiveTypeQuestion, related_name='documents', on_delete=models.CASCADE)
+    document = models.FileField(upload_to='QuestionImage/documents/')

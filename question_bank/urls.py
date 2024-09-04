@@ -12,6 +12,10 @@ urlpatterns = [
     path('add/r-and-a/question/', views.add_r_and_a_type_question, name='add-r-and-a-type-question'),
     path('add/list-1/question/', views.add_list_type_1_question, name='add-list-type-1-question'),
     path('add/list-2/question/', views.add_list_type_2_question, name='add-list-type-2-question'),
-    path('add-true-and-false-type-question', views.add_true_and_false_type_question, name='add-true-and-false-type-question'),
-    path('add-fill-in-the-blank-question', views.add_fill_in_the_blank_question, name='add-fill-in-the-blank-question'),
+    path('add-true-and-false-type-question/', views.add_true_and_false_type_question, name='add-true-and-false-type-question'),
+    path('add-fill-in-the-blank-question/', views.add_fill_in_the_blank_question, name='add-fill-in-the-blank-question'),
+    path('add-descriptive-type-question/', views.add_descriptive_type_question, name='add-descriptive-type-question'),
+    path('descriptive-questions-list/', views.question_list_view, name='question_list'),
+    path('descriptive-question-blog/<int:question_id>/', views.question_blog_view, name='question_blog_view'),
+
 ]

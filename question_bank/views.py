@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.core.files.storage import FileSystemStorage
 from django.contrib import messages
 import pandas as pd
@@ -19,7 +19,20 @@ from django.http import FileResponse, HttpResponse
 from PIL import Image as PILImage
 from django.utils.text import slugify
 from io import BytesIO
+from .models import DescriptiveTypeQuestion
 
+
+import os
+from django.conf import settings
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.utils import ImageReader
+from .models import DescriptiveTypeQuestion, QuestionImage, QuestionDocument
+from bs4 import BeautifulSoup
 # ************************* Generate Test Word file Start *********************************************
 
 def clean_text(text):
@@ -753,3 +766,70 @@ def add_fill_in_the_blank_question(request):
     return render(request, 'question_bank/add_question/fill_in_the_blank_form.html')
 
 # ************************* Create Fill in the Blank Type Question end *********************************************
+
+def add_descriptive_type_question(request):
+    if request.method == 'POST':
+        # Get the form data
+        question_statement = request.POST.get('question_statement')
+        question_images = request.FILES.getlist('question_images')  # Multiple image files
+        question_documents = request.FILES.getlist('question_documents')  # Multiple document files
+        question_video = request.FILES.get('question_video')
+        question_link = request.POST.get('question_link')
+        other_text = request.POST.get('other_text')
+        exam_name = request.POST.get('exam_name')
+        subject_name = request.POST.get('subject_name')
+        area_name = request.POST.get('area_name')
+        part_name = request.POST.get('part_name')
+        topic_name = request.POST.get('topic_name')
+
+        # Create and save the DescriptiveTypeQuestion object
+        question = DescriptiveTypeQuestion(
+            question_statement=question_statement,
+            question_video=question_video,
+            question_link=question_link,
+            other_text=other_text,
+            exam_name=exam_name,
+            subject_name=subject_name,
+            area_name=area_name,
+            part_name=part_name,
+            topic_name=topic_name,
+        )
+        question.save()
+
+        # Save the images and associate them with the question
+        for image in question_images:
+            QuestionImage.objects.create(question=question, image=image)
+
+        # Save the documents and associate them with the question
+        for document in question_documents:
+            QuestionDocument.objects.create(question=question, document=document)
+
+        # Success message
+        messages.success(request, 'Descriptive type question added successfully!')
+
+        return redirect('question_list')
+
+    return render(request, 'question_bank/add_question/descriptive_type.html')
+
+
+def question_list_view(request):
+    # Fetch all DescriptiveTypeQuestion entries
+    questions = DescriptiveTypeQuestion.objects.all()
+    print(questions)
+
+    context = {
+        'questions': questions
+    }
+
+    return render(request, 'question_bank/question_list.html', context)
+
+
+def question_blog_view(request, question_id):
+    # Fetch the question using its ID
+    question = get_object_or_404(DescriptiveTypeQuestion, id=question_id)
+
+    context = {
+        'question': question
+    }
+    
+    return render(request, 'question_bank/question_blog.html', context)

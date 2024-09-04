@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_tags %}
+
+{% block title %}Add descriptive type questions - Hajela's IAS Academy (HIA){% endblock %}
+
+{% block content %}
+    <!-- Simple Type Question Form Start -->
+    <div class="container-xxl py-5">
+        <div class="container">
+            {% if messages %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+            <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+                <h6 class="section-title bg-white text-center text-primary px-3">Add Descriptive Type Question</h6>
+                <h1 class="mb-5">Fill in the details to add a new Descriptive type question</h1>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-12 wow fadeInUp" data-wow-delay="0.5s">
+                    <form id="simpleTypeForm" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <input type="hidden" name="questionType" value="descriptive_type">
+
+                        <!-- Question Statement with CKEditor -->
+                        <div class="row g-3">
+                            <div class="col-md-12 mb-3">
+                                <label for="question_statement">Your Statement</label>
+                                <div class="form-floating">
+                                    <textarea class="form-control" name="question_statement" id="question_statement" placeholder="Enter the full question statement" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Image Upload -->
+                        <div class="row g-3">
+                            <div class="col-md-12 mb-3">
+                                <label for="question_images" class="form-label">Upload Images</label>
+                                <input class="form-control" type="file" id="question_images" name="question_images" accept="image/*" multiple>
+                            </div>
+                        </div>
+
+                        <!-- Document Upload -->
+                        <div class="row g-3">
+                            <div class="col-md-12 mb-3">
+                                <label for="question_documents" class="form-label">Upload Documents (.pdf,.doc,.docx,.pptx)</label>
+                                <input class="form-control" type="file" id="question_documents" name="question_documents" accept=".pdf,.doc,.docx,.pptx" multiple>
+                            </div>
+                        </div>
+
+
+                        <!-- Video Upload -->
+                        <div class="row g-3">
+                            <div class="col-md-12 mb-3">
+                                <label for="question_video" class="form-label">Upload Video File</label>
+                                <input class="form-control" type="file" id="question_video" name="question_video" accept="video/*">
+                            </div>
+                        </div>
+
+
+                        <!-- Link Field -->
+                        <div class="row g-3">
+                            <div class="col-md-12 mb-3">
+                                <div class="form-floating">
+                                    <input type="url" class="form-control" id="question_link" name="question_link" placeholder="Enter link to resources or reference materials">
+                                    <label for="question_link">Link to Resources</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Common Fields -->
+                        <div class="row g-3">
+                            <div class="col-md-12 mb-3">
+                                <label for="other_text">Other Text</label>
+                                <div class="form-floating">
+                                    <textarea class="form-control" name="other_text" id="other_text" placeholder="Other Question" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Common Fields -->
+                        <div class="row g-3">
+                            <label class="form-label">Other Details</label>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="examName" name="exam_name" required>
+                                        <option value="">Select Exam Name</option>
+                                        <option value="UPSC">UPSC</option>
+                                        <option value="MPPSC">MPPSC</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <label for="examName">Exam Name</label>
+                                </div>
+                            </div>                           
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="subjectName" name="subject_name" placeholder="Subject Name" required>
+                                    <label for="subjectName">Subject Name</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="areaName" name="area_name" placeholder="Area Name" required>
+                                    <label for="areaName">Area Name</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="partName" name="part_name" placeholder="Part Name">
+                                    <label for="partName">Part Name</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="topicName" name="topic_name" placeholder="Topic Name">
+                                    <label for="topicName">Topic Name</label>
+                                </div>
+                            </div>
+                            <!-- Submit Button -->
+                            <div class="col-12">
+                                <button class="btn btn-primary w-100 py-3" type="submit">Submit Question</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Simple Type Question Form End -->
+{% endblock content %}
