@@ -809,7 +809,7 @@ def add_descriptive_type_question(request):
 
         return redirect('question_list')
 
-    return render(request, 'question_bank/add_question/descriptive_type.html')
+    return render(request, 'question_bank/descriptive_type.html')
 
 
 def question_list_view(request):
