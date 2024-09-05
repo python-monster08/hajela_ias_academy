@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Image Gallery - Hajela's IAS Academy (HIA){% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12 text-center mb-4">
+            <h1 class="display-4">Image Gallery</h1>
+            <p>Explore our image gallery from various events and lectures.</p>
+        </div>
+    </div>
+
+    <!-- Images Section -->
+    <div class="row">
+        <div class="col-12">
+            <h2>Images</h2>
+        </div>
+    </div>
+    <div class="row">
+        {% for item in gallery_items %}
+            {% if item.media_type == 'image' %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card" style="width: 300px; height: 300px; object-fit: cover;">
+                        <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#imageModal" onclick="showImage('{{ item.file.url }}')">
+                            <img src="{{ item.file.url }}" class="card-img-top" alt="{{ item.title }}" style="width: 300px; height: 300px; object-fit: cover;">
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <!-- Image Modal with Slider -->
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imageModalLabel">Image Preview</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="carouselImages" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            {% for item in gallery_items %}
+                                {% if item.media_type == 'image' %}
+                                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                        <img src="{{ item.file.url }}" class="d-block w-100" alt="{{ item.title }}">
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselImages" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carouselImages" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock content %}
+
+{% block custom_js %}
+<script>
+    function showImage(imageUrl) {
+        const carouselItems = document.querySelectorAll('#carouselImages .carousel-item');
+        carouselItems.forEach((item, index) => {
+            if (item.querySelector('img').src === imageUrl) {
+                document.querySelector('#carouselImages').carousel(index);
+            }
+        });
+    }
+</script>
+{% endblock custom_js %}

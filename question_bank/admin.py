@@ -1,9 +1,9 @@
 from django.contrib import admin
-from .models import QuestionBank, DescriptiveTypeQuestion, QuestionImage, QuestionDocument
+from .models import QuestionBank, DescriptiveTypeQuestion, QuestionImage, QuestionDocument, ExamName, Subject, Area, PartName,TopicName
 
 class QuestionBankAdmin(admin.ModelAdmin):
-    list_display = ('question_number', 'exam_name', 'exam_year', 'question_sub_type', 'marks', 'degree_of_difficulty')
-    search_fields = ('question_number', 'exam_name', 'subject_name', 'area_name', 'part_name')
+    list_display = ('question_number', 'exam_name', 'exam_year', 'type_of_question', 'question_sub_type', 'marks')
+    list_filter = ('exam_name', 'exam_year', 'type_of_question', 'question_sub_type')
     list_filter = ('exam_name', 'exam_year', 'type_of_question', 'degree_of_difficulty')
     ordering = ('exam_year', 'exam_name', 'question_number')
 
@@ -61,3 +61,28 @@ class DescriptiveTypeQuestionAdmin(admin.ModelAdmin):
 
     # Include the inlines for images and documents
     inlines = [QuestionImageInline, QuestionDocumentInline]
+
+
+@admin.register(ExamName)
+class ExamNameAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
+@admin.register(Subject)
+class SubjectAdmin(admin.ModelAdmin):
+    list_display = ('name', 'exam')
+    list_filter = ('exam',)
+
+@admin.register(Area)
+class AreaAdmin(admin.ModelAdmin):
+    list_display = ('name', 'subject')
+    list_filter = ('subject',)
+
+@admin.register(PartName)
+class PartNameAdmin(admin.ModelAdmin):
+    list_display = ('name', 'area')
+    list_filter = ('area',)
+
+@admin.register(TopicName)
+class TopicNameAdmin(admin.ModelAdmin):
+    list_display = ('name', 'part')
+    list_filter = ('part',)

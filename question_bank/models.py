@@ -1,6 +1,53 @@
 from django.db import models
 
+class ExamName(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
+class Subject(models.Model):
+    name = models.CharField(max_length=255)
+    exam = models.ForeignKey(ExamName, on_delete=models.CASCADE, related_name='subjects')
+
+    def __str__(self):
+        return f"{self.name} ({self.exam.name})"
+
+
+class Area(models.Model):
+    name = models.CharField(max_length=255)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='areas')
+
+    def __str__(self):
+        return f"{self.name} ({self.subject.name})"
+
+
+class PartName(models.Model):
+    name = models.CharField(max_length=255)
+    area = models.ForeignKey(Area, on_delete=models.CASCADE, related_name='parts')
+
+    def __str__(self):
+        return f"{self.name} ({self.area.name})"
+    
+
+class TopicName(models.Model):
+    name = models.CharField(max_length=255)
+    part = models.ForeignKey(PartName, on_delete=models.CASCADE, related_name='topics')
+
+    def __str__(self):
+        return f"{self.name} ({self.part.name})"
+
+
 class QuestionBank(models.Model):
+    QUESTION_TYPES = (
+        ('simple_type', 'Simple Type'),
+        ('r_and_a_type', 'R & A Type'),
+        ('list_type_1', 'List Type 1'),
+        ('list_type_2', 'List Type 2'),
+        ('true_false', 'True & False'),
+        ('fill_in_the_blank', 'Fill in the Blank'),
+    )
     # Question Information Fields 
     type_of_question = models.CharField(max_length=100, default='mcq1')
     exam_name = models.CharField(max_length=100)
@@ -11,7 +58,7 @@ class QuestionBank(models.Model):
     marks = models.FloatField(default=0.0)
     negative_marks = models.FloatField(default=0.0)
     degree_of_difficulty = models.CharField(max_length=100)
-    question_sub_type = models.CharField(max_length=100)
+    question_sub_type = models.CharField(max_length=100, choices=QUESTION_TYPES, default='simple_type')
 
     # Question fields 
     question_number = models.PositiveIntegerField(unique=True, blank=True, null=True)
@@ -58,6 +105,7 @@ class QuestionBank(models.Model):
     subject_name = models.CharField(max_length=100)
     area_name = models.CharField(max_length=100)
     part_name = models.CharField(max_length=100)
+    topic_name = models.CharField(max_length=255, null=True, blank=True)
     
     # New fields based on the table headings in the image
     # Table Header Fields

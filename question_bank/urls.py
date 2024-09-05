@@ -18,4 +18,10 @@ urlpatterns = [
     path('descriptive-questions-list/', views.question_list_view, name='question_list'),
     path('descriptive-question-blog/<int:question_id>/', views.question_blog_view, name='question_blog_view'),
 
+
+    path('get-subjects/', views.get_subjects, name='get_subjects'),
+    path('get-areas/', views.get_areas, name='get_areas'),
+    path('get-parts/', views.get_parts, name='get_parts'),
+    path('get-topics/', views.get_topics, name='get_topics'),
+
 ]

@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .models import Contact
-
+from .models import Contact, TeamMember, GalleryItem
+from django.core.files.storage import FileSystemStorage
+from django.http import HttpResponse
 # Create your views here.
 
 def index(request):
@@ -38,4 +39,15 @@ def course_detail(request):
 
 
 def our_team(request):
-    return render(request, 'main_app_templates/our-team.html')
+    team_members = TeamMember.objects.all()
+    return render(request, 'main_app_templates/our-team.html', {'team_members': team_members})
+
+
+
+def gallery_images_view(request):
+    gallery_items = GalleryItem.objects.filter(media_type='image').order_by('-uploaded_at')
+    return render(request, 'main_app_templates/gallery_images.html', {'gallery_items': gallery_items})
+
+def gallery_videos_view(request):
+    gallery_items = GalleryItem.objects.filter(media_type='video').order_by('-uploaded_at')
+    return render(request, 'main_app_templates/gallery_videos.html', {'gallery_items': gallery_items})

@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Video Gallery - Hajela's IAS Academy (HIA){% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12 text-center mb-4">
+            <h1 class="display-4">Video Gallery</h1>
+            <p>Explore our video gallery from various events and lectures.</p>
+        </div>
+    </div>
+
+    <!-- Videos Section -->
+    <div class="row">
+        <div class="col-12">
+            <h2>Videos</h2>
+        </div>
+    </div>
+    <div class="row">
+        {% for item in gallery_items %}
+            {% if item.media_type == 'video' %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card" style="width: 300px; height: 300px; object-fit: cover;">
+                        <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#videoModal" onclick="showVideo('{{ item.video_url }}')">
+                            {% if item.video_thumbnail %}
+                                <img src="{{ item.video_thumbnail.url }}" class="card-img-top" alt="{{ item.title }}" style="width: 300px; height: 300px; object-fit: cover;">
+                            {% else %}
+                                <img src="{% static 'assets/img/video-thumbnail.jpg' %}" class="card-img-top" alt="{{ item.title }}" style="width: 300px; height: 300px; object-fit: cover;">
+                            {% endif %}
+                        </a>
+                        <!-- Title for Videos -->
+                        <div class="card-body text-center">
+                            <h5 class="card-title">{{ item.title }}</h5>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <!-- Video Modal -->
+    <div class="modal fade" id="videoModal" tabindex="-1" aria-labelledby="videoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="videoModalLabel">Video Preview</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="embed-responsive embed-responsive-16by9">
+                        <iframe id="videoFrame" width="100%" height="400" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock content %}
+
+{% block custom_js %}
+<script>
+    function showVideo(videoUrl) {
+        const embedUrl = convertToEmbedUrl(videoUrl);
+        document.getElementById('videoFrame').src = embedUrl;
+    }
+
+    function convertToEmbedUrl(videoUrl) {
+        let embedUrl = videoUrl;
+        if (videoUrl.includes("youtube.com/watch")) {
+            const videoId = videoUrl.split("v=")[1];
+            embedUrl = "https://www.youtube.com/embed/" + videoId;
+        } else if (videoUrl.includes("youtu.be")) {
+            const videoId = videoUrl.split(".be/")[1];
+            embedUrl = "https://www.youtube.com/embed/" + videoId;
+        }
+        return embedUrl;
+    }
+
+    document.getElementById('videoModal').addEventListener('hidden.bs.modal', function () {
+        document.getElementById('videoFrame').src = '';
+    });
+</script>
+{% endblock custom_js %}

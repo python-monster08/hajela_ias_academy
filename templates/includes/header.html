@@ -23,6 +23,13 @@
             <a href="{% url 'about' %}" class="nav-item nav-link">About</a>
             <a href="{% url 'courses' %}" class="nav-item nav-link">Courses</a>
             <a href="{% url 'our-team' %}" class="nav-item nav-link">Our Team</a>
+            <div class="nav-item dropdown">
+                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Gallery</a>
+                <div class="dropdown-menu fade-down m-0">
+                    <a href="{% url 'gallery_images' %}" class="dropdown-item">Images</a>
+                    <a href="{% url 'gallery_videos' %}" class="dropdown-item">Videos</a>
+                </div>
+            </div>
             <a href="{% url 'contact' %}" class="nav-item nav-link">Contact</a>
             {% if user.is_authenticated %}
             <div class="nav-item dropdown">
