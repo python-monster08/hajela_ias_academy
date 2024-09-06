@@ -98,7 +98,24 @@
                         <!-- Common Fields with Dynamic Values -->
                         <div class="row g-3">
                             <label class="form-label">Other Details</label>
-
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="correctAnswer" name="correct_answer_choice" required>
+                                        <option value="">Select the correct answer</option>
+                                        <option value="a">Option a</option>
+                                        <option value="b">Option b</option>
+                                        <option value="c">Option c</option>
+                                        <option value="d">Option d</option>
+                                    </select>
+                                    <label for="correctAnswer">Correct Answer</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="answerDescription" name="correct_answer_description" placeholder="Answer Description">
+                                    <label for="answerDescription">Answer Description</label>
+                                </div>
+                            </div>
                             <!-- Dynamic Exam Name -->
                             <div class="col-md-6">
                                 <div class="form-floating">

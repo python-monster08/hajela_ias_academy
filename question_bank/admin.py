@@ -28,7 +28,7 @@ class QuestionBankAdmin(admin.ModelAdmin):
             'fields': ('correct_answer_choice', 'correct_answer_description')
         }),
         ('Extra Information', {
-            'fields': ('image', 'subject_name', 'area_name', 'part_name')
+            'fields': ('image', 'subject_name', 'area_name', 'part_name', 'topic_name')
         }),
         ('Table Data', {
             'fields': (

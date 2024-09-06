@@ -45,8 +45,8 @@ class QuestionBank(models.Model):
         ('r_and_a_type', 'R & A Type'),
         ('list_type_1', 'List Type 1'),
         ('list_type_2', 'List Type 2'),
-        ('true_false', 'True & False'),
-        ('fill_in_the_blank', 'Fill in the Blank'),
+        ('true_and_false_type', 'True & False'),
+        ('fill_in_the_blank_type', 'Fill in the Blank'),
     )
     # Question Information Fields 
     type_of_question = models.CharField(max_length=100, default='mcq1')
