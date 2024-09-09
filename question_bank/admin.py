@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import QuestionBank, DescriptiveTypeQuestion, QuestionImage, QuestionDocument, ExamName, Subject, Area, PartName,TopicName
+from .models import QuestionBank, InputSuggestion, InputSuggestionImage, InputSuggestionDocument, ExamName, Subject, Area, PartName,TopicName
 
 class QuestionBankAdmin(admin.ModelAdmin):
     list_display = ('question_number', 'exam_name', 'exam_year', 'type_of_question', 'question_sub_type', 'marks')
@@ -44,23 +44,47 @@ class QuestionBankAdmin(admin.ModelAdmin):
 admin.site.register(QuestionBank, QuestionBankAdmin)
 
 
-class QuestionImageInline(admin.TabularInline):
-    model = QuestionImage
-    extra = 1  # Number of empty image fields to display by default
+class InputSuggestionImageInline(admin.TabularInline):
+    model = InputSuggestionImage
+    extra = 1  # Allows adding extra image fields directly in the admin view
 
-class QuestionDocumentInline(admin.TabularInline):
-    model = QuestionDocument
-    extra = 1  # Number of empty document fields to display by default
+class InputSuggestionDocumentInline(admin.TabularInline):
+    model = InputSuggestionDocument
+    extra = 1  # Allows adding extra document fields directly in the admin view
 
-@admin.register(DescriptiveTypeQuestion)
-class DescriptiveTypeQuestionAdmin(admin.ModelAdmin):
-    list_display = ('id','question_statement', 'exam_name', 'subject_name', 'area_name', 'created_at')
-    search_fields = ('question_statement', 'exam_name', 'subject_name', 'area_name')
+@admin.register(InputSuggestion)
+class InputSuggestionAdmin(admin.ModelAdmin):
+    list_display = ('brief_description', 'exam_name', 'subject_name', 'created_at')
+    search_fields = ('brief_description', 'exam_name', 'subject_name', 'area_name', 'part_name', 'topic_name')
     list_filter = ('exam_name', 'subject_name', 'created_at')
-    ordering = ('-created_at',)
 
-    # Include the inlines for images and documents
-    inlines = [QuestionImageInline, QuestionDocumentInline]
+    inlines = [InputSuggestionImageInline, InputSuggestionDocumentInline]
+
+    fieldsets = (
+        (None, {
+            'fields': ('brief_description', 'details', 'exam_name', 'subject_name', 'area_name', 'part_name', 'topic_name')
+        }),
+        ('Media & Links', {
+            'fields': ('question_video', 'question_link')
+        }),
+        ('Additional Information', {
+            'fields': ('other_text',)
+        }),
+    )
+
+    # To display images and documents in the admin view
+    def view_on_site(self, obj):
+        return obj.get_absolute_url()  # If you have a view for this object
+
+@admin.register(InputSuggestionImage)
+class InputSuggestionImageAdmin(admin.ModelAdmin):
+    list_display = ('question', 'image')
+    search_fields = ('question__brief_description',)
+
+@admin.register(InputSuggestionDocument)
+class InputSuggestionDocumentAdmin(admin.ModelAdmin):
+    list_display = ('question', 'document')
+    search_fields = ('question__brief_description',)
 
 
 @admin.register(ExamName)

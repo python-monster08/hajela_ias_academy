@@ -17,8 +17,8 @@
                 </div>
             {% endif %}
             <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
-                <h6 class="section-title bg-white text-center text-primary px-3">Add Descriptive Type Question</h6>
-                <h1 class="mb-5">Fill in the details to add a new Descriptive type question</h1>
+                <h6 class="section-title bg-white text-center text-primary px-3">Add Input Suggestion</h6>
+                <h1 class="mb-5">Fill in the details to add a new input suggestion</h1>
             </div>
             <div class="row g-4">
                 <div class="col-lg-12 wow fadeInUp" data-wow-delay="0.5s">
@@ -27,12 +27,20 @@
 
                         <input type="hidden" name="questionType" value="descriptive_type">
 
-                        <!-- Question Statement with CKEditor -->
                         <div class="row g-3">
                             <div class="col-md-12 mb-3">
-                                <label for="question_statement">Your Statement</label>
+                                <label for="brief_description">Brief Description</label>
                                 <div class="form-floating">
-                                    <textarea class="form-control" name="question_statement" id="question_statement" placeholder="Enter the full question statement" required></textarea>
+                                    <textarea class="form-control" name="brief_description" id="brief_description" placeholder="Enter the full question statement" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+                       
+                        <div class="row g-3">
+                            <div class="col-md-12 mb-3">
+                                <label for="details">Details</label>
+                                <div class="form-floating">
+                                    <textarea class="form-control" name="details" id="details" placeholder="Enter the details" required style="height: 327px;"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -42,6 +50,8 @@
                             <div class="col-md-12 mb-3">
                                 <label for="question_images" class="form-label">Upload Images</label>
                                 <input class="form-control" type="file" id="question_images" name="question_images" accept="image/*" multiple>
+                                <!-- Container to display the image file names -->
+                                <div id="imageFileNames"></div>
                             </div>
                         </div>
 
@@ -50,6 +60,8 @@
                             <div class="col-md-12 mb-3">
                                 <label for="question_documents" class="form-label">Upload Documents (.pdf,.doc,.docx,.pptx)</label>
                                 <input class="form-control" type="file" id="question_documents" name="question_documents" accept=".pdf,.doc,.docx,.pptx" multiple>
+                                <!-- Container to display the document file names -->
+                                <div id="documentFileNames"></div>
                             </div>
                         </div>
 
@@ -59,6 +71,8 @@
                             <div class="col-md-12 mb-3">
                                 <label for="question_video" class="form-label">Upload Video File</label>
                                 <input class="form-control" type="file" id="question_video" name="question_video" accept="video/*">
+                                <!-- Container to display the video file name -->
+                                <div id="videoFileName"></div>
                             </div>
                         </div>
 
@@ -133,3 +147,39 @@
     </div>
     <!-- Simple Type Question Form End -->
 {% endblock content %}
+
+{% block custom_js %}
+<!-- JavaScript to handle file input and display file names -->
+<script>
+    document.getElementById('question_images').addEventListener('change', function() {
+        var imageFileNamesDiv = document.getElementById('imageFileNames');
+        imageFileNamesDiv.innerHTML = ''; // Clear previous file names
+        Array.from(this.files).forEach(function(file) {
+            var fileName = document.createElement('p');
+            fileName.textContent = file.name;
+            imageFileNamesDiv.appendChild(fileName);
+        });
+    });
+
+    document.getElementById('question_documents').addEventListener('change', function() {
+        var documentFileNamesDiv = document.getElementById('documentFileNames');
+        documentFileNamesDiv.innerHTML = ''; // Clear previous file names
+        Array.from(this.files).forEach(function(file) {
+            var fileName = document.createElement('p');
+            fileName.textContent = file.name;
+            documentFileNamesDiv.appendChild(fileName);
+        });
+    });
+
+    document.getElementById('question_video').addEventListener('change', function() {
+        var videoFileNameDiv = document.getElementById('videoFileName');
+        videoFileNameDiv.innerHTML = ''; // Clear previous file names
+        Array.from(this.files).forEach(function(file) {
+            var fileName = document.createElement('p');
+            fileName.textContent = file.name;
+            videoFileNameDiv.appendChild(fileName);
+        });
+    });
+</script>
+
+{% endblock custom_js %}

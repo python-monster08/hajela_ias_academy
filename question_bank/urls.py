@@ -14,9 +14,9 @@ urlpatterns = [
     path('add/list-2/question/', views.add_list_type_2_question, name='add-list-type-2-question'),
     path('add-true-and-false-type-question/', views.add_true_and_false_type_question, name='add-true-and-false-type-question'),
     path('add-fill-in-the-blank-question/', views.add_fill_in_the_blank_question, name='add-fill-in-the-blank-question'),
-    path('add-descriptive-type-question/', views.add_descriptive_type_question, name='add-descriptive-type-question'),
-    path('descriptive-questions-list/', views.question_list_view, name='question_list'),
-    path('descriptive-question-blog/<int:question_id>/', views.question_blog_view, name='question_blog_view'),
+    path('add-input-suggestion/', views.add_input_suggestion, name='add-input-suggestion'),
+    path('input-suggestion-list/', views.view_input_suggestion, name='input-suggestion-list'),
+    path('view-input-suggestion/<int:question_id>/', views.question_blog_view, name='view-input-suggestion'),
 
 
     path('get-subjects/', views.get_subjects, name='get_subjects'),

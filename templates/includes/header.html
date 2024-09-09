@@ -38,14 +38,13 @@
                     <a href="{% url 'add-simple-type-question' %}" class="dropdown-item">Add Question</a>
                     <a href="{% url 'generate_questions' %}" class="dropdown-item">View Uploaded Questions</a>
                     <hr class="dropdown-divider">
-                    <a href="{% url 'add-descriptive-type-question' %}" class="dropdown-item">Add Input</a>
-                    <a href="{% url 'question_list' %}" class="dropdown-item">Check Your Input List</a>
+                    <a href="{% url 'add-input-suggestion' %}" class="dropdown-item">Add Input Suggestion</a>
+                    <a href="{% url 'input-suggestion-list' %}" class="dropdown-item">Check Your Input Suggestions</a>
                     <hr class="dropdown-divider">
                     <a href="{% url 'upload-file' %}" class="dropdown-item">Upload Excel File</a>
                     <a href="{% url 'generate-questions-document' %}" class="dropdown-item">Generate Class Plus Doc</a>
-                    <a href="{% url 'add-simple-type-question' %}" class="dropdown-item">UPSC Mains</a>
                 </div>
-            </div>
+            </div> 
             <a href="{% url 'logout' %}" class="nav-item nav-link">Logout</a>
             {% else %}
             <a href="{% url 'login' %}" class="nav-item nav-link">Login</a>

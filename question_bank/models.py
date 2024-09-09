@@ -12,7 +12,7 @@ class Subject(models.Model):
     exam = models.ForeignKey(ExamName, on_delete=models.CASCADE, related_name='subjects')
 
     def __str__(self):
-        return f"{self.name} ({self.exam.name})"
+        return f"{self.name} --> ({self.exam.name})"
 
 
 class Area(models.Model):
@@ -20,7 +20,7 @@ class Area(models.Model):
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='areas')
 
     def __str__(self):
-        return f"{self.name} ({self.subject.name})"
+        return f"{self.name} --> ({self.subject.name} - {self.subject.exam.name})"
 
 
 class PartName(models.Model):
@@ -28,7 +28,7 @@ class PartName(models.Model):
     area = models.ForeignKey(Area, on_delete=models.CASCADE, related_name='parts')
 
     def __str__(self):
-        return f"{self.name} ({self.area.name})"
+        return f"{self.name} ({self.area.name} - {self.area.subject.name} - {self.area.subject.exam.name})"
     
 
 class TopicName(models.Model):
@@ -147,11 +147,37 @@ class QuestionBank(models.Model):
 
 
 
-class DescriptiveTypeQuestion(models.Model):
-    question_statement = models.TextField()
-    question_images = models.FileField(upload_to='descriptive_questions/images/', blank=True, null=True)
-    question_documents = models.FileField(upload_to='descriptive_questions/documents/', blank=True, null=True)
-    question_video = models.FileField(upload_to='descriptive_questions/videos/', blank=True, null=True)
+# class DescriptiveTypeQuestion(models.Model):
+#     question_statement = models.TextField()
+#     question_images = models.FileField(upload_to='descriptive_questions/images/', blank=True, null=True)
+#     question_documents = models.FileField(upload_to='descriptive_questions/documents/', blank=True, null=True)
+#     question_video = models.FileField(upload_to='descriptive_questions/videos/', blank=True, null=True)
+#     question_link = models.URLField(blank=True, null=True)
+#     other_text = models.TextField(blank=True, null=True)
+#     exam_name = models.CharField(max_length=255)
+#     subject_name = models.CharField(max_length=255)
+#     area_name = models.CharField(max_length=255)
+#     part_name = models.CharField(max_length=255, blank=True, null=True)
+#     topic_name = models.CharField(max_length=255, blank=True, null=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     def __str__(self):
+#         return self.question_statement[:50]
+
+
+# class QuestionImage(models.Model):
+#     question = models.ForeignKey(DescriptiveTypeQuestion, related_name='images', on_delete=models.CASCADE)
+#     image = models.ImageField(upload_to='QuestionImage/images/')
+
+# class QuestionDocument(models.Model):
+#     question = models.ForeignKey(DescriptiveTypeQuestion, related_name='documents', on_delete=models.CASCADE)
+#     document = models.FileField(upload_to='QuestionImage/documents/')
+
+
+class InputSuggestion(models.Model):
+    brief_description = models.TextField()  # Short description field
+    details = models.TextField()  # New field to store detailed explanation
+    question_video = models.FileField(upload_to='input_suggestion/videos/', blank=True, null=True)
     question_link = models.URLField(blank=True, null=True)
     other_text = models.TextField(blank=True, null=True)
     exam_name = models.CharField(max_length=255)
@@ -162,13 +188,14 @@ class DescriptiveTypeQuestion(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.question_statement[:50]
+        return self.brief_description[:50]
 
 
-class QuestionImage(models.Model):
-    question = models.ForeignKey(DescriptiveTypeQuestion, related_name='images', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='QuestionImage/images/')
+class InputSuggestionImage(models.Model):
+    question = models.ForeignKey(InputSuggestion, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='input_suggestion/images/')
 
-class QuestionDocument(models.Model):
-    question = models.ForeignKey(DescriptiveTypeQuestion, related_name='documents', on_delete=models.CASCADE)
-    document = models.FileField(upload_to='QuestionImage/documents/')
+
+class InputSuggestionDocument(models.Model):
+    question = models.ForeignKey(InputSuggestion, related_name='documents', on_delete=models.CASCADE)
+    document = models.FileField(upload_to='input_suggestion/documents/')
