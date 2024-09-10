@@ -451,15 +451,18 @@ def get_parts(request):
     parts = PartName.objects.filter(area_id=area_id).values('id', 'name')
     return JsonResponse({'parts': list(parts)})
 
+
 def get_chapters(request):
     part_id = request.GET.get('part_id')
-    chapeters = ChapterName.objects.filter(part_id=part_id).values('id', 'name')
-    return JsonResponse({'chapeters': list(chapeters)})
+    chapeters = ChapterName.objects.filter(part_id=part_id).values('id', 'name')  # Typo: 'chapeters' should be 'chapters'
+    return JsonResponse({'chapters': list(chapeters)})  # Also change to 'chapters'
+
 
 def get_topics(request):
-    part_id = request.GET.get('part_id')
-    topics = TopicName.objects.filter(part_id=part_id).values('id', 'name')
+    chapter_id = request.GET.get('chapter_id')
+    topics = TopicName.objects.filter(chapter_id=chapter_id).values('id', 'name')
     return JsonResponse({'topics': list(topics)})
+
 
 
 # ************************* Create Simple Type Question Start *********************************************
@@ -472,6 +475,7 @@ def add_simple_type_question(request):
         subject_id = request.POST.get('subject_name')
         area_id = request.POST.get('area_name')
         part_id = request.POST.get('part_name')
+        chapter_id = request.POST.get('chapter_name')  # Extract chapter name
         topic_id = request.POST.get('topic_name')
 
         # Fetch the actual names from the related models
@@ -479,14 +483,15 @@ def add_simple_type_question(request):
         subject_name = Subject.objects.get(id=subject_id).name if subject_id else ''
         area_name = Area.objects.get(id=area_id).name if area_id else ''
         part_name = PartName.objects.get(id=part_id).name if part_id else ''
+        chapter_name = ChapterName.objects.get(id=chapter_id).name if chapter_id else ''  # Get chapter name
 
         # Handle topic name (can be selected from dropdown or manually added)
         topic_name = ''
         if topic_id == 'other':
             new_topic_name = request.POST.get('new_topic_name', '')
             if new_topic_name:
-                # Ensure the part_id is provided when creating a new topic
-                topic, created = TopicName.objects.get_or_create(name=new_topic_name, part_id=part_id)
+                # Ensure the chapter_id is provided when creating a new topic
+                topic, created = TopicName.objects.get_or_create(name=new_topic_name, chapter_id=chapter_id)
                 topic_name = topic.name
         else:
             topic_name = TopicName.objects.get(id=topic_id).name if topic_id else ''
@@ -509,6 +514,7 @@ def add_simple_type_question(request):
             subject_name=subject_name,  # Saving the name of the subject
             area_name=area_name,  # Saving the name of the area
             part_name=part_name,  # Saving the name of the part
+            chapter_name=chapter_name,  # Saving the name of the chapter
             topic_name=topic_name,  # Saving the name of the topic
             answer_option_a=request.POST.get('answer_option_a', ''),
             answer_option_b=request.POST.get('answer_option_b', ''),
@@ -527,6 +533,7 @@ def add_simple_type_question(request):
     }
 
     return render(request, 'question_bank/add_question/simple_type_form.html', context)
+
 
 
 
