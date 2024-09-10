@@ -23,5 +23,6 @@ urlpatterns = [
     path('get-areas/', views.get_areas, name='get_areas'),
     path('get-parts/', views.get_parts, name='get_parts'),
     path('get-topics/', views.get_topics, name='get_topics'),
+    path('get-chapters/', views.get_chapters, name='get_chapters'),
 
 ]

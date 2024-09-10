@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.core.files.storage import FileSystemStorage
 from django.contrib import messages
 import pandas as pd
-from .models import QuestionBank,InputSuggestion,InputSuggestionImage, InputSuggestionDocument, ExamName, Subject, Area, PartName
+from .models import QuestionBank,InputSuggestion,InputSuggestionImage, InputSuggestionDocument, ExamName, Subject, Area, PartName, ChapterName
 from django.db.models import Max
 from .forms import UploadFileForm
 import os
@@ -451,6 +451,11 @@ def get_parts(request):
     parts = PartName.objects.filter(area_id=area_id).values('id', 'name')
     return JsonResponse({'parts': list(parts)})
 
+def get_chapters(request):
+    part_id = request.GET.get('part_id')
+    chapeters = ChapterName.objects.filter(part_id=part_id).values('id', 'name')
+    return JsonResponse({'chapeters': list(chapeters)})
+
 def get_topics(request):
     part_id = request.GET.get('part_id')
     topics = TopicName.objects.filter(part_id=part_id).values('id', 'name')
@@ -460,18 +465,6 @@ def get_topics(request):
 # ************************* Create Simple Type Question Start *********************************************
 def add_simple_type_question(request):
     exam_names = ExamName.objects.all()
-    subjects = Subject.objects.all()
-    areas = Area.objects.all()
-    part_names = PartName.objects.all()
-    topics = TopicName.objects.all()
-
-    context = {
-        'exam_names': exam_names,
-        'subjects': subjects,
-        'areas': areas,
-        'part_names': part_names,
-        'topics': topics,
-    }
 
     if request.method == 'POST':
         # Extract form data
@@ -486,13 +479,14 @@ def add_simple_type_question(request):
         subject_name = Subject.objects.get(id=subject_id).name if subject_id else ''
         area_name = Area.objects.get(id=area_id).name if area_id else ''
         part_name = PartName.objects.get(id=part_id).name if part_id else ''
-        
+
         # Handle topic name (can be selected from dropdown or manually added)
         topic_name = ''
         if topic_id == 'other':
             new_topic_name = request.POST.get('new_topic_name', '')
             if new_topic_name:
-                topic, created = TopicName.objects.get_or_create(name=new_topic_name)
+                # Ensure the part_id is provided when creating a new topic
+                topic, created = TopicName.objects.get_or_create(name=new_topic_name, part_id=part_id)
                 topic_name = topic.name
         else:
             topic_name = TopicName.objects.get(id=topic_id).name if topic_id else ''
@@ -500,6 +494,7 @@ def add_simple_type_question(request):
         exam_year = request.POST.get('exam_year', None)
         if not exam_year:
             exam_year = None
+
         # Initialize the QuestionBank object with the names, not the IDs
         question = QuestionBank(
             question_sub_type=request.POST.get('questionType', 'simple_type'),
@@ -527,7 +522,84 @@ def add_simple_type_question(request):
         messages.success(request, 'Simple Type Question has been added successfully!')
         return redirect('add-simple-type-question')  # Redirect back to the form
 
+    context = {
+        'exam_names': exam_names,
+    }
+
     return render(request, 'question_bank/add_question/simple_type_form.html', context)
+
+
+
+# def add_simple_type_question(request):
+#     exam_names = ExamName.objects.all()
+#     subjects = Subject.objects.all()
+#     areas = Area.objects.all()
+#     part_names = PartName.objects.all()
+#     topics = TopicName.objects.all()
+
+#     context = {
+#         'exam_names': exam_names,
+#         'subjects': subjects,
+#         'areas': areas,
+#         'part_names': part_names,
+#         'topics': topics,
+#     }
+
+#     if request.method == 'POST':
+#         # Extract form data
+#         exam_id = request.POST.get('exam_name')
+#         subject_id = request.POST.get('subject_name')
+#         area_id = request.POST.get('area_name')
+#         part_id = request.POST.get('part_name')
+#         topic_id = request.POST.get('topic_name')
+
+#         # Fetch the actual names from the related models
+#         exam_name = ExamName.objects.get(id=exam_id).name if exam_id else ''
+#         subject_name = Subject.objects.get(id=subject_id).name if subject_id else ''
+#         area_name = Area.objects.get(id=area_id).name if area_id else ''
+#         part_name = PartName.objects.get(id=part_id).name if part_id else ''
+        
+#         # Handle topic name (can be selected from dropdown or manually added)
+#         topic_name = ''
+#         if topic_id == 'other':
+#             new_topic_name = request.POST.get('new_topic_name', '')
+#             if new_topic_name:
+#                 topic, created = TopicName.objects.get_or_create(name=new_topic_name)
+#                 topic_name = topic.name
+#         else:
+#             topic_name = TopicName.objects.get(id=topic_id).name if topic_id else ''
+
+#         exam_year = request.POST.get('exam_year', None)
+#         if not exam_year:
+#             exam_year = None
+#         # Initialize the QuestionBank object with the names, not the IDs
+#         question = QuestionBank(
+#             question_sub_type=request.POST.get('questionType', 'simple_type'),
+#             question_part=request.POST.get('question_part_first', ''),
+#             correct_answer_choice=request.POST.get('correct_answer_choice', ''),
+#             correct_answer_description=request.POST.get('correct_answer_description', ''),
+#             exam_name=exam_name,  # Saving the name of the exam
+#             exam_year=exam_year,
+#             marks=float(request.POST.get('marks', 0.0)),
+#             negative_marks=float(request.POST.get('negative_marks', 0.0)),
+#             degree_of_difficulty=request.POST.get('degree_of_difficulty', ''),
+#             subject_name=subject_name,  # Saving the name of the subject
+#             area_name=area_name,  # Saving the name of the area
+#             part_name=part_name,  # Saving the name of the part
+#             topic_name=topic_name,  # Saving the name of the topic
+#             answer_option_a=request.POST.get('answer_option_a', ''),
+#             answer_option_b=request.POST.get('answer_option_b', ''),
+#             answer_option_c=request.POST.get('answer_option_c', ''),
+#             answer_option_d=request.POST.get('answer_option_d', ''),
+#         )
+
+#         # Save the question to the database
+#         question.save()
+
+#         messages.success(request, 'Simple Type Question has been added successfully!')
+#         return redirect('add-simple-type-question')  # Redirect back to the form
+
+#     return render(request, 'question_bank/add_question/simple_type_form.html', context)
 
 
 # ************************* Create Simple Type Question End *********************************************

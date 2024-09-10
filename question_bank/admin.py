@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import QuestionBank, InputSuggestion, InputSuggestionImage, InputSuggestionDocument, ExamName, Subject, Area, PartName,TopicName
+from .models import QuestionBank, InputSuggestion, InputSuggestionImage, InputSuggestionDocument, ExamName, Subject, Area, PartName,ChapterName ,TopicName
 
 class QuestionBankAdmin(admin.ModelAdmin):
     list_display = ('question_number', 'exam_name', 'exam_year', 'type_of_question', 'question_sub_type', 'marks')
@@ -28,7 +28,7 @@ class QuestionBankAdmin(admin.ModelAdmin):
             'fields': ('correct_answer_choice', 'correct_answer_description')
         }),
         ('Extra Information', {
-            'fields': ('image', 'subject_name', 'area_name', 'part_name', 'topic_name')
+            'fields': ('image', 'subject_name', 'area_name', 'part_name', 'chapter_name', 'topic_name')
         }),
         ('Table Data', {
             'fields': (
@@ -106,7 +106,12 @@ class PartNameAdmin(admin.ModelAdmin):
     list_display = ('name', 'area')
     list_filter = ('area',)
 
-@admin.register(TopicName)
-class TopicNameAdmin(admin.ModelAdmin):
+@admin.register(ChapterName)
+class ChapterNameAdmin(admin.ModelAdmin):
     list_display = ('name', 'part')
     list_filter = ('part',)
+
+@admin.register(TopicName)
+class TopicNameAdmin(admin.ModelAdmin):
+    list_display = ('name', 'chapter')
+    list_filter = ('chapter',)
