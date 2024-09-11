@@ -1,5 +1,6 @@
 from django.db import models
 from django.urls import reverse
+from django.contrib.auth.models import User  # Import the User model
 
 class ExamName(models.Model):
     name = models.CharField(max_length=255)
@@ -148,6 +149,7 @@ class QuestionBank(models.Model):
     head_d_data4 = models.CharField(max_length=100, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  # Track who created the question
 
     def save(self, *args, **kwargs):
         if self.question_number is None:
@@ -176,6 +178,8 @@ class InputSuggestion(models.Model):
     part_name = models.CharField(max_length=255, blank=True, null=True)
     topic_name = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  # Track who created the question
+
 
     def __str__(self):
         return self.brief_description[:50]

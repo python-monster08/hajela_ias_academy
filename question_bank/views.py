@@ -130,6 +130,16 @@ def add_options_and_answers(document, question):
     
     document.add_paragraph(f"Correct Answer: {clean_text(question.correct_answer_choice)}")
     document.add_paragraph(f"Solution: {clean_text(question.correct_answer_description)}")
+    
+    # Format created_at datetime
+    created_at_str = question.created_at.strftime('%Y-%m-%d %H:%M:%S')
+    document.add_paragraph(f"Created At: {created_at_str}")
+    
+    # Handle created_by (User object from Django built-in User model)
+    if question.created_by:
+        created_by_str = question.created_by.get_full_name() or question.created_by.username
+        document.add_paragraph(f"Created By: {clean_text(created_by_str)}")
+
 
 
 # ************************* Generate Test Word file End *********************************************
@@ -520,6 +530,7 @@ def add_simple_type_question(request):
             answer_option_b=request.POST.get('answer_option_b', ''),
             answer_option_c=request.POST.get('answer_option_c', ''),
             answer_option_d=request.POST.get('answer_option_d', ''),
+            created_by = request.user  # Assign the logged-in user
         )
 
         # Save the question to the database
@@ -599,6 +610,7 @@ def add_r_and_a_type_question(request):
             answer_option_b=request.POST.get('answer_option_b', ''),
             answer_option_c=request.POST.get('answer_option_c', ''),
             answer_option_d=request.POST.get('answer_option_d', ''),
+            created_by = request.user  # Assign the logged-in user
         )
 
         # Save the question to the database
@@ -684,6 +696,7 @@ def add_list_type_1_question(request):
             answer_option_b=request.POST.get('answer_option_b', ''),
             answer_option_c=request.POST.get('answer_option_c', ''),
             answer_option_d=request.POST.get('answer_option_d', ''),
+            created_by = request.user  # Assign the logged-in user
         )
 
         # Save the question to the database
@@ -774,6 +787,7 @@ def add_list_type_2_question(request):
             answer_option_b=request.POST.get('answer_option_b', ''),
             answer_option_c=request.POST.get('answer_option_c', ''),
             answer_option_d=request.POST.get('answer_option_d', ''),
+            created_by = request.user  # Assign the logged-in user
         )
 
         # Save the question to the database
@@ -848,6 +862,7 @@ def add_true_and_false_type_question(request):
             topic_name = topic_name,
             answer_option_a="True",
             answer_option_b="False",
+            created_by = request.user  # Assign the logged-in user
         )
 
         # Save the question to the database
@@ -923,6 +938,7 @@ def add_fill_in_the_blank_question(request):
             answer_option_b=request.POST.get('answer_option_b', ''),
             answer_option_c=request.POST.get('answer_option_c', ''),
             answer_option_d=request.POST.get('answer_option_d', ''),
+            created_by = request.user  # Assign the logged-in user
         )
 
         # Save the question to the database
@@ -991,6 +1007,7 @@ def add_input_suggestion(request):
                 part_name=part_name,
                 chapter_name=chapter_name,  # Saving the name of the chapter
                 topic_name=topic_name,
+                created_by = request.user  # Assign the logged-in user
             )
             suggestion.save()
 
