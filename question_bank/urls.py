@@ -25,4 +25,6 @@ urlpatterns = [
     path('get-topics/', views.get_topics, name='get_topics'),
     path('get-chapters/', views.get_chapters, name='get_chapters'),
 
+    path('view-questions/', views.view_questions, name='view_questions'),
+
 ]

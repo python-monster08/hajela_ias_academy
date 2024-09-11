@@ -23,6 +23,9 @@ from django.conf import settings
 from django.http import HttpResponseServerError
 from django.http import JsonResponse
 from .models import Subject, Area, PartName, TopicName
+
+from django.contrib.auth.decorators import login_required
+
 # ************************* Generate Test Word file Start *********************************************
 
 def clean_text(text):
@@ -1057,3 +1060,15 @@ def question_blog_view(request, question_id):
     }
     
     return render(request, 'question_bank/view_input_suggestion.html', context)
+
+
+
+@login_required
+def view_questions(request):
+    # Get questions only created by the logged-in user
+    questions = QuestionBank.objects.filter(created_by=request.user).order_by('-created_at')
+
+    context = {
+        'questions': questions
+    }
+    return render(request, 'question_bank/add_question/view_questions.html', context)
