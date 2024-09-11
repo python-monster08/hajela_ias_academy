@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import views as auth_views
 
 def login_view(request):
     if request.method == "POST":
@@ -19,3 +21,8 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('index')  # Redirect to login page after logout
+
+
+@csrf_exempt
+def password_reset_view(request):
+    return auth_views.PasswordResetView.as_view()(request)

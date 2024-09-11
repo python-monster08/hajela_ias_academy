@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 
 class ExamName(models.Model):
     name = models.CharField(max_length=255)
@@ -146,6 +147,8 @@ class QuestionBank(models.Model):
     head_d_data3 = models.CharField(max_length=100, null=True, blank=True)
     head_d_data4 = models.CharField(max_length=100, null=True, blank=True)
 
+    created_at = models.DateTimeField(auto_now_add=True)
+
     def save(self, *args, **kwargs):
         if self.question_number is None:
             last_question = QuestionBank.objects.all().order_by('question_number').last()
@@ -169,13 +172,16 @@ class InputSuggestion(models.Model):
     exam_name = models.CharField(max_length=255)
     subject_name = models.CharField(max_length=255)
     area_name = models.CharField(max_length=255)
+    chapter_name = models.CharField(max_length=255, blank=True, null=True)
     part_name = models.CharField(max_length=255, blank=True, null=True)
     topic_name = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.brief_description[:50]
-
+    # Add this method
+    def get_absolute_url(self):
+        return reverse('view-input-suggestion', args=[str(self.id)])
 
 class InputSuggestionImage(models.Model):
     question = models.ForeignKey(InputSuggestion, related_name='images', on_delete=models.CASCADE)

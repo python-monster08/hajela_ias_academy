@@ -48,10 +48,10 @@
 
                         <!-- Common Fields -->
                         <div class="row g-3">
-                            <div class="col-md-12 mb-3">
-                                <label for="question_part_first">Question Part First</label>
+                            <div class="col-md-12 mb-4">
                                 <div class="form-floating">
                                     <textarea class="form-control" name="question_part_first" id="question_part_first" placeholder="Question Part First" required></textarea>
+                                    <label for="question_part_first">Question Part First</label>
                                 </div>
                             </div>
                         </div>
@@ -112,7 +112,7 @@
                                     <input type="text" class="form-control" name="list_2_row5" placeholder="List-II Item 5" aria-label="List-II Item 5">
                                 </div>
                             </div>
-                            <div class="col-md-12 mb-3">
+                            <div class="col-md-12 mb-4">
                                 <label for="question_part_third">Question Part Third</label>
                                 <div class="form-floating">
                                     <textarea class="form-control" name="question_part_third" id="question_part_third" placeholder="Question Part Third"></textarea>
@@ -137,12 +137,12 @@
                             </div>
                         </div>
 
-                        <!-- Common Fields with Dynamic Values -->
+                        <!-- Other Fields and Dynamic Fields -->
                         <div class="row g-3">
-                            <label class="form-label">Other Details</label>
-                            <div class="col-md-6">
+                            <label class="form-label text-primary fw-bold">Other Details</label>
+                            <div class="col-md-6 mb-4">
                                 <div class="form-floating">
-                                    <select class="form-select" id="correctAnswer" name="correct_answer_choice" required>
+                                    <select class="form-select" id="correctAnswer" name="correct_answer_choice" style="height:100px" required>
                                         <option value="">Select the correct answer</option>
                                         <option value="a">Option a</option>
                                         <option value="b">Option b</option>
@@ -152,14 +152,15 @@
                                     <label for="correctAnswer">Correct Answer</label>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6 mb-4">
                                 <div class="form-floating">
-                                    <input type="text" class="form-control" id="answerDescription" name="correct_answer_description" placeholder="Answer Description">
+                                    <textarea class="form-control" id="answerDescription" name="correct_answer_description" placeholder="Answer Description" style="height:100px"> </textarea>
                                     <label for="answerDescription">Answer Description</label>
                                 </div>
                             </div>
-                            <!-- Dynamic Exam Name -->
-                            <div class="col-md-6">
+
+                            <!-- Dynamic Fields (Exam, Subject, Area, etc.) -->
+                            <div class="col-md-6 mb-4">
                                 <div class="form-floating">
                                     <select class="form-select" id="examName" name="exam_name" required>
                                         <option value="">Select Exam Name</option>
@@ -171,90 +172,113 @@
                                 </div>
                             </div>
 
-                            <!-- Dynamic Subject Name -->
-                            <div class="col-md-6">
+                            <div class="col-md-6 mb-4">
                                 <div class="form-floating">
                                     <select class="form-select" id="subjectName" name="subject_name" required>
                                         <option value="">Select Subject Name</option>
-                                        {% for subject in subjects %}
-                                            <option value="{{ subject.id }}">{{ subject.name }}</option>
-                                        {% endfor %}
                                     </select>
                                     <label for="subjectName">Subject Name</label>
                                 </div>
                             </div>
 
-                            <!-- Dynamic Area Name -->
-                            <div class="col-md-6">
+                            <div class="col-md-6 mb-4">
                                 <div class="form-floating">
                                     <select class="form-select" id="areaName" name="area_name" required>
                                         <option value="">Select Area Name</option>
-                                        {% for area in areas %}
-                                            <option value="{{ area.id }}">{{ area.name }}</option>
-                                        {% endfor %}
                                     </select>
                                     <label for="areaName">Area Name</label>
                                 </div>
                             </div>
 
-                            <!-- Dynamic Part Name -->
-                            <div class="col-md-6">
+                            <div class="col-md-6 mb-4">
                                 <div class="form-floating">
                                     <select class="form-select" id="partName" name="part_name">
                                         <option value="">Select Part Name</option>
-                                        {% for part in part_names %}
-                                            <option value="{{ part.id }}">{{ part.name }}</option>
-                                        {% endfor %}
-                                    </select>                                    
+                                    </select>
                                     <label for="partName">Part Name</label>
                                 </div>
                             </div>
 
-                            <!-- Dynamic Topic Name -->
-                            <div class="col-md-6">
+                            <!-- Dynamic Chapter Name -->
+                            <div class="col-md-6 mb-4">
+                                <div class="form-floating">
+                                    <select class="form-select" id="chapterName" name="chapter_name">
+                                        <option value="">Select Chapter Name</option>
+                                    </select>
+                                    <label for="chapterName">Chapter Name</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
                                 <div class="form-floating">
                                     <select class="form-select" id="topicName" name="topic_name">
                                         <option value="">Select Topic Name</option>
-                                        {% for topic in topics %}
-                                            <option value="{{ topic.id }}">{{ topic.name }}</option>
-                                        {% endfor %}
                                         <option value="other">Other (Add manually)</option>
                                     </select>
                                     <label for="topicName">Topic Name</label>
                                 </div>
                             </div>
 
-                            <!-- Manual Topic Name Input Field (hidden by default) -->
-                            <div class="col-md-6" id="manual_topic" style="display: none;">
-                                <label for="new_topic_name">Add New Topic</label>
+                            <div class="col-md-6 mb-4" id="manual_topic" style="display: none;">
                                 <div class="form-floating">
-                                    <input type="text" name="new_topic_name" class="form-control" id="new_topic_name" placeholder="Enter new topic">
+                                    <input type="text" class="form-control" name="new_topic_name"  id="new_topic_name" placeholder="Enter new topic">
+                                    <label for="new_topic_name">Add New Topic</label>
                                 </div>
                             </div>
+
 
                             <!-- Year and Marks Fields -->
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input type="number" class="form-control" id="year" name="exam_year" placeholder="Year">
-                                    <label for="year">Year (Only for Previous PYQs)</label>
+                                <!-- New/PYQs Dropdown -->
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="newOrPyq" name="new_or_pyq" required>
+                                            <option value="">Select New or PYQs</option>
+                                            <option value="new">New</option>
+                                            <option value="pyq">PYQs</option>
+                                        </select>
+                                        <label for="newOrPyq">New or PYQs</label>
+                                    </div>
                                 </div>
-                            </div>
+
+                                <!-- Exam Year Field (Shown only if PYQs is selected) -->
+                                <div class="col-md-6" id="examYearField" style="display:none;">
+                                    <div class="form-floating">
+                                        <input type="number" class="form-control" id="year" name="exam_year" placeholder="Year">
+                                        <label for="year">Year</label>
+                                    </div>
+                                </div>
 
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="number" step="0.5" class="form-control" id="marks" name="marks" placeholder="Marks" required>
+                                    <select class="form-select" id="marks" name="marks" required>
+                                        <option value="">Select Marks</option>
+                                        <option value="0.5">0.5</option>
+                                        <option value="1.0">1.0</option>
+                                        <option value="1.5">1.5</option>
+                                        <option value="2.0">2.0</option>
+                                        <option value="2.5">2.5</option>
+                                        <option value="3.0">3.0</option>
+                                    </select>
                                     <label for="marks">Marks</label>
                                 </div>
                             </div>
 
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="number" step="0.001" class="form-control" id="negativeMarks" name="negative_marks" placeholder="Negative Marks" required>
+                                    <select class="form-select" id="negativeMarks" name="negative_marks" required>
+                                        <option value="">Select Negative Marks</option>
+                                        <option value="1.0">1.0</option>
+                                        <option value="0.5">0.5</option>
+                                        <option value="0.33">0.33</option>
+                                        <option value="0.25">0.25</option>
+                                        <option value="0.2">0.2</option>
+                                        <option value="0">0</option>
+                                    </select>
                                     <label for="negativeMarks">Negative Marks</label>
                                 </div>
                             </div>
 
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6 ">
                                 <div class="form-floating">
                                     <select class="form-select" id="degreeOfDifficulty" name="degree_of_difficulty" required>
                                         <option value="">Select Degree of Difficulty</option>
@@ -276,7 +300,7 @@
             </div>
         </div>
     </div>
-    <!-- List-II Type Question Form End -->
+    <!-- R & A Type Question Form End -->
 {% endblock content %}
 
 {% block custom_js %}
@@ -331,10 +355,24 @@
             });
     });
 
-    // Fetch topics based on part selection
+    // Fetch chapters based on part selection
     document.getElementById('partName').addEventListener('change', function() {
         let partId = this.value;
-        fetch(`/question-bank/get-topics/?part_id=${partId}`)
+        fetch(`/question-bank/get-chapters/?part_id=${partId}`)
+            .then(response => response.json())
+            .then(data => {
+                let chapterSelect = document.getElementById('chapterName');
+                chapterSelect.innerHTML = '<option value="">Select Chapter Name</option>';
+                data.chapters.forEach(chapter => {
+                    chapterSelect.innerHTML += `<option value="${chapter.id}">${chapter.name}</option>`;
+                });
+            });
+    });
+
+    // Fetch topics based on chapter selection
+    document.getElementById('chapterName').addEventListener('change', function() {
+        let chapterId = this.value;
+        fetch(`/question-bank/get-topics/?chapter_id=${chapterId}`)
             .then(response => response.json())
             .then(data => {
                 let topicSelect = document.getElementById('topicName');
@@ -345,238 +383,18 @@
                 topicSelect.innerHTML += '<option value="other">Other (Add manually)</option>';
             });
     });
+
+    // Handle New/PYQs dropdown
+    document.getElementById('newOrPyq').addEventListener('change', function() {
+        var selectedValue = this.value;
+        var examYearField = document.getElementById('examYearField');
+        
+        if (selectedValue === 'pyq') {
+            examYearField.style.display = 'block'; // Show the field if PYQs is selected
+        } else {
+            examYearField.style.display = 'none'; // Hide the field if New is selected
+            document.getElementById('year').value = ''; // Clear the exam year value
+        }
+    });
 </script>
 {% endblock custom_js %}
-
-
-
-{% comment %} {% extends 'base.html' %}
-{% load static %}
-{% load custom_tags %}
-{% block title %}Add List-II Type Question - Hajela's IAS Academy (HIA){% endblock %}
-
-{% block content %}
-    <!-- List-II Type Question Form Start -->
-    <div class="container-xxl py-5">
-        <div class="container">
-            {% if messages %}
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {% for message in messages %}
-                        {{ message }}
-                    {% endfor %}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endif %}
-            <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
-                <h6 class="section-title bg-white text-center text-primary px-3">Add List-II Type Question</h6>
-                <h1 class="mb-5">Fill in the details to add a new List-II type question</h1>
-            </div>
-            <div class="row g-4">
-                <div class="col-lg-12 wow fadeInUp" data-wow-delay="0.5s">
-                    <form id="listIITypeForm" method="POST" enctype="multipart/form-data">
-                        {% csrf_token %}
-
-                        <!-- Question Type Selection -->
-                        <div class="row g-3">
-                            <div class="col-md-12">
-                                <h5 class="text-primary mb-3">Choose Question Type</h5>
-                                <div class="mb-3">
-                                    <a href="{% url 'add-simple-type-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-simple-type-question' %}active{% endif %}">Simple Type</a>
-
-                                    <a href="{% url 'add-r-and-a-type-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-r-and-a-type-question' %}active{% endif %}">R & A</a>
-
-                                    <a href="{% url 'add-list-type-1-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-list-type-1-question' %}active{% endif %}">List-I</a>
-
-                                    <a href="{% url 'add-list-type-2-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-list-type-2-question' %}active{% endif %}">List-II</a>
-
-                                    <a href="{% url 'add-true-and-false-type-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-true-and-false-type-question' %}active{% endif %}">True & False</a>
-
-                                    <a href="{% url 'add-fill-in-the-blank-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-fill-in-the-blank-question' %}active{% endif %}">Fill in the Blank</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <input type="hidden" name="questionType" value="list_type_2">
-
-                        <!-- Common Fields -->
-                        <div class="row g-3">
-                            <div class="col-md-12 mb-3">
-                                <label for="question_part_first">Question Part First</label>
-                                <div class="form-floating">
-                                    <textarea class="form-control" name="question_part_first" id="question_part_first" placeholder="Question Part First" required></textarea>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- List-II Specific Fields -->
-                        <div class="row g-3">
-                            <!-- List-I Heading -->
-                            <div class="col-md-6">
-                                <div class="form-floating mb-3 mt-3">
-                                    <input type="text" class="form-control" id="listIHeading" name="list_1_name" placeholder="List-I Heading">
-                                    <label for="listIHeading">List-I Heading</label>
-                                </div>
-                            </div>
-                            <!-- List-II Heading -->
-                            <div class="col-md-6">
-                                <div class="form-floating mb-3 mt-3">
-                                    <input type="text" class="form-control" id="listIIHeading" name="list_2_name" placeholder="List-II Heading">
-                                    <label for="listIIHeading">List-II Heading</label>
-                                </div>
-                            </div>
-
-                            <!-- List-I Items -->
-                            <div class="col-md-6">
-                                <label class="form-label">List-I Items</label>
-                                <div class="input-group mb-3">
-                                    <input type="text" class="form-control" name="list_1_row1" placeholder="List-I Item 1" aria-label="List-I Item 1">
-                                </div>
-                                <div class="input-group mb-3">
-                                    <input type="text" class="form-control" name="list_1_row2" placeholder="List-I Item 2" aria-label="List-I Item 2">
-                                </div>
-                                <div class="input-group mb-3">
-                                    <input type="text" class="form-control" name="list_1_row3" placeholder="List-I Item 3" aria-label="List-I Item 3">
-                                </div>
-                                <div class="input-group mb-3">
-                                    <input type="text" class="form-control" name="list_1_row4" placeholder="List-I Item 4" aria-label="List-I Item 4">
-                                </div>
-                                <div class="input-group mb-3">
-                                    <input type="text" class="form-control" name="list_1_row5" placeholder="List-I Item 5" aria-label="List-I Item 5">
-                                </div>
-                            </div>
-
-                            <!-- List-II Items -->
-                            <div class="col-md-6">
-                                <label class="form-label">List-II Items</label>
-                                <div class="input-group mb-3">
-                                    <input type="text" class="form-control" name="list_2_row1" placeholder="List-II Item 1" aria-label="List-II Item 1">
-                                </div>
-                                <div class="input-group mb-3">
-                                    <input type="text" class="form-control" name="list_2_row2" placeholder="List-II Item 2" aria-label="List-II Item 2">
-                                </div>
-                                <div class="input-group mb-3">
-                                    <input type="text" class="form-control" name="list_2_row3" placeholder="List-II Item 3" aria-label="List-II Item 3">
-                                </div>
-                                <div class="input-group mb-3">
-                                    <input type="text" class="form-control" name="list_2_row4" placeholder="List-II Item 4" aria-label="List-II Item 4">
-                                </div>
-                                <div class="input-group mb-3">
-                                    <input type="text" class="form-control" name="list_2_row5" placeholder="List-II Item 5" aria-label="List-II Item 5">
-                                </div>
-                            </div>
-                            <div class="col-md-12 mb-3">
-                                <label for="question_part_third">Question Part Third</label>
-                                <div class="form-floating">
-                                    <textarea class="form-control" name="question_part_third" id="question_part_third" placeholder="Question Part Third"></textarea>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Options -->
-                        <div id="optionsSection" class="col-md-12">
-                            <label class="form-label">Options</label>
-                            <div class="input-group mb-3">
-                                <input type="text" class="form-control" name="answer_option_a" placeholder="Option a" aria-label="Option a" required>
-                            </div>
-                            <div class="input-group mb-3">
-                                <input type="text" class="form-control" name="answer_option_b" placeholder="Option b" aria-label="Option b" required>
-                            </div>
-                            <div class="input-group mb-3">
-                                <input type="text" class="form-control" name="answer_option_c" placeholder="Option c" aria-label="Option c" required>
-                            </div>
-                            <div class="input-group mb-3">
-                                <input type="text" class="form-control" name="answer_option_d" placeholder="Option d" aria-label="Option d" required>
-                            </div>
-                        </div>
-
-                        <!-- Common Fields -->
-                        <div class="row g-3">
-                            <label class="form-label">Other Details</label>
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <select class="form-select" id="correctAnswer" name="correct_answer_choice" required>
-                                        <option value="">Select the correct answer</option>
-                                        <option value="a">Option a</option>
-                                        <option value="b">Option b</option>
-                                        <option value="c">Option c</option>
-                                        <option value="d">Option d</option>
-                                    </select>
-                                    <label for="correctAnswer">Correct Answer</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input type="text" class="form-control" id="answerDescription" name="correct_answer_description" placeholder="Answer Description">
-                                    <label for="answerDescription">Answer Description</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <select class="form-select" id="examName" name="exam_name" required>
-                                        <option value="">Select Exam Name</option>
-                                        <option value="UPSC">UPSC</option>
-                                        <option value="MPPSC">MPPSC</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                    <label for="examName">Exam Name</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input type="number" class="form-control" id="year" name="exam_year" placeholder="Year">
-                                    <label for="year">Year</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input type="number" step="0.001" class="form-control" id="marks" name="marks" placeholder="Marks" required>
-                                    <label for="marks">Marks</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input type="number" step="0.001" class="form-control" id="negativeMarks" name="negative_marks" placeholder="Negative Marks" required>
-                                    <label for="negativeMarks">Negative Marks</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <select class="form-select" id="degreeOfDifficulty" name="degree_of_difficulty" required>
-                                        <option value="">Select Degree of Difficulty</option>
-                                        {% for i in 10|to_range %}
-                                            <option value="{{ i }}">{{ i }}</option>
-                                        {% endfor %}
-                                    </select>
-                                    <label for="degreeOfDifficulty">Degree of Difficulty</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input type="text" class="form-control" id="subjectName" name="subject_name" placeholder="Subject Name" required>
-                                    <label for="subjectName">Subject Name</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input type="text" class="form-control" id="areaName" name="area_name" placeholder="Area Name" required>
-                                    <label for="areaName">Area Name</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input type="text" class="form-control" id="partName" name="part_name" placeholder="Part Name">
-                                    <label for="partName">Part Name</label>
-                                </div>
-                            </div>
-                            <!-- Submit Button -->
-                            <div class="col-12">
-                                <button class="btn btn-primary w-100 py-3" type="submit">Submit Question</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- List-II Type Question Form End -->
-{% endblock content %} {% endcomment %}

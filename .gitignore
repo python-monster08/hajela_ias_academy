@@ -3,3 +3,4 @@ staticfiles/
 db.sqlite3
 media
 add-question-temp.html
+temp.txt

@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import QuestionBank, InputSuggestion, InputSuggestionImage, InputSuggestionDocument, ExamName, Subject, Area, PartName,ChapterName ,TopicName
 
 class QuestionBankAdmin(admin.ModelAdmin):
-    list_display = ('question_number', 'exam_name', 'exam_year', 'type_of_question', 'question_sub_type', 'marks')
+    list_display = ('created_at','question_number', 'exam_name', 'exam_year', 'type_of_question', 'question_sub_type', 'marks')
     list_filter = ('exam_name', 'exam_year', 'type_of_question', 'question_sub_type')
     list_filter = ('exam_name', 'exam_year', 'type_of_question', 'degree_of_difficulty')
     ordering = ('exam_year', 'exam_name', 'question_number')
