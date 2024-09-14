@@ -51,3 +51,14 @@ def gallery_images_view(request):
 def gallery_videos_view(request):
     gallery_items = GalleryItem.objects.filter(media_type='video').order_by('-uploaded_at')
     return render(request, 'main_app_templates/gallery_videos.html', {'gallery_items': gallery_items})
+
+
+def footer_gallery(request):
+    # Fetch the latest 6 images from the GalleryItem model
+    gallery_items = GalleryItem.objects.filter(media_type='image').order_by('-uploaded_at')[:6]
+
+    context = {
+        'gallery_items': gallery_items,
+    }
+
+    return context

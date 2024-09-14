@@ -31,11 +31,11 @@
                 <h1 class="mb-5">Get in Touch for Any Query</h1>
             </div>
             <div class="row g-4">
-                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                <div class="col-lg-4 col-md-6 col-12 wow fadeInUp" data-wow-delay="0.1s">
                     <h5>Contact Details</h5>
                     <p class="mb-4">Feel free to reach out to us with any questions or concerns regarding our coaching programs.</p>
                     <div class="d-flex align-items-center mb-3">
-                        <div class="d-flex align-items-center justify-content-center flex-shrink-0 bg-primary" style="width: 50px; height: 50px;">
+                        <div class="d-flex align-items-center justify-content-center flex-shrink-0 bg-primary" style="min-width: 50px; height: 50px;">
                             <i class="fa fa-map-marker-alt text-white"></i>
                         </div>
                         <div class="ms-3">
@@ -44,7 +44,7 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center mb-3">
-                        <div class="d-flex align-items-center justify-content-center flex-shrink-0 bg-primary" style="width: 50px; height: 50px;">
+                        <div class="d-flex align-items-center justify-content-center flex-shrink-0 bg-primary" style="min-width: 50px; height: 50px;">
                             <i class="fa fa-phone-alt text-white"></i>
                         </div>
                         <div class="ms-3">
@@ -53,44 +53,44 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center">
-                        <div class="d-flex align-items-center justify-content-center flex-shrink-0 bg-primary" style="width: 50px; height: 50px;">
+                        <div class="d-flex align-items-center justify-content-center flex-shrink-0 bg-primary" style="min-width: 50px; height: 50px;">
                             <i class="fa fa-envelope-open text-white"></i>
                         </div>
                         <div class="ms-3">
                             <h5 class="text-primary">Email</h5>
-                            <p class="mb-0">hia_civil_services_academy@hicareers.org</p>
+                            <p class="mb-0"><a class="text-dark" href="mailto:hia_civil_services_academy@hicareers.org">info@hicareers.org</a></p>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
+                <div class="col-lg-4 col-md-6 col-12 wow fadeInUp" data-wow-delay="0.3s">
                     <iframe class="position-relative rounded w-100 h-100"
                         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d117322.27533036374!2d77.35078233372892!3d23.23139947524115!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x397c4300010636e1%3A0x3e8a05aa2f1449cc!2sHIA%20IAS%2FPSC%20COACHING%20CENTRE!5e0!3m2!1sen!2sin!4v1724440393080!5m2!1sen!2sin"
                         frameborder="0" style="min-height: 300px; border:0;" allowfullscreen="" aria-hidden="false"
                         tabindex="0"></iframe>
                 </div>
-                <div class="col-lg-4 col-md-12 wow fadeInUp" data-wow-delay="0.5s">    
+                <div class="col-lg-4 col-md-12 col-12 wow fadeInUp" data-wow-delay="0.5s">    
                     <form action="{% url 'contact' %}" method="post">
                         {% csrf_token %}
                         <div class="row g-3">
-                            <div class="col-md-6">
+                            <div class="col-md-6 col-12">
                                 <div class="form-floating">
                                     <input type="text" class="form-control" id="name" name="name" placeholder="Your Name">
                                     <label for="name">Your Name</label>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6 col-12">
                                 <div class="form-floating">
                                     <input type="email" class="form-control" id="email" name="email" placeholder="Your Email">
                                     <label for="email">Your Email</label>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6 col-12">
                                 <div class="form-floating">
                                     <input type="text" class="form-control" id="mobile_no" name="mobile" placeholder="Your Mobile No">
                                     <label for="mobile_no">Mobile No.</label>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6 col-12">
                                 <div class="form-floating">
                                     <input type="text" class="form-control" id="subject" name="subject" placeholder="Subject">
                                     <label for="subject">Subject</label>

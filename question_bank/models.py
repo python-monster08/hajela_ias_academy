@@ -112,7 +112,7 @@ class QuestionBank(models.Model):
     answer_option_d = models.TextField(blank=True, null=True)
 
     # Correct Answer Fields 
-    correct_answer_choice = models.CharField(max_length=1, blank=True, null=True)
+    correct_answer_choice = models.CharField(max_length=255, blank=True, null=True)
     correct_answer_description = models.TextField(blank=True, null=True)
 
     # Extra Information Field

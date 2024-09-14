@@ -16,7 +16,7 @@
                     <h4 class="text-white mb-3">Contact</h4>
                     <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>K K Plaza, First Floor, Plot No. 1, M.P. Nagar, Zone 2, Bhopal, MP, 462011</p>
                     <p class="mb-2"><i class="fa fa-phone-alt me-3"></i><a href="tel:+91 9109723996" class="text-light">+91 9109723996</a>,&nbsp; <a href="tel:+91 7554167267" class="text-light">+91 7554167267</a></p>
-                    <p class="mb-2"><i class="fa fa-envelope me-3"></i>hia_civil_services_academy@hicareers.org</p>
+                    <p class="mb-2 text-light"><i class="fa fa-envelope me-3"></i><a class="text-light" href="mailto:hia_civil_services_academy@hicareers.org">info@hicareers.org</a></p>
                     <div class="d-flex pt-2">
                         <a class="btn btn-outline-light btn-social" href="https://www.instagram.com/hia_civil_services_academy/" target="_blank"><i class="fab fa-instagram"></i></a>
                         <a class="btn btn-outline-light btn-social" href="https://www.facebook.com/people/HIA-Civil-Services-Academy/61559454314671/" target="_blank"><i class="fab fa-facebook-f"></i></a>
@@ -25,28 +25,20 @@
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6">
+                    {% if gallery_items|length <= 6 %}
                     <h4 class="text-white mb-3">Gallery</h4>
-                    <div class="row g-2 pt-2">
-                        <div class="col-4">
-                            <img class="img-fluid bg-light p-1" src="{% static 'assets/img/course-1.jpg' %}" alt="IAS Coaching">
+                        <div class="row g-2 pt-2">
+                            {% for item in gallery_items %}
+                                <div class="col-4">
+                                    <a href="{{ item.file.url }}"><img class="img-fluid bg-light p-1" src="{{ item.file.url }}" alt="{{ item.title }}"></a>
+                                </div>
+                            {% endfor %}
                         </div>
-                        <div class="col-4">
-                            <img class="img-fluid bg-light p-1" src="{% static 'assets/img/course-2.jpg' %}" alt="UPSC Coaching">
-                        </div>
-                        <div class="col-4">
-                            <img class="img-fluid bg-light p-1" src="{% static 'assets/img/course-3.jpg' %}" alt="MPPSC Coaching">
-                        </div>
-                        <div class="col-4">
-                            <img class="img-fluid bg-light p-1" src="{% static 'assets/img/course-2.jpg' %}" alt="UPSC Coaching">
-                        </div>
-                        <div class="col-4">
-                            <img class="img-fluid bg-light p-1" src="{% static 'assets/img/course-3.jpg' %}" alt="MPPSC Coaching">
-                        </div>
-                        <div class="col-4">
-                            <img class="img-fluid bg-light p-1" src="{% static 'assets/img/course-1.jpg' %}" alt="IAS Coaching">
-                        </div>
-                    </div>
+                    {% else %}
+                        <!-- No gallery to show -->
+                    {% endif %}
                 </div>
+                
                 <div class="col-lg-3 col-md-6">
                     <h4 class="text-white mb-3">Newsletter</h4>
                     <p>Stay updated with the latest news and course offerings at Hajela's IAS Academy.</p>

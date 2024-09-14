@@ -1,44 +1,12 @@
-<!-- templates/accounts/login.html -->
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
+{% block title %}Login - Hajela's IAS Academy (HIA){% endblock %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Hajela's IAS Academy (HIA)</title>
-    <link rel="stylesheet" href="{% static 'assets/css/bootstrap.min.css' %}">
-    <style>
-        body {
-            background-image: url("{% static 'assets/img/bg-image.jpg' %}");
-            background-size: cover;
-            background-position: center;
-            height: 100vh;
-            display: flex;
-            justify-content: flex-end; /* Form will be positioned on the right side */
-            align-items: center;
-            padding-right: 50px; /* Adds some spacing from the right edge */
-        }
+{% block content %}
 
-        .card {
-            background: rgba(255, 255, 255, 0.9); /* Slight transparency for the card */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 500px; /* Adjust the card width */
-        }
-
-        .card-title {
-            font-weight: bold;
-            color: #007bff;
-        }
-
-        
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <div class="row justify-content-end">
-            <div class="col-lg-5">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-8 col-12">
                 <div class="card mt-5">
                     <div class="card-body">
                         <h4 class="card-title text-center">Login</h4>
@@ -53,9 +21,8 @@
                                 <input type="password" name="password" class="form-control" id="password" placeholder="Enter your password" required>
                             </div>
                             <button type="submit" class="btn btn-primary btn-block">Login</button>
-                            
-                            
                         </form>
+
                         {% if messages %}
                             <div class="alert alert-danger mt-3">
                                 {% for message in messages %}
@@ -63,11 +30,12 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
+
                         <!-- Forgot Password Link -->
                         <div class="text-left mt-3">
-                            <a href="{% url 'password_reset' %}">Forgot your password?</a> 
+                            <a href="{% url 'password_reset' %}">Forgot your password?</a>
                         </div>
-                        <div class="text-center mt-3">
+                        <div class="mt-3">
                             <a href="{% url 'index' %}">Back to home</a>
                         </div>
                     </div>
@@ -75,8 +43,4 @@
             </div>
         </div>
     </div>
-
-    <script src="{% static 'assets/js/bootstrap.bundle.min.js' %}"></script>
-</body>
-
-</html>
+{% endblock content %}
