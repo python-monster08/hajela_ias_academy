@@ -47,7 +47,18 @@
                                 <label for="content" class="form-label">Content</label>
                                 <div class="form-floating">
                                     <textarea class="form-control" name="content" id="content" placeholder="Enter the content" required></textarea>
-                                    <label for="content">Content</label>
+                                    <label for="content">Quote, Idiom, or Phrase</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Meaning Field for Idioms and Phrases (Hidden by Default) -->
+                        <div class="row g-3" id="meaningField" style="display: none;">
+                            <div class="col-md-12 mb-3">
+                                <label for="meaning" class="form-label">Meaning</label>
+                                <div class="form-floating">
+                                    <textarea class="form-control" name="meaning" id="meaning" placeholder="Enter the meaning of the idiom or phrase"></textarea>
+                                    <label for="meaning">Meaning of Idiom or Phrase</label>
                                 </div>
                             </div>
                         </div>
@@ -62,6 +73,8 @@
                                 </div>
                             </div>
                         </div>
+
+                        
 
                         <!-- Dynamic Fields (Exam, Subject, Area, etc.) -->
                         <div class="row g-3">
@@ -151,6 +164,18 @@
             document.getElementById('manual_topic').style.display = 'block';
         } else {
             document.getElementById('manual_topic').style.display = 'none';
+        }
+    });
+
+    // Show or hide the meaning field based on the selected type
+    document.getElementById('type').addEventListener('change', function() {
+        var type = this.value;
+        var meaningField = document.getElementById('meaningField');
+        
+        if (type === 'idiom' || type === 'phrase') {
+            meaningField.style.display = 'block';
+        } else {
+            meaningField.style.display = 'none';
         }
     });
 

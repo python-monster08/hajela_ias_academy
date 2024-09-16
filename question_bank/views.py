@@ -1078,6 +1078,7 @@ def add_quote_idiom_phrase(request):
     if request.method == 'POST':
         type = request.POST.get('type')
         content = request.POST.get('content')
+        meaning = request.POST.get('meaning')  # Get the meaning field from the form
         author = request.POST.get('author', '')  # Optional
         exam_id = request.POST.get('exam_name')
         subject_id = request.POST.get('subject_name')
@@ -1087,7 +1088,7 @@ def add_quote_idiom_phrase(request):
         topic_name = request.POST.get('topic_name')
         new_topic_name = request.POST.get('new_topic_name')
 
-        # Determine if a new topic was added manually
+        # Handle new topic creation
         if topic_name == 'other' and new_topic_name:
             topic = TopicName.objects.create(name=new_topic_name, chapter_id=chapter_id)
         else:
@@ -1097,15 +1098,17 @@ def add_quote_idiom_phrase(request):
         QuoteIdiomPhrase.objects.create(
             type=type,
             content=content,
+            meaning=meaning if type in ['idiom', 'phrase'] else '',  # Only save meaning for idioms and phrases
             author=author,
             exam_id=exam_id,
             subject_id=subject_id,
             area_id=area_id,
             part_id=part_id,
             chapter_id=chapter_id,
-            topic=topic.name  # Save the topic's name
+            topic=topic.name
         )
-
+        # Display success message and redirect
+        messages.success(request, 'Your Quote, Idiom, Phrase has been added successfully!')
         return redirect('add_quote_idiom_phrase')  # Redirect to the same page after submission
 
     # Fetch exam names for the form

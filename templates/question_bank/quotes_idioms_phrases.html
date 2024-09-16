@@ -16,13 +16,25 @@
                     {% for item in quotes_idioms_phrases %}
                         <div class="card mb-4 shadow-sm">
                             <div class="card-body">
+                                <!-- Display numbering using forloop.counter -->
+                                
+
                                 <blockquote class="blockquote">
-                                    <p class="mb-0">“{{ item.content }}”</p>
+                                    <p class="mb-0"><span class="fs-5 text-dark"> {{ forloop.counter }}.</span> “{{ item.content }}”</p>
                                     {% if item.author %}
                                         <footer class="blockquote-footer mt-2">{{ item.author }}</footer>
                                     {% endif %}
                                 </blockquote>
-                                <!-- Optional: Display the type of entry (Quote, Idiom, Phrase) -->
+
+                                <!-- Display meaning for idioms and phrases -->
+                                {% if item.type == 'idiom' or item.type == 'phrase' %}
+                                    <div class="mt-3">
+                                        <strong>Meaning:</strong>
+                                        <p class="text-warning">{{ item.meaning }}</p>
+                                    </div>
+                                {% endif %}
+
+                                <!-- Display type (Quote, Idiom, or Phrase) -->
                                 <div class="text-muted small">
                                     <span class="badge bg-primary">{{ item.get_type_display }}</span>
                                 </div>
