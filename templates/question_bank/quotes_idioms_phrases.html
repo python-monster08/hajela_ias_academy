@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Quotes, Idioms, and Phrases - Hajela's IAS Academy (HIA){% endblock %}
+
+{% block content %}
+    <div class="container-xxl py-5">
+        <div class="container">
+            <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+                <h6 class="section-title bg-white text-center text-primary px-3">Quotes, Idioms, and Phrases</h6>
+                <h1 class="mb-5">Explore Our Collection</h1>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-12 wow fadeInUp" data-wow-delay="0.5s">
+                    <!-- Loop through all QuoteIdiomPhrase entries -->
+                    {% for item in quotes_idioms_phrases %}
+                        <div class="card mb-4 shadow-sm">
+                            <div class="card-body">
+                                <blockquote class="blockquote">
+                                    <p class="mb-0">“{{ item.content }}”</p>
+                                    {% if item.author %}
+                                        <footer class="blockquote-footer mt-2">{{ item.author }}</footer>
+                                    {% endif %}
+                                </blockquote>
+                                <!-- Optional: Display the type of entry (Quote, Idiom, Phrase) -->
+                                <div class="text-muted small">
+                                    <span class="badge bg-primary">{{ item.get_type_display }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p>No quotes, idioms, or phrases found.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

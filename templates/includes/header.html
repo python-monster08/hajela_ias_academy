@@ -30,6 +30,7 @@
                     <a href="{% url 'gallery_videos' %}" class="dropdown-item">Videos</a>
                 </div>
             </div>
+            <a href="{% url 'quotes_idioms_phrases' %}" class="nav-item nav-link">View Quote Idiom Phrase</a>
             <a href="{% url 'contact' %}" class="nav-item nav-link">Contact</a>
             {% if user.is_authenticated %}
             <div class="nav-item dropdown">
@@ -41,6 +42,9 @@
                     <hr class="dropdown-divider">
                     <a href="{% url 'add-input-suggestion' %}" class="dropdown-item">Add Input Suggestion</a>
                     <a href="{% url 'input-suggestion-list' %}" class="dropdown-item">Check Your Input Suggestions</a>
+                    <hr class="dropdown-divider">
+                    <a href="{% url 'add_quote_idiom_phrase' %}" class="dropdown-item">Add Quote Idiom Phrase</a>
+                    
                     <hr class="dropdown-divider">
                     <a href="{% url 'upload-file' %}" class="dropdown-item">Upload Excel File</a>
                     <a href="{% url 'generate-questions-document' %}" class="dropdown-item">Generate Class Plus Doc</a>

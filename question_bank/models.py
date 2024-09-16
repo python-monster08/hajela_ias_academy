@@ -195,3 +195,25 @@ class InputSuggestionImage(models.Model):
 class InputSuggestionDocument(models.Model):
     question = models.ForeignKey(InputSuggestion, related_name='documents', on_delete=models.CASCADE)
     document = models.FileField(upload_to='input_suggestion/documents/')
+
+
+class QuoteIdiomPhrase(models.Model):
+    TYPE_CHOICES = (
+        ('quote', 'Quote'),
+        ('idiom', 'Idiom'),
+        ('phrase', 'Phrase'),
+    )
+
+    type = models.CharField(max_length=10, choices=TYPE_CHOICES)
+    content = models.TextField()
+    author = models.CharField(max_length=255, blank=True, null=True)  # Optional field for author or source
+    exam = models.ForeignKey(ExamName, on_delete=models.SET_NULL, null=True, blank=True)
+    subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True)
+    area = models.ForeignKey(Area, on_delete=models.SET_NULL, null=True, blank=True)
+    part = models.ForeignKey(PartName, on_delete=models.SET_NULL, null=True, blank=True)
+    chapter = models.ForeignKey(ChapterName, on_delete=models.SET_NULL, null=True, blank=True)
+    topic = models.CharField(max_length=255, blank=True, null=True)  # Manually added or selected topic
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.get_type_display()}: {self.content[:50]}..."

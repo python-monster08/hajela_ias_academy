@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import QuestionBank, InputSuggestion, InputSuggestionImage, InputSuggestionDocument, ExamName, Subject, Area, PartName,ChapterName ,TopicName
+from .models import QuestionBank, InputSuggestion, InputSuggestionImage, InputSuggestionDocument, ExamName, Subject, Area, PartName,ChapterName ,TopicName, QuoteIdiomPhrase
 
 class QuestionBankAdmin(admin.ModelAdmin):
     list_display = ('created_at', 'created_by','question_number', 'exam_name', 'exam_year', 'type_of_question', 'question_sub_type', 'marks')
@@ -115,3 +115,13 @@ class ChapterNameAdmin(admin.ModelAdmin):
 class TopicNameAdmin(admin.ModelAdmin):
     list_display = ('name', 'chapter')
     list_filter = ('chapter',)
+
+
+
+# Admin for QuoteIdiomPhrase
+@admin.register(QuoteIdiomPhrase)
+class QuoteIdiomPhraseAdmin(admin.ModelAdmin):
+    list_display = ('type', 'content', 'exam', 'subject', 'area', 'part', 'chapter', 'topic', 'created_at')
+    search_fields = ('content', 'author', 'exam__name', 'subject__name', 'area__name', 'part__name', 'chapter__name', 'topic')
+    list_filter = ('type', 'exam', 'subject', 'area', 'part', 'chapter')
+    date_hierarchy = 'created_at'

@@ -22,8 +22,8 @@ from io import BytesIO
 from django.conf import settings
 from django.http import HttpResponseServerError
 from django.http import JsonResponse
-from .models import Subject, Area, PartName, TopicName
-
+from .models import Subject, Area, PartName, TopicName, QuoteIdiomPhrase
+from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 
 # ************************* Generate Test Word file Start *********************************************
@@ -1072,3 +1072,53 @@ def view_questions(request):
         'questions': questions
     }
     return render(request, 'question_bank/add_question/view_questions.html', context)
+
+
+def add_quote_idiom_phrase(request):
+    if request.method == 'POST':
+        type = request.POST.get('type')
+        content = request.POST.get('content')
+        author = request.POST.get('author', '')  # Optional
+        exam_id = request.POST.get('exam_name')
+        subject_id = request.POST.get('subject_name')
+        area_id = request.POST.get('area_name')
+        part_id = request.POST.get('part_name')
+        chapter_id = request.POST.get('chapter_name')
+        topic_name = request.POST.get('topic_name')
+        new_topic_name = request.POST.get('new_topic_name')
+
+        # Determine if a new topic was added manually
+        if topic_name == 'other' and new_topic_name:
+            topic = TopicName.objects.create(name=new_topic_name, chapter_id=chapter_id)
+        else:
+            topic = TopicName.objects.get(id=topic_name)
+
+        # Save the form data
+        QuoteIdiomPhrase.objects.create(
+            type=type,
+            content=content,
+            author=author,
+            exam_id=exam_id,
+            subject_id=subject_id,
+            area_id=area_id,
+            part_id=part_id,
+            chapter_id=chapter_id,
+            topic=topic.name  # Save the topic's name
+        )
+
+        return redirect('add_quote_idiom_phrase')  # Redirect to the same page after submission
+
+    # Fetch exam names for the form
+    exam_names = ExamName.objects.all()
+
+    return render(request, 'question_bank/add_quote_idiom_phrase.html', {'exam_names': exam_names})
+
+
+def quotes_idioms_phrases_view(request):
+    # Fetch all quotes, idioms, and phrases from the database
+    quotes_idioms_phrases = QuoteIdiomPhrase.objects.all().order_by('-created_at')
+    
+    # Render the template with the fetched data
+    return render(request, 'question_bank/quotes_idioms_phrases.html', {
+        'quotes_idioms_phrases': quotes_idioms_phrases
+    })

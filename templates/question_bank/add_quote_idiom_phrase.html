@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_tags %}
+
+{% block title %}Add Quote, Idiom, or Phrase - Hajela's IAS Academy (HIA){% endblock %}
+
+{% block content %}
+    <!-- Add Quote, Idiom, or Phrase Form Start -->
+    <div class="container-xxl py-5">
+        <div class="container">
+            {% if messages %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+            <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+                <h6 class="section-title bg-white text-center text-primary px-3">Add Quote, Idiom, or Phrase</h6>
+                <h1 class="mb-5">Fill in the details to add a new entry</h1>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-12 wow fadeInUp" data-wow-delay="0.5s">
+                    <form id="addQuoteIdiomPhraseForm" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Select Type -->
+                        <div class="row g-3">
+                            <div class="col-md-12 mb-3">
+                                <label for="type" class="form-label">Choose Type</label>
+                                <div class="form-floating">
+                                    <select class="form-select" id="type" name="type" required>
+                                        <option value="">Select Type</option>
+                                        <option value="quote">Quote</option>
+                                        <option value="idiom">Idiom</option>
+                                        <option value="phrase">Phrase</option>
+                                    </select>
+                                    <label for="type">Type</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Add Quote/Idiom/Phrase Content -->
+                        <div class="row g-3">
+                            <div class="col-md-12 mb-3">
+                                <label for="content" class="form-label">Content</label>
+                                <div class="form-floating">
+                                    <textarea class="form-control" name="content" id="content" placeholder="Enter the content" required></textarea>
+                                    <label for="content">Content</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Optional Author Field -->
+                        <div class="row g-3">
+                            <div class="col-md-12 mb-3">
+                                <label for="author" class="form-label">Author (Optional)</label>
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" name="author" id="author" placeholder="Enter author or source (optional)">
+                                    <label for="author">Author or Source</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Fields (Exam, Subject, Area, etc.) -->
+                        <div class="row g-3">
+                            <div class="col-md-6 mb-4">
+                                <div class="form-floating">
+                                    <select class="form-select" id="examName" name="exam_name" required>
+                                        <option value="">Select Exam Name</option>
+                                        {% for exam in exam_names %}
+                                            <option value="{{ exam.id }}">{{ exam.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label for="examName">Exam Name</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <div class="form-floating">
+                                    <select class="form-select" id="subjectName" name="subject_name" required>
+                                        <option value="">Select Subject Name</option>
+                                    </select>
+                                    <label for="subjectName">Subject Name</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <div class="form-floating">
+                                    <select class="form-select" id="areaName" name="area_name" required>
+                                        <option value="">Select Area Name</option>
+                                    </select>
+                                    <label for="areaName">Area Name</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <div class="form-floating">
+                                    <select class="form-select" id="partName" name="part_name">
+                                        <option value="">Select Part Name</option>
+                                    </select>
+                                    <label for="partName">Part Name</label>
+                                </div>
+                            </div>
+
+                            <!-- Dynamic Chapter Name -->
+                            <div class="col-md-6 mb-4">
+                                <div class="form-floating">
+                                    <select class="form-select" id="chapterName" name="chapter_name">
+                                        <option value="">Select Chapter Name</option>
+                                    </select>
+                                    <label for="chapterName">Chapter Name</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <div class="form-floating">
+                                    <select class="form-select" id="topicName" name="topic_name">
+                                        <option value="">Select Topic Name</option>
+                                        <option value="other">Other (Add manually)</option>
+                                    </select>
+                                    <label for="topicName">Topic Name</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-4" id="manual_topic" style="display: none;">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" name="new_topic_name" id="new_topic_name" placeholder="Enter new topic">
+                                    <label for="new_topic_name">Add New Topic</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="col-12 mt-3">
+                            <button class="btn btn-primary w-100 py-3" type="submit">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Add Quote, Idiom, or Phrase Form End -->
+{% endblock content %}
+
+{% block custom_js %}
+<script>
+    document.getElementById('topicName').addEventListener('change', function() {
+        if (this.value === 'other') {
+            document.getElementById('manual_topic').style.display = 'block';
+        } else {
+            document.getElementById('manual_topic').style.display = 'none';
+        }
+    });
+
+    // Fetch subjects based on exam selection
+    document.getElementById('examName').addEventListener('change', function() {
+        let examId = this.value;
+        fetch(`/question-bank/get-subjects/?exam_id=${examId}`)
+            .then(response => response.json())
+            .then(data => {
+                let subjectSelect = document.getElementById('subjectName');
+                subjectSelect.innerHTML = '<option value="">Select Subject Name</option>';
+                data.subjects.forEach(subject => {
+                    subjectSelect.innerHTML += `<option value="${subject.id}">${subject.name}</option>`;
+                });
+            });
+    });
+
+    // Fetch areas based on subject selection
+    document.getElementById('subjectName').addEventListener('change', function() {
+        let subjectId = this.value;
+        fetch(`/question-bank/get-areas/?subject_id=${subjectId}`)
+            .then(response => response.json())
+            .then(data => {
+                let areaSelect = document.getElementById('areaName');
+                areaSelect.innerHTML = '<option value="">Select Area Name</option>';
+                data.areas.forEach(area => {
+                    areaSelect.innerHTML += `<option value="${area.id}">${area.name}</option>`;
+                });
+            });
+    });
+
+    // Fetch parts based on area selection
+    document.getElementById('areaName').addEventListener('change', function() {
+        let areaId = this.value;
+        fetch(`/question-bank/get-parts/?area_id=${areaId}`)
+            .then(response => response.json())
+            .then(data => {
+                let partSelect = document.getElementById('partName');
+                partSelect.innerHTML = '<option value="">Select Part Name</option>';
+                data.parts.forEach(part => {
+                    partSelect.innerHTML += `<option value="${part.id}">${part.name}</option>`;
+                });
+            });
+    });
+
+    // Fetch chapters based on part selection
+    document.getElementById('partName').addEventListener('change', function() {
+        let partId = this.value;
+        fetch(`/question-bank/get-chapters/?part_id=${partId}`)
+            .then(response => response.json())
+            .then(data => {
+                let chapterSelect = document.getElementById('chapterName');
+                chapterSelect.innerHTML = '<option value="">Select Chapter Name</option>';
+                data.chapters.forEach(chapter => {
+                    chapterSelect.innerHTML += `<option value="${chapter.id}">${chapter.name}</option>`;
+                });
+            });
+    });
+
+    // Fetch topics based on chapter selection
+    document.getElementById('chapterName').addEventListener('change', function() {
+        let chapterId = this.value;
+        fetch(`/question-bank/get-topics/?chapter_id=${chapterId}`)
+            .then(response => response.json())
+            .then(data => {
+                let topicSelect = document.getElementById('topicName');
+                topicSelect.innerHTML = '<option value="">Select Topic Name</option>';
+                data.topics.forEach(topic => {
+                    topicSelect.innerHTML += `<option value="${topic.id}">${topic.name}</option>`;
+                });
+                topicSelect.innerHTML += '<option value="other">Other (Add manually)</option>';
+            });
+    });
+</script>
+{% endblock custom_js %}
