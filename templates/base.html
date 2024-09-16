@@ -98,7 +98,7 @@
 
     <!-- Template Javascript -->
     <script src="{% static 'assets/js/main.js' %}"></script>
-    {% block custom_js %}
+    
     <!-- Your custom JS script -->
     <script>
         $(document).ready(function() {
@@ -113,6 +113,7 @@
             });
         });        
     </script>
+    {% block custom_js %}
     {% endblock custom_js %}
 </body>
 </html>
