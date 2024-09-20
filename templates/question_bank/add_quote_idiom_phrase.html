@@ -4,6 +4,11 @@
 
 {% block title %}Add Quote, Idiom, or Phrase - Hajela's IAS Academy (HIA){% endblock %}
 
+{% block custom_css %}
+<!-- Include Select2 CSS for searchable select inputs -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock custom_css %}
+
 {% block content %}
     <!-- Add Quote, Idiom, or Phrase Form Start -->
     <div class="container-xxl py-5">
@@ -74,8 +79,6 @@
                             </div>
                         </div>
 
-                        
-
                         <!-- Dynamic Fields (Exam, Subject, Area, etc.) -->
                         <div class="row g-3">
                             <div class="col-md-6 mb-4">
@@ -127,15 +130,19 @@
                                 </div>
                             </div>
 
+                            <!-- Multiple Topic Selection with Search -->
                             <div class="col-md-6 mb-4">
+                                <label for="topicName">Topic Name(s)</label>
                                 <div class="form-floating">
-                                    <select class="form-select" id="topicName" name="topic_name">
+                                    <select class="form-select" id="topicName" name="topic_name" multiple="multiple">
                                         <option value="">Select Topic Name</option>
-                                        <option value="other">Other (Add manually)</option>
+                                        {% for topic in topics %}
+                                            <option value="{{ topic.id }}">{{ topic.name }}</option>
+                                        {% endfor %}
                                     </select>
-                                    <label for="topicName">Topic Name</label>
                                 </div>
                             </div>
+                            
 
                             <div class="col-md-6 mb-4" id="manual_topic" style="display: none;">
                                 <div class="form-floating">
@@ -159,95 +166,106 @@
 
 {% block custom_js %}
 <script>
-    document.getElementById('topicName').addEventListener('change', function() {
-        if (this.value === 'other') {
-            document.getElementById('manual_topic').style.display = 'block';
-        } else {
-            document.getElementById('manual_topic').style.display = 'none';
-        }
-    });
+    $(document).ready(function() {
+        // Initialize Select2 for the topic select box with multiple selection and search
+        $('#topicName').select2({
+            placeholder: "Select or search topics",
+            allowClear: true
+        });
 
-    // Show or hide the meaning field based on the selected type
-    document.getElementById('type').addEventListener('change', function() {
-        var type = this.value;
-        var meaningField = document.getElementById('meaningField');
+        // Handle showing the manual topic input when "Other" is selected
+        $('#topicName').on('change', function() {
+            let selectedValues = $(this).val();
+            if (selectedValues && selectedValues.includes('other')) {
+                $('#manual_topic').show();
+            } else {
+                $('#manual_topic').hide();
+            }
+        });
         
-        if (type === 'idiom' || type === 'phrase') {
-            meaningField.style.display = 'block';
-        } else {
-            meaningField.style.display = 'none';
-        }
-    });
+        // Show or hide the meaning field based on the selected type
+        $('#type').on('change', function() {
+            let type = $(this).val();
+            if (type === 'idiom' || type === 'phrase') {
+                $('#meaningField').show();
+            } else {
+                $('#meaningField').hide();
+            }
+        });
 
-    // Fetch subjects based on exam selection
-    document.getElementById('examName').addEventListener('change', function() {
-        let examId = this.value;
-        fetch(`/question-bank/get-subjects/?exam_id=${examId}`)
-            .then(response => response.json())
-            .then(data => {
-                let subjectSelect = document.getElementById('subjectName');
-                subjectSelect.innerHTML = '<option value="">Select Subject Name</option>';
-                data.subjects.forEach(subject => {
-                    subjectSelect.innerHTML += `<option value="${subject.id}">${subject.name}</option>`;
+        // Fetch subjects based on exam selection
+        $('#examName').on('change', function() {
+            let examId = $(this).val();
+            fetch(`/question-bank/get-subjects/?exam_id=${examId}`)
+                .then(response => response.json())
+                .then(data => {
+                    let subjectSelect = $('#subjectName');
+                    subjectSelect.empty().append('<option value="">Select Subject Name</option>');
+                    data.subjects.forEach(subject => {
+                        subjectSelect.append(`<option value="${subject.id}">${subject.name}</option>`);
+                    });
                 });
-            });
-    });
+        });
 
-    // Fetch areas based on subject selection
-    document.getElementById('subjectName').addEventListener('change', function() {
-        let subjectId = this.value;
-        fetch(`/question-bank/get-areas/?subject_id=${subjectId}`)
-            .then(response => response.json())
-            .then(data => {
-                let areaSelect = document.getElementById('areaName');
-                areaSelect.innerHTML = '<option value="">Select Area Name</option>';
-                data.areas.forEach(area => {
-                    areaSelect.innerHTML += `<option value="${area.id}">${area.name}</option>`;
+        // Fetch areas based on subject selection
+        $('#subjectName').on('change', function() {
+            let subjectId = $(this).val();
+            fetch(`/question-bank/get-areas/?subject_id=${subjectId}`)
+                .then(response => response.json())
+                .then(data => {
+                    let areaSelect = $('#areaName');
+                    areaSelect.empty().append('<option value="">Select Area Name</option>');
+                    data.areas.forEach(area => {
+                        areaSelect.append(`<option value="${area.id}">${area.name}</option>`);
+                    });
                 });
-            });
-    });
+        });
 
-    // Fetch parts based on area selection
-    document.getElementById('areaName').addEventListener('change', function() {
-        let areaId = this.value;
-        fetch(`/question-bank/get-parts/?area_id=${areaId}`)
-            .then(response => response.json())
-            .then(data => {
-                let partSelect = document.getElementById('partName');
-                partSelect.innerHTML = '<option value="">Select Part Name</option>';
-                data.parts.forEach(part => {
-                    partSelect.innerHTML += `<option value="${part.id}">${part.name}</option>`;
+        // Fetch parts based on area selection
+        $('#areaName').on('change', function() {
+            let areaId = $(this).val();
+            fetch(`/question-bank/get-parts/?area_id=${areaId}`)
+                .then(response => response.json())
+                .then(data => {
+                    let partSelect = $('#partName');
+                    partSelect.empty().append('<option value="">Select Part Name</option>');
+                    data.parts.forEach(part => {
+                        partSelect.append(`<option value="${part.id}">${part.name}</option>`);
+                    });
                 });
-            });
-    });
+        });
 
-    // Fetch chapters based on part selection
-    document.getElementById('partName').addEventListener('change', function() {
-        let partId = this.value;
-        fetch(`/question-bank/get-chapters/?part_id=${partId}`)
-            .then(response => response.json())
-            .then(data => {
-                let chapterSelect = document.getElementById('chapterName');
-                chapterSelect.innerHTML = '<option value="">Select Chapter Name</option>';
-                data.chapters.forEach(chapter => {
-                    chapterSelect.innerHTML += `<option value="${chapter.id}">${chapter.name}</option>`;
+        // Fetch chapters based on part selection
+        $('#partName').on('change', function() {
+            let partId = $(this).val();
+            fetch(`/question-bank/get-chapters/?part_id=${partId}`)
+                .then(response => response.json())
+                .then(data => {
+                    let chapterSelect = $('#chapterName');
+                    chapterSelect.empty().append('<option value="">Select Chapter Name</option>');
+                    data.chapters.forEach(chapter => {
+                        chapterSelect.append(`<option value="${chapter.id}">${chapter.name}</option>`);
+                    });
                 });
-            });
-    });
+        });
 
-    // Fetch topics based on chapter selection
-    document.getElementById('chapterName').addEventListener('change', function() {
-        let chapterId = this.value;
-        fetch(`/question-bank/get-topics/?chapter_id=${chapterId}`)
-            .then(response => response.json())
-            .then(data => {
-                let topicSelect = document.getElementById('topicName');
-                topicSelect.innerHTML = '<option value="">Select Topic Name</option>';
-                data.topics.forEach(topic => {
-                    topicSelect.innerHTML += `<option value="${topic.id}">${topic.name}</option>`;
+        // Fetch topics based on chapter selection
+        $('#chapterName').on('change', function() {
+            let chapterId = $(this).val();
+            fetch(`/question-bank/get-topics/?chapter_id=${chapterId}`)
+                .then(response => response.json())
+                .then(data => {
+                    let topicSelect = $('#topicName');
+                    topicSelect.empty().append('<option value="">Select Topic Name</option>');
+                    data.topics.forEach(topic => {
+                        topicSelect.append(`<option value="${topic.id}">${topic.name}</option>`);
+                    });
+                    topicSelect.append('<option value="other">Other (Add manually)</option>');
                 });
-                topicSelect.innerHTML += '<option value="other">Other (Add manually)</option>';
-            });
+        });
     });
 </script>
+
+<!-- Include Select2 JS for searchable multi-select -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 {% endblock custom_js %}

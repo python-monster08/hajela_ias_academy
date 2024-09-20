@@ -3,19 +3,75 @@
 {% load static %}
 {% block title %}Home - Hajela's IAS Academy (HIA){% endblock %}
 
+{% block custom_css %}
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <style>
+        .heading-custom {
+            font-family: 'Cinzel', serif;
+            font-size: 150px;
+            font-weight: 700;
+            margin-bottom: 30px;
+        }
+
+        /* Responsive styling for different screen sizes */
+        @media (max-width: 1200px) {
+            .heading-custom {
+                font-size: 100px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .heading-custom {
+                font-size: 80px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .heading-custom {
+                font-size: 60px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .heading-custom {
+                font-size: 50px;
+            }
+        }
+
+        /* Additional margin and padding adjustments for proper layout */
+        .carousel-content {
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .carousel-content h1,
+        .carousel-content h5 {
+            margin-bottom: 20px;
+        }
+
+        .carousel-content p {
+            margin-bottom: 40px;
+        }
+    </style>
+{% endblock custom_css %}
+
 {% block content %}
 <!-- Carousel Start -->
 <div class="container-fluid p-0 mb-5">
     <div class="owl-carousel header-carousel position-relative">
+        <!-- First Carousel Item -->
         <div class="owl-carousel-item position-relative">
             <img class="img-fluid" src="{% static 'assets/img/carousel-1.jpg' %}" alt="IAS Coaching">
             <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center" style="background: rgba(24, 29, 56, .7);">
+                
                 <div class="container">
                     <div class="row justify-content-start">
+                        <h1 class="text-white mb-2 animated fadeInDown heading-custom">Hajela's IAS</h1>
                         <div class="col-sm-10 col-lg-8">
+                            <!-- New Heading Added for Hajela IAS -->
                             <h5 class="text-primary text-uppercase mb-3 animated slideInDown">Best Coaching for IAS & UPSC</h5>
                             <h1 class="display-3 text-white animated slideInDown">Achieve Your Dream of Becoming a Civil Servant</h1>
-                            <p class="fs-5 text-white mb-4 pb-2">Join Hajela's IAS Academy, where we provide comprehensive coaching, expert guidance, and a supportive learning environment to help you succeed in your UPSC, and MPPSC exams.</p>
+                            <p class="fs-5 text-white mb-2 pb-2">Join Hajela's IAS Academy, where we provide comprehensive coaching, expert guidance, and a supportive learning environment to help you succeed in your UPSC, and MPPSC exams.</p>
                             <a href="{% url 'courses' %}" class="btn btn-primary py-md-3 px-md-5 me-3 animated slideInLeft">Explore Courses</a>
                             <a href="{% url 'contact' %}" class="btn btn-light py-md-3 px-md-5 animated slideInRight">Join Now</a>
                         </div>
@@ -23,12 +79,16 @@
                 </div>
             </div>
         </div>
+
+        <!-- Second Carousel Item -->
         <div class="owl-carousel-item position-relative">
             <img class="img-fluid" src="{% static 'assets/img/carousel-2.jpg' %}" alt="MPPSC Coaching">
             <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center" style="background: rgba(24, 29, 56, .7);">
                 <div class="container">
                     <div class="row justify-content-start">
+                        <h1 class="text-white mb-4 animated fadeInDown heading-custom">Hajela's IAS</h1>
                         <div class="col-sm-10 col-lg-8">
+                            <!-- New Heading Added for Hajela IAS -->
                             <h5 class="text-primary text-uppercase mb-3 animated slideInDown">Comprehensive MPPSC Coaching</h5>
                             <h1 class="display-3 text-white animated slideInDown">Your Path to Government Service Success</h1>
                             <p class="fs-5 text-white mb-4 pb-2">Prepare with the best resources and expert faculty to crack MPPSC and other state-level government exams. Start your journey with HIA today.</p>
@@ -41,6 +101,7 @@
         </div>
     </div>
 </div>
+
 <!-- Carousel End -->
 
 <!-- Service Start -->

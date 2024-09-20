@@ -121,7 +121,13 @@ class TopicNameAdmin(admin.ModelAdmin):
 # Admin for QuoteIdiomPhrase
 @admin.register(QuoteIdiomPhrase)
 class QuoteIdiomPhraseAdmin(admin.ModelAdmin):
-    list_display = ('type', 'content', 'exam', 'subject', 'area', 'part', 'chapter', 'topic', 'created_at')
-    search_fields = ('content', 'author', 'exam__name', 'subject__name', 'area__name', 'part__name', 'chapter__name', 'topic')
+    list_display = ('type', 'content', 'exam', 'subject', 'area', 'part', 'chapter', 'get_topics', 'created_at')
+    search_fields = ('content', 'author', 'exam__name', 'subject__name', 'area__name', 'part__name', 'chapter__name', 'topics__name')
     list_filter = ('type', 'exam', 'subject', 'area', 'part', 'chapter')
     date_hierarchy = 'created_at'
+
+    # Custom method to display topics in list_display
+    def get_topics(self, obj):
+        return ", ".join([topic.name for topic in obj.topics.all()])
+    
+    get_topics.short_description = 'Topics'  # Display name for the column

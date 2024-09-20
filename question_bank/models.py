@@ -197,6 +197,31 @@ class InputSuggestionDocument(models.Model):
     document = models.FileField(upload_to='input_suggestion/documents/')
 
 
+# class QuoteIdiomPhrase(models.Model):
+#     TYPE_CHOICES = (
+#         ('quote', 'Quote'),
+#         ('idiom', 'Idiom'),
+#         ('phrase', 'Phrase'),
+#     )
+
+#     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
+#     content = models.TextField()
+#     meaning = models.TextField(blank=True, null=True)  # Add a meaning field for idioms and phrases
+#     author = models.CharField(max_length=255, blank=True, null=True)  # Optional field for author or source
+#     exam = models.ForeignKey(ExamName, on_delete=models.SET_NULL, null=True, blank=True)
+#     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True)
+#     area = models.ForeignKey(Area, on_delete=models.SET_NULL, null=True, blank=True)
+#     part = models.ForeignKey(PartName, on_delete=models.SET_NULL, null=True, blank=True)
+#     chapter = models.ForeignKey(ChapterName, on_delete=models.SET_NULL, null=True, blank=True)
+#     topic = models.CharField(max_length=255, blank=True, null=True)  # Manually added or selected topic
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  # Track who created the question
+
+#     def __str__(self):
+#         return f"{self.get_type_display()}: {self.content[:50]}..."
+
+
+
 class QuoteIdiomPhrase(models.Model):
     TYPE_CHOICES = (
         ('quote', 'Quote'),
@@ -206,16 +231,16 @@ class QuoteIdiomPhrase(models.Model):
 
     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
     content = models.TextField()
-    meaning = models.TextField(blank=True, null=True)  # Add a meaning field for idioms and phrases
+    meaning = models.TextField(blank=True, null=True)  # Meaning for idioms and phrases
     author = models.CharField(max_length=255, blank=True, null=True)  # Optional field for author or source
     exam = models.ForeignKey(ExamName, on_delete=models.SET_NULL, null=True, blank=True)
     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True)
     area = models.ForeignKey(Area, on_delete=models.SET_NULL, null=True, blank=True)
     part = models.ForeignKey(PartName, on_delete=models.SET_NULL, null=True, blank=True)
     chapter = models.ForeignKey(ChapterName, on_delete=models.SET_NULL, null=True, blank=True)
-    topic = models.CharField(max_length=255, blank=True, null=True)  # Manually added or selected topic
+    topics = models.ManyToManyField(TopicName)  # Many-to-many relationship for topics
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  # Track who created the question
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  # Track who created the entry
 
     def __str__(self):
         return f"{self.get_type_display()}: {self.content[:50]}..."

@@ -1074,6 +1074,49 @@ def view_questions(request):
     return render(request, 'question_bank/add_question/view_questions.html', context)
 
 
+# def add_quote_idiom_phrase(request):
+#     if request.method == 'POST':
+#         type = request.POST.get('type')
+#         content = request.POST.get('content')
+#         meaning = request.POST.get('meaning')  # Get the meaning field from the form
+#         author = request.POST.get('author', '')  # Optional
+#         exam_id = request.POST.get('exam_name')
+#         subject_id = request.POST.get('subject_name')
+#         area_id = request.POST.get('area_name')
+#         part_id = request.POST.get('part_name')
+#         chapter_id = request.POST.get('chapter_name')
+#         topic_name = request.POST.get('topic_name')
+#         new_topic_name = request.POST.get('new_topic_name')
+
+#         # Handle new topic creation
+#         if topic_name == 'other' and new_topic_name:
+#             topic = TopicName.objects.create(name=new_topic_name, chapter_id=chapter_id)
+#         else:
+#             topic = TopicName.objects.get(id=topic_name)
+
+#         # Save the form data
+#         QuoteIdiomPhrase.objects.create(
+#             type=type,
+#             content=content,
+#             meaning=meaning if type in ['idiom', 'phrase'] else '',  # Only save meaning for idioms and phrases
+#             author=author,
+#             exam_id=exam_id,
+#             subject_id=subject_id,
+#             area_id=area_id,
+#             part_id=part_id,
+#             chapter_id=chapter_id,
+#             topic=topic.name
+#         )
+#         # Display success message and redirect
+#         messages.success(request, 'Your Quote, Idiom, Phrase has been added successfully!')
+#         return redirect('add_quote_idiom_phrase')  # Redirect to the same page after submission
+
+#     # Fetch exam names for the form
+#     exam_names = ExamName.objects.all()
+
+#     return render(request, 'question_bank/add_quote_idiom_phrase.html', {'exam_names': exam_names})
+
+
 def add_quote_idiom_phrase(request):
     if request.method == 'POST':
         type = request.POST.get('type')
@@ -1085,17 +1128,14 @@ def add_quote_idiom_phrase(request):
         area_id = request.POST.get('area_name')
         part_id = request.POST.get('part_name')
         chapter_id = request.POST.get('chapter_name')
-        topic_name = request.POST.get('topic_name')
+        topic_ids = request.POST.getlist('topic_name')  # Get the list of selected topics
         new_topic_name = request.POST.get('new_topic_name')
 
-        # Handle new topic creation
-        if topic_name == 'other' and new_topic_name:
-            topic = TopicName.objects.create(name=new_topic_name, chapter_id=chapter_id)
-        else:
-            topic = TopicName.objects.get(id=topic_name)
+        # Filter out 'other' from topic_ids
+        topic_ids = [topic_id for topic_id in topic_ids if topic_id != 'other']
 
-        # Save the form data
-        QuoteIdiomPhrase.objects.create(
+        # Create a new QuoteIdiomPhrase entry
+        new_entry = QuoteIdiomPhrase.objects.create(
             type=type,
             content=content,
             meaning=meaning if type in ['idiom', 'phrase'] else '',  # Only save meaning for idioms and phrases
@@ -1105,16 +1145,88 @@ def add_quote_idiom_phrase(request):
             area_id=area_id,
             part_id=part_id,
             chapter_id=chapter_id,
-            topic=topic.name
+            created_by=request.user
         )
+
+        # Handle new topic creation if 'new_topic_name' is provided
+        if new_topic_name:
+            new_topic = TopicName.objects.create(name=new_topic_name, chapter_id=chapter_id)
+            new_entry.topics.add(new_topic)  # Add the newly created topic to the entry
+
+        # Add selected topics (if any) to the entry
+        if topic_ids:
+            selected_topics = TopicName.objects.filter(id__in=topic_ids)
+            new_entry.topics.add(*selected_topics)  # Add all selected topics to the entry
+
         # Display success message and redirect
         messages.success(request, 'Your Quote, Idiom, Phrase has been added successfully!')
-        return redirect('add_quote_idiom_phrase')  # Redirect to the same page after submission
+        return redirect('add_quote_idiom_phrase')
 
     # Fetch exam names for the form
     exam_names = ExamName.objects.all()
 
     return render(request, 'question_bank/add_quote_idiom_phrase.html', {'exam_names': exam_names})
+
+
+
+# def add_quote_idiom_phrase(request):
+#     if request.method == 'POST':
+#         type = request.POST.get('type')
+#         content = request.POST.get('content')
+#         meaning = request.POST.get('meaning')  # Get the meaning field from the form
+#         author = request.POST.get('author', '')  # Optional
+#         exam_id = request.POST.get('exam_name')
+#         subject_id = request.POST.get('subject_name')
+#         area_id = request.POST.get('area_name')
+#         part_id = request.POST.get('part_name')
+#         chapter_id = request.POST.get('chapter_name')
+#         topic_ids = request.POST.getlist('topic_name')  # Get the list of selected topics
+#         new_topic_name = request.POST.get('new_topic_name')
+
+#         # Handle new topic creation or fetch existing ones
+#         topic_objects = []
+        
+#         # Filter out the 'other' option from the selected topics
+#         topic_ids = [topic_id for topic_id in topic_ids if topic_id != 'other']
+
+#         # If a new topic is added manually, create it and append to the list
+#         if new_topic_name:
+#             new_topic = TopicName.objects.create(name=new_topic_name, chapter_id=chapter_id)
+#             topic_objects.append(new_topic)
+        
+#         # Add selected topics if available
+#         if topic_ids:
+#             selected_topics = TopicName.objects.filter(id__in=topic_ids)
+#             topic_objects.extend(selected_topics)
+
+#         # Concatenate all topic names into a single string
+#         topic_names = ', '.join([topic.name for topic in topic_objects])
+
+#         # Save the form data into the QuoteIdiomPhrase model
+#         QuoteIdiomPhrase.objects.create(
+#             type=type,
+#             content=content,
+#             meaning=meaning if type in ['idiom', 'phrase'] else '',  # Only save meaning for idioms and phrases
+#             author=author,
+#             exam_id=exam_id,
+#             subject_id=subject_id,
+#             area_id=area_id,
+#             part_id=part_id,
+#             chapter_id=chapter_id,
+#             topic=topic_names,  # Save all topic names as a single string
+#             created_by=request.user  # Associate with the logged-in user
+#         )
+
+#         # Display success message and redirect
+#         messages.success(request, 'Your Quote, Idiom, Phrase has been added successfully!')
+#         return redirect('add_quote_idiom_phrase')
+
+#     # Fetch exam names for the form
+#     exam_names = ExamName.objects.all()
+
+#     return render(request, 'question_bank/add_quote_idiom_phrase.html', {'exam_names': exam_names})
+
+
 
 
 def quotes_idioms_phrases_view(request):
