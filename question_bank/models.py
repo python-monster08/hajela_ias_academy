@@ -42,14 +42,25 @@ class ChapterName(models.Model):
         return f"{self.name} ({self.part.name} - {self.part.area.name} - {self.part.area.subject.name})"
 
 
-# Updated Model: TopicName now refers to ChapterName
+# # Updated Model: TopicName now refers to ChapterName
+# class TopicName(models.Model):
+#     name = models.CharField(max_length=255)
+#     # part = models.ForeignKey(PartName, on_delete=models.CASCADE, related_name='topics')
+#     chapter = models.ForeignKey(ChapterName, on_delete=models.CASCADE, related_name='topics', null=True, blank=True)
+
+#     def __str__(self):
+#         return f"{self.name} ({self.chapter.name} - {self.chapter.part.name})"
+
+
 class TopicName(models.Model):
     name = models.CharField(max_length=255)
-    # part = models.ForeignKey(PartName, on_delete=models.CASCADE, related_name='topics')
     chapter = models.ForeignKey(ChapterName, on_delete=models.CASCADE, related_name='topics', null=True, blank=True)
 
     def __str__(self):
-        return f"{self.name} ({self.chapter.name} - {self.chapter.part.name})"
+        # Handle cases where chapter or part might be None
+        chapter_name = self.chapter.name if self.chapter else "No Chapter"
+        part_name = self.chapter.part.name if self.chapter and self.chapter.part else "No Part"
+        return f"{self.name} ({chapter_name} - {part_name})"
 
 
 
@@ -222,6 +233,30 @@ class InputSuggestionDocument(models.Model):
 
 
 
+# class QuoteIdiomPhrase(models.Model):
+#     TYPE_CHOICES = (
+#         ('quote', 'Quote'),
+#         ('idiom', 'Idiom'),
+#         ('phrase', 'Phrase'),
+#     )
+
+#     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
+#     content = models.TextField()
+#     meaning = models.TextField(blank=True, null=True)  # Meaning for idioms and phrases
+#     author = models.CharField(max_length=255, blank=True, null=True)  # Optional field for author or source
+#     exam = models.ForeignKey(ExamName, on_delete=models.SET_NULL, null=True, blank=True)
+#     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True)
+#     area = models.ForeignKey(Area, on_delete=models.SET_NULL, null=True, blank=True)
+#     part = models.ForeignKey(PartName, on_delete=models.SET_NULL, null=True, blank=True)
+#     chapter = models.ForeignKey(ChapterName, on_delete=models.SET_NULL, null=True, blank=True)
+#     topics = models.ManyToManyField(TopicName)  # Many-to-many relationship for topics
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  # Track who created the entry
+
+#     def __str__(self):
+#         return f"{self.get_type_display()}: {self.content[:50]}..."
+
+
 class QuoteIdiomPhrase(models.Model):
     TYPE_CHOICES = (
         ('quote', 'Quote'),
@@ -233,12 +268,12 @@ class QuoteIdiomPhrase(models.Model):
     content = models.TextField()
     meaning = models.TextField(blank=True, null=True)  # Meaning for idioms and phrases
     author = models.CharField(max_length=255, blank=True, null=True)  # Optional field for author or source
-    exam = models.ForeignKey(ExamName, on_delete=models.SET_NULL, null=True, blank=True)
-    subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True)
-    area = models.ForeignKey(Area, on_delete=models.SET_NULL, null=True, blank=True)
-    part = models.ForeignKey(PartName, on_delete=models.SET_NULL, null=True, blank=True)
-    chapter = models.ForeignKey(ChapterName, on_delete=models.SET_NULL, null=True, blank=True)
-    topics = models.ManyToManyField(TopicName)  # Many-to-many relationship for topics
+    exams = models.ManyToManyField(ExamName, blank=True)  # Many-to-many relationship for exams
+    subjects = models.ManyToManyField(Subject, blank=True)  # Many-to-many relationship for subjects
+    areas = models.ManyToManyField(Area, blank=True)  # Many-to-many relationship for areas
+    parts = models.ManyToManyField(PartName, blank=True)  # Many-to-many relationship for parts
+    chapters = models.ManyToManyField(ChapterName, blank=True)  # Many-to-many relationship for chapters
+    topics = models.ManyToManyField(TopicName, blank=True)  # Many-to-many relationship for topics
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  # Track who created the entry
 

@@ -121,10 +121,40 @@ class TopicNameAdmin(admin.ModelAdmin):
 # Admin for QuoteIdiomPhrase
 @admin.register(QuoteIdiomPhrase)
 class QuoteIdiomPhraseAdmin(admin.ModelAdmin):
-    list_display = ('type', 'content', 'exam', 'subject', 'area', 'part', 'chapter', 'get_topics', 'created_at')
-    search_fields = ('content', 'author', 'exam__name', 'subject__name', 'area__name', 'part__name', 'chapter__name', 'topics__name')
-    list_filter = ('type', 'exam', 'subject', 'area', 'part', 'chapter')
+    list_display = ('type', 'content', 'get_exams', 'get_subjects', 'get_areas', 'get_parts', 'get_chapters', 'get_topics', 'created_at')
+    search_fields = ('content', 'author', 'exams__name', 'subjects__name', 'areas__name', 'parts__name', 'chapters__name', 'topics__name')
+    list_filter = ('type', 'exams', 'subjects', 'areas', 'parts', 'chapters')
     date_hierarchy = 'created_at'
+
+    # Custom method to display exams in list_display
+    def get_exams(self, obj):
+        return ", ".join([exam.name for exam in obj.exams.all()])
+    
+    get_exams.short_description = 'Exams'  # Display name for the column
+
+    # Custom method to display subjects in list_display
+    def get_subjects(self, obj):
+        return ", ".join([subject.name for subject in obj.subjects.all()])
+    
+    get_subjects.short_description = 'Subjects'  # Display name for the column
+
+    # Custom method to display areas in list_display
+    def get_areas(self, obj):
+        return ", ".join([area.name for area in obj.areas.all()])
+    
+    get_areas.short_description = 'Areas'  # Display name for the column
+
+    # Custom method to display parts in list_display
+    def get_parts(self, obj):
+        return ", ".join([part.name for part in obj.parts.all()])
+    
+    get_parts.short_description = 'Parts'  # Display name for the column
+
+    # Custom method to display chapters in list_display
+    def get_chapters(self, obj):
+        return ", ".join([chapter.name for chapter in obj.chapters.all()])
+    
+    get_chapters.short_description = 'Chapters'  # Display name for the column
 
     # Custom method to display topics in list_display
     def get_topics(self, obj):

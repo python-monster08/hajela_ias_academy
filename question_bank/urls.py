@@ -29,4 +29,5 @@ urlpatterns = [
 
     path('add-quote-idiom-phrase/', views.add_quote_idiom_phrase, name='add_quote_idiom_phrase'),
     path('quotes-idioms-phrases/', views.quotes_idioms_phrases_view, name='quotes_idioms_phrases'),
+    path('dashboard/analytics/', views.analytics_dashboard, name='analytics_dashboard'),  # Analytics dashboard
 ]

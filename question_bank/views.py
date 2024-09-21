@@ -25,7 +25,10 @@ from django.http import JsonResponse
 from .models import Subject, Area, PartName, TopicName, QuoteIdiomPhrase
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-
+from django.db.models import Count
+import json
+import plotly.express as px
+import plotly.graph_objects as go
 # ************************* Generate Test Word file Start *********************************************
 
 def clean_text(text):
@@ -449,32 +452,63 @@ def upload_file(request):
 
 
 
+# def get_subjects(request):
+#     exam_id = request.GET.get('exam_id')
+#     subjects = Subject.objects.filter(exam_id=exam_id).values('id', 'name')
+#     return JsonResponse({'subjects': list(subjects)})
+
+# def get_areas(request):
+#     subject_id = request.GET.get('subject_id')
+#     areas = Area.objects.filter(subject_id=subject_id).values('id', 'name')
+#     return JsonResponse({'areas': list(areas)})
+
+# def get_parts(request):
+#     area_id = request.GET.get('area_id')
+#     parts = PartName.objects.filter(area_id=area_id).values('id', 'name')
+#     return JsonResponse({'parts': list(parts)})
+
+
+# def get_chapters(request):
+#     part_id = request.GET.get('part_id')
+#     chapeters = ChapterName.objects.filter(part_id=part_id).values('id', 'name')  # Typo: 'chapeters' should be 'chapters'
+#     return JsonResponse({'chapters': list(chapeters)})  # Also change to 'chapters'
+
+
+# def get_topics(request):
+#     chapter_id = request.GET.get('chapter_id')
+#     topics = TopicName.objects.filter(chapter_id=chapter_id).values('id', 'name')
+#     return JsonResponse({'topics': list(topics)})
+
+# Get subjects for multiple exams
 def get_subjects(request):
-    exam_id = request.GET.get('exam_id')
-    subjects = Subject.objects.filter(exam_id=exam_id).values('id', 'name')
+    exam_ids = request.GET.getlist('exam_ids[]')  # Capture multiple exam IDs
+    print("exam_ids", exam_ids)  # Check if the exam_ids list is being captured correctly
+    subjects = Subject.objects.filter(exam_id__in=exam_ids).values('id', 'name')
+    print("subjects", subjects)  # Check if subjects are being fetched correctly
     return JsonResponse({'subjects': list(subjects)})
 
+
 def get_areas(request):
-    subject_id = request.GET.get('subject_id')
-    areas = Area.objects.filter(subject_id=subject_id).values('id', 'name')
+    subject_ids = request.GET.getlist('subject_ids[]')  # Capture multiple subject IDs
+    areas = Area.objects.filter(subject_id__in=subject_ids).values('id', 'name')
     return JsonResponse({'areas': list(areas)})
 
 def get_parts(request):
-    area_id = request.GET.get('area_id')
-    parts = PartName.objects.filter(area_id=area_id).values('id', 'name')
+    area_ids = request.GET.getlist('area_ids[]')  # Capture multiple area IDs
+    parts = PartName.objects.filter(area_id__in=area_ids).values('id', 'name')
     return JsonResponse({'parts': list(parts)})
 
-
 def get_chapters(request):
-    part_id = request.GET.get('part_id')
-    chapeters = ChapterName.objects.filter(part_id=part_id).values('id', 'name')  # Typo: 'chapeters' should be 'chapters'
-    return JsonResponse({'chapters': list(chapeters)})  # Also change to 'chapters'
-
+    part_ids = request.GET.getlist('part_ids[]')  # Capture multiple part IDs
+    chapters = ChapterName.objects.filter(part_id__in=part_ids).values('id', 'name')
+    return JsonResponse({'chapters': list(chapters)})
 
 def get_topics(request):
-    chapter_id = request.GET.get('chapter_id')
-    topics = TopicName.objects.filter(chapter_id=chapter_id).values('id', 'name')
+    chapter_ids = request.GET.getlist('chapter_ids[]')  # Capture multiple chapter IDs
+    topics = TopicName.objects.filter(chapter_id__in=chapter_ids).values('id', 'name')
     return JsonResponse({'topics': list(topics)})
+
+
 
 
 
@@ -1117,58 +1151,6 @@ def view_questions(request):
 #     return render(request, 'question_bank/add_quote_idiom_phrase.html', {'exam_names': exam_names})
 
 
-def add_quote_idiom_phrase(request):
-    if request.method == 'POST':
-        type = request.POST.get('type')
-        content = request.POST.get('content')
-        meaning = request.POST.get('meaning')  # Get the meaning field from the form
-        author = request.POST.get('author', '')  # Optional
-        exam_id = request.POST.get('exam_name')
-        subject_id = request.POST.get('subject_name')
-        area_id = request.POST.get('area_name')
-        part_id = request.POST.get('part_name')
-        chapter_id = request.POST.get('chapter_name')
-        topic_ids = request.POST.getlist('topic_name')  # Get the list of selected topics
-        new_topic_name = request.POST.get('new_topic_name')
-
-        # Filter out 'other' from topic_ids
-        topic_ids = [topic_id for topic_id in topic_ids if topic_id != 'other']
-
-        # Create a new QuoteIdiomPhrase entry
-        new_entry = QuoteIdiomPhrase.objects.create(
-            type=type,
-            content=content,
-            meaning=meaning if type in ['idiom', 'phrase'] else '',  # Only save meaning for idioms and phrases
-            author=author,
-            exam_id=exam_id,
-            subject_id=subject_id,
-            area_id=area_id,
-            part_id=part_id,
-            chapter_id=chapter_id,
-            created_by=request.user
-        )
-
-        # Handle new topic creation if 'new_topic_name' is provided
-        if new_topic_name:
-            new_topic = TopicName.objects.create(name=new_topic_name, chapter_id=chapter_id)
-            new_entry.topics.add(new_topic)  # Add the newly created topic to the entry
-
-        # Add selected topics (if any) to the entry
-        if topic_ids:
-            selected_topics = TopicName.objects.filter(id__in=topic_ids)
-            new_entry.topics.add(*selected_topics)  # Add all selected topics to the entry
-
-        # Display success message and redirect
-        messages.success(request, 'Your Quote, Idiom, Phrase has been added successfully!')
-        return redirect('add_quote_idiom_phrase')
-
-    # Fetch exam names for the form
-    exam_names = ExamName.objects.all()
-
-    return render(request, 'question_bank/add_quote_idiom_phrase.html', {'exam_names': exam_names})
-
-
-
 # def add_quote_idiom_phrase(request):
 #     if request.method == 'POST':
 #         type = request.POST.get('type')
@@ -1183,27 +1165,11 @@ def add_quote_idiom_phrase(request):
 #         topic_ids = request.POST.getlist('topic_name')  # Get the list of selected topics
 #         new_topic_name = request.POST.get('new_topic_name')
 
-#         # Handle new topic creation or fetch existing ones
-#         topic_objects = []
-        
-#         # Filter out the 'other' option from the selected topics
+#         # Filter out 'other' from topic_ids
 #         topic_ids = [topic_id for topic_id in topic_ids if topic_id != 'other']
 
-#         # If a new topic is added manually, create it and append to the list
-#         if new_topic_name:
-#             new_topic = TopicName.objects.create(name=new_topic_name, chapter_id=chapter_id)
-#             topic_objects.append(new_topic)
-        
-#         # Add selected topics if available
-#         if topic_ids:
-#             selected_topics = TopicName.objects.filter(id__in=topic_ids)
-#             topic_objects.extend(selected_topics)
-
-#         # Concatenate all topic names into a single string
-#         topic_names = ', '.join([topic.name for topic in topic_objects])
-
-#         # Save the form data into the QuoteIdiomPhrase model
-#         QuoteIdiomPhrase.objects.create(
+#         # Create a new QuoteIdiomPhrase entry
+#         new_entry = QuoteIdiomPhrase.objects.create(
 #             type=type,
 #             content=content,
 #             meaning=meaning if type in ['idiom', 'phrase'] else '',  # Only save meaning for idioms and phrases
@@ -1213,9 +1179,18 @@ def add_quote_idiom_phrase(request):
 #             area_id=area_id,
 #             part_id=part_id,
 #             chapter_id=chapter_id,
-#             topic=topic_names,  # Save all topic names as a single string
-#             created_by=request.user  # Associate with the logged-in user
+#             created_by=request.user
 #         )
+
+#         # Handle new topic creation if 'new_topic_name' is provided
+#         if new_topic_name:
+#             new_topic = TopicName.objects.create(name=new_topic_name, chapter_id=chapter_id)
+#             new_entry.topics.add(new_topic)  # Add the newly created topic to the entry
+
+#         # Add selected topics (if any) to the entry
+#         if topic_ids:
+#             selected_topics = TopicName.objects.filter(id__in=topic_ids)
+#             new_entry.topics.add(*selected_topics)  # Add all selected topics to the entry
 
 #         # Display success message and redirect
 #         messages.success(request, 'Your Quote, Idiom, Phrase has been added successfully!')
@@ -1228,6 +1203,69 @@ def add_quote_idiom_phrase(request):
 
 
 
+def add_quote_idiom_phrase(request):
+    if request.method == 'POST':
+        # Get all form data
+        type = request.POST.get('type')
+        content = request.POST.get('content')
+        meaning = request.POST.get('meaning', '')  # Optional meaning field
+        author = request.POST.get('author', '')  # Optional author field
+        exam_ids = request.POST.getlist('exam_name[]')  # Get multiple exam IDs
+        subject_ids = request.POST.getlist('subject_name[]')  # Get multiple subject IDs
+        area_ids = request.POST.getlist('area_name[]')  # Get multiple area IDs
+        part_ids = request.POST.getlist('part_name[]')  # Get multiple part IDs
+        chapter_ids = request.POST.getlist('chapter_name[]')  # Get multiple chapter IDs
+        topic_ids = request.POST.getlist('topic_name[]')  # Get multiple topic IDs
+        new_topic_name = request.POST.get('new_topic_name', '')  # New topic name if manually entered
+
+        # Create the QuoteIdiomPhrase instance
+        new_entry = QuoteIdiomPhrase.objects.create(
+            type=type,
+            content=content,
+            meaning=meaning if type in ['idiom', 'phrase'] else '',  # Add meaning only for idioms or phrases
+            author=author,  # Add author if provided
+            created_by=request.user
+        )
+
+        # Handle ManyToMany fields after creating the instance
+        if exam_ids:
+            exams = ExamName.objects.filter(id__in=exam_ids)
+            new_entry.exams.set(exams)
+
+        if subject_ids:
+            subjects = Subject.objects.filter(id__in=subject_ids)
+            new_entry.subjects.set(subjects)
+
+        if area_ids:
+            areas = Area.objects.filter(id__in=area_ids)
+            new_entry.areas.set(areas)
+
+        if part_ids:
+            parts = PartName.objects.filter(id__in=part_ids)
+            new_entry.parts.set(parts)
+
+        if chapter_ids:
+            chapters = ChapterName.objects.filter(id__in=chapter_ids)
+            new_entry.chapters.set(chapters)
+
+        if new_topic_name:
+            new_topic = TopicName.objects.create(name=new_topic_name)
+            new_entry.topics.add(new_topic)
+
+        if topic_ids:
+            selected_topics = TopicName.objects.filter(id__in=topic_ids)
+            new_entry.topics.add(*selected_topics)
+
+        # Display success message and redirect
+        messages.success(request, 'Your Quote, Idiom, or Phrase has been added successfully!')
+        return redirect('add_quote_idiom_phrase')
+
+    # Fetch all exam names for the form
+    exam_names = ExamName.objects.all()
+    return render(request, 'question_bank/add_quote_idiom_phrase.html', {'exam_names': exam_names})
+
+
+
 
 def quotes_idioms_phrases_view(request):
     # Fetch all quotes, idioms, and phrases from the database
@@ -1237,3 +1275,78 @@ def quotes_idioms_phrases_view(request):
     return render(request, 'question_bank/quotes_idioms_phrases.html', {
         'quotes_idioms_phrases': quotes_idioms_phrases
     })
+
+
+# def analytics_dashboard(request):
+#     # QuestionBank Analytics
+#     total_questions = QuestionBank.objects.count()
+#     questions_by_user = QuestionBank.objects.values('created_by__username').annotate(total=Count('id')).order_by('-total')
+#     question_type_distribution = QuestionBank.objects.values('question_sub_type').annotate(total=Count('id'))
+#     question_per_month = QuestionBank.objects.extra(select={'month': "strftime('%%Y-%%m', created_at)"}).values('month').annotate(total=Count('id')).order_by('-month')
+
+#     # InputSuggestion Analytics
+#     total_suggestions = InputSuggestion.objects.count()
+#     suggestions_by_user = InputSuggestion.objects.values('created_by__username').annotate(total=Count('id')).order_by('-total')
+#     suggestions_per_month = InputSuggestion.objects.extra(select={'month': "strftime('%%Y-%%m', created_at)"}).values('month').annotate(total=Count('id')).order_by('-month')
+
+#     # QuoteIdiomPhrase Analytics
+#     total_quotes = QuoteIdiomPhrase.objects.count()
+#     quotes_by_user = QuoteIdiomPhrase.objects.values('created_by__username').annotate(total=Count('id')).order_by('-total')
+#     quote_type_distribution = QuoteIdiomPhrase.objects.values('type').annotate(total=Count('id'))
+#     quotes_per_month = QuoteIdiomPhrase.objects.extra(select={'month': "strftime('%%Y-%%m', created_at)"}).values('month').annotate(total=Count('id')).order_by('-month')
+
+#     context = {
+#         # QuestionBank Stats
+#         'total_questions': total_questions,
+#         'questions_by_user': questions_by_user,
+#         'question_type_distribution': question_type_distribution,
+#         'question_per_month': question_per_month,
+        
+#         # InputSuggestion Stats
+#         'total_suggestions': total_suggestions,
+#         'suggestions_by_user': suggestions_by_user,
+#         'suggestions_per_month': suggestions_per_month,
+
+#         # QuoteIdiomPhrase Stats
+#         'total_quotes': total_quotes,
+#         'quotes_by_user': quotes_by_user,
+#         'quote_type_distribution': quote_type_distribution,
+#         'quotes_per_month': quotes_per_month,
+#     }
+
+#     return render(request, 'question_bank/analytics_dashboard.html', context)
+
+def analytics_dashboard(request):
+    # Count total questions added by users
+    total_questions_per_user = QuestionBank.objects.values('created_by__username').annotate(total=Count('id'))
+
+    # Count total suggestions added by users
+    total_suggestions_per_user = InputSuggestion.objects.values('created_by__username').annotate(total=Count('id'))
+
+    # Count total quotes added by users
+    total_quotes_per_user = QuoteIdiomPhrase.objects.values('created_by__username').annotate(total=Count('id'))
+
+    # Prepare data for chart (Example: Total Questions Per User)
+    users = [entry['created_by__username'] for entry in total_questions_per_user]
+    question_counts = [entry['total'] for entry in total_questions_per_user]
+
+    # Prepare data for chart (Example: Total Suggestions Per User)
+    suggestion_counts = [entry['total'] for entry in total_suggestions_per_user]
+
+    # Prepare data for chart (Example: Total Quotes Per User)
+    quote_counts = [entry['total'] for entry in total_quotes_per_user]
+
+    # Using Plotly for server-side charts (Optional)
+    fig = px.bar(x=users, y=question_counts, labels={'x': 'User', 'y': 'Total Questions Added'})
+    chart = fig.to_html(full_html=False)
+
+    # Pass data to the template for client-side rendering via Chart.js
+    context = {
+        'users': json.dumps(users),
+        'question_counts': json.dumps(question_counts),
+        'suggestion_counts': json.dumps(suggestion_counts),
+        'quote_counts': json.dumps(quote_counts),
+        'chart': chart,  # Plotly chart HTML
+    }
+
+    return render(request, 'question_bank/analytics_dashboard.html', context)

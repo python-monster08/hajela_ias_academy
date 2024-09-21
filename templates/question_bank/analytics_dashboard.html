@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+    <h2>Analytics Dashboard</h2>
+
+    <!-- Chart.js Example -->
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Total Questions Added by User</h4>
+            <canvas id="questionChart"></canvas>
+        </div>
+        <div class="col-md-6">
+            <h4>Total Suggestions Added by User</h4>
+            <canvas id="suggestionChart"></canvas>
+        </div>
+        <div class="col-md-6">
+            <h4>Total Quotes Added by User</h4>
+            <canvas id="quoteChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Plotly Chart Example -->
+    <h4>Plotly Bar Chart of Questions Added</h4>
+    <div>
+        {{ chart|safe }}  <!-- This will render the Plotly bar chart -->
+    </div>
+</div>
+
+<!-- Load Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Prepare data for Chart.js (Total Questions Added by User)
+    var questionCtx = document.getElementById('questionChart').getContext('2d');
+    var questionChart = new Chart(questionCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ users|safe }},
+            datasets: [{
+                label: 'Total Questions',
+                data: {{ question_counts|safe }},
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Prepare data for Chart.js (Total Suggestions Added by User)
+    var suggestionCtx = document.getElementById('suggestionChart').getContext('2d');
+    var suggestionChart = new Chart(suggestionCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ users|safe }},
+            datasets: [{
+                label: 'Total Suggestions',
+                data: {{ suggestion_counts|safe }},
+                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Prepare data for Chart.js (Total Quotes Added by User)
+    var quoteCtx = document.getElementById('quoteChart').getContext('2d');
+    var quoteChart = new Chart(quoteCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ users|safe }},
+            datasets: [{
+                label: 'Total Quotes',
+                data: {{ quote_counts|safe }},
+                backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                borderColor: 'rgba(255, 159, 64, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
+
+
+
+{% comment %} {% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h1>Analytics Dashboard</h1>
+
+    <!-- Total Statistics -->
+    <h2>Total Data</h2>
+    <ul>
+        <li><strong>Total Questions:</strong> {{ total_questions }}</li>
+        <li><strong>Total Suggestions:</strong> {{ total_suggestions }}</li>
+        <li><strong>Total Quotes/Idioms/Phrases:</strong> {{ total_quotes }}</li>
+    </ul>
+
+    <!-- Questions by User -->
+    <h2>Questions Added by User</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Total Questions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user_data in questions_by_user %}
+            <tr>
+                <td>{{ user_data.created_by__username }}</td>
+                <td>{{ user_data.total }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Question Type Distribution -->
+    <h2>Question Type Distribution</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Question Type</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for question_type in question_type_distribution %}
+            <tr>
+                <td>{{ question_type.question_sub_type }}</td>
+                <td>{{ question_type.total }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Questions Added Per Month -->
+    <h2>Questions Added Per Month</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Month</th>
+                <th>Total Questions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for month_data in question_per_month %}
+            <tr>
+                <td>{{ month_data.month }}</td>
+                <td>{{ month_data.total }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Similar sections for InputSuggestion and QuoteIdiomPhrase -->
+</div>
+{% endblock %} {% endcomment %}
