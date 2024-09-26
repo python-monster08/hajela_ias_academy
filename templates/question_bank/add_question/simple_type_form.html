@@ -47,6 +47,33 @@
 
                         <input type="hidden" name="questionType" value="simple_type">
 
+                        <!-- Language and Script Fields -->
+                        <div class="row g-3 mb-4">
+                            <!-- Language Field -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="language" name="language" required>
+                                        <option value="">Select Language</option>
+                                        <option value="English">English</option>
+                                        <option value="Hindi">Hindi</option>
+                                    </select>
+                                    <label for="language">Language</label>
+                                </div>
+                            </div>
+
+                            <!-- Script Field -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="script" name="script" required>
+                                        <option value="">Select Script</option>
+                                        <option value="Latin">Latin</option>
+                                        <option value="Devanagari">Devanagari</option>
+                                    </select>
+                                    <label for="script">Script</label>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Common Fields -->
                         <div class="row g-3 mb-4">
                             <div class="col-md-12 mb-3">
@@ -73,10 +100,7 @@
                                 <input type="text" class="form-control" name="answer_option_d" placeholder="Option d" aria-label="Option d" required>
                             </div>
                         </div>
-
-                        <!-- Other Fields and Dynamic Fields -->
-                        <div class="row g-3">
-                            <label class="form-label text-primary fw-bold">Other Details</label>
+                        <div class="row g-3 mb-4">
                             <div class="col-md-6 mb-4">
                                 <div class="form-floating">
                                     <select class="form-select" id="correctAnswer" name="correct_answer_choice" style="height:100px" required>
@@ -95,6 +119,12 @@
                                     <label for="answerDescription">Answer Description</label>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Other Fields and Dynamic Fields -->
+                        <div class="row g-3">
+                            <label class="form-label text-primary fw-bold">Other Details</label>
+                            
 
                             <!-- Dynamic Fields (Exam, Subject, Area, etc.) -->
                             <div class="col-md-6 mb-4">
@@ -211,7 +241,7 @@
                                         <option value="0.2">0.2</option>
                                         <option value="0">0</option>
                                     </select>
-                                    <label for="negativeMarks">Negative Marks</label>
+                                    <label for="negativeMarks">Negative Marks (fraction of Marks to be obtained on correct answer)</label>
                                 </div>
                             </div>
 
@@ -226,6 +256,24 @@
                                     <label for="degreeOfDifficulty">Degree of Difficulty</label>
                                 </div>
                             </div>
+
+                            
+
+                            <!-- Existing Evergreen Index Field -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="evergreenIndex" name="evergreen_index" required>
+                                        <option value="">Select Evergreen Index</option>
+                                        {% for i in 10|to_range %}
+                                            <option value="{{ i }}">{{ i }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label for="evergreenIndex">Evergreen Index</label>
+                                </div>
+                            </div>
+
+                            <!-- Other fields below as before -->
+
                         </div>
 
                         <!-- Submit Button -->
@@ -331,6 +379,22 @@
         } else {
             examYearField.style.display = 'none'; // Hide the field if New is selected
             document.getElementById('year').value = ''; // Clear the exam year value
+        }
+    });
+
+    document.getElementById('language').addEventListener('change', function() {
+        let language = this.value;
+        let scriptSelect = document.getElementById('script');
+
+        // Clear current options
+        scriptSelect.innerHTML = '<option value="">Select Script</option>';
+
+        // Conditional options based on language
+        if (language === 'English') {
+            scriptSelect.innerHTML += '<option value="Latin">Latin</option>';
+        } else if (language === 'Hindi') {
+            scriptSelect.innerHTML += '<option value="Latin">Latin</option>';
+            scriptSelect.innerHTML += '<option value="Devanagari">Devanagari</option>';
         }
     });
 </script>

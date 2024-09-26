@@ -8,6 +8,14 @@
 {% block content %}
 <div class="container-xxl py-5">
     <div class="container">
+        {% if messages %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
         <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
             <h6 class="section-title bg-white text-center text-primary px-3">Add Quote, Idiom, or Phrase</h6>
             <h1 class="mb-5">Fill in the details to add a new entry</h1>
@@ -129,7 +137,7 @@
             let examIds = $(this).val();
             let queryString = examIds.map(id => `exam_ids[]=${id}`).join('&');
             
-            fetch(`/question-bank/get-subjects/?${queryString}`)
+            fetch(`/question-bank/get-subjects-list/?${queryString}`)
                 .then(response => response.json())
                 .then(data => {
                     let subjectSelect = $('#subjectName');
@@ -146,7 +154,7 @@
             let subjectIds = $(this).val();
             let queryString = subjectIds.map(id => `subject_ids[]=${id}`).join('&');
             
-            fetch(`/question-bank/get-areas/?${queryString}`)
+            fetch(`/question-bank/get-areas-list/?${queryString}`)
                 .then(response => response.json())
                 .then(data => {
                     let areaSelect = $('#areaName');
@@ -163,7 +171,7 @@
             let areaIds = $(this).val();
             let queryString = areaIds.map(id => `area_ids[]=${id}`).join('&');
             
-            fetch(`/question-bank/get-parts/?${queryString}`)
+            fetch(`/question-bank/get-parts-list/?${queryString}`)
                 .then(response => response.json())
                 .then(data => {
                     let partSelect = $('#partName');
@@ -180,7 +188,7 @@
             let partIds = $(this).val();
             let queryString = partIds.map(id => `part_ids[]=${id}`).join('&');
             
-            fetch(`/question-bank/get-chapters/?${queryString}`)
+            fetch(`/question-bank/get-chapters-list/?${queryString}`)
                 .then(response => response.json())
                 .then(data => {
                     let chapterSelect = $('#chapterName');
@@ -197,7 +205,7 @@
             let chapterIds = $(this).val();
             let queryString = chapterIds.map(id => `chapter_ids[]=${id}`).join('&');
             
-            fetch(`/question-bank/get-topics/?${queryString}`)
+            fetch(`/question-bank/get-topics-list/?${queryString}`)
                 .then(response => response.json())
                 .then(data => {
                     let topicSelect = $('#topicName');

@@ -1,6 +1,8 @@
 from django.db import models
 from django.urls import reverse
 from django.contrib.auth.models import User  # Import the User model
+from django.conf import settings
+
 
 class ExamName(models.Model):
     name = models.CharField(max_length=255)
@@ -81,6 +83,7 @@ class QuestionBank(models.Model):
     exam_year = models.IntegerField(blank=True, null=True)
     language = models.CharField(max_length=100, default='', blank=True, null=True)
     script = models.TextField(blank=True, null=True)
+    evergreen_index = models.PositiveIntegerField(default=5, null=True, blank=True)  # New Evergreen Index field
     marks = models.FloatField(default=0.0)
     negative_marks = models.FloatField(default=0.0)
     degree_of_difficulty = models.CharField(max_length=100)
@@ -160,7 +163,7 @@ class QuestionBank(models.Model):
     head_d_data4 = models.CharField(max_length=100, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  # Track who created the question
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if self.question_number is None:
@@ -189,7 +192,7 @@ class InputSuggestion(models.Model):
     part_name = models.CharField(max_length=255, blank=True, null=True)
     topic_name = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  # Track who created the question
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
 
 
     def __str__(self):
@@ -257,6 +260,30 @@ class InputSuggestionDocument(models.Model):
 #         return f"{self.get_type_display()}: {self.content[:50]}..."
 
 
+# class QuoteIdiomPhrase(models.Model):
+#     TYPE_CHOICES = (
+#         ('quote', 'Quote'),
+#         ('idiom', 'Idiom'),
+#         ('phrase', 'Phrase'),
+#     )
+
+#     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
+#     content = models.TextField()
+#     meaning = models.TextField(blank=True, null=True)  # Meaning for idioms and phrases
+#     author = models.CharField(max_length=255, blank=True, null=True)  # Optional field for author or source
+#     exams = models.ManyToManyField(ExamName, blank=True)  # Many-to-many relationship for exams
+#     subjects = models.ManyToManyField(Subject, blank=True)  # Many-to-many relationship for subjects
+#     areas = models.ManyToManyField(Area, blank=True)  # Many-to-many relationship for areas
+#     parts = models.ManyToManyField(PartName, blank=True)  # Many-to-many relationship for parts
+#     chapters = models.ManyToManyField(ChapterName, blank=True)  # Many-to-many relationship for chapters
+#     topics = models.ManyToManyField(TopicName, blank=True)  # Many-to-many relationship for topics
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
+
+#     def __str__(self):
+#         return f"{self.get_type_display()}: {self.content[:50]}..."
+
+
 class QuoteIdiomPhrase(models.Model):
     TYPE_CHOICES = (
         ('quote', 'Quote'),
@@ -264,18 +291,47 @@ class QuoteIdiomPhrase(models.Model):
         ('phrase', 'Phrase'),
     )
 
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('staff_approved', 'Staff Approved'),
+        ('admin_approved', 'Admin Approved'),
+        ('rejected', 'Rejected'),
+    )
+
     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
     content = models.TextField()
     meaning = models.TextField(blank=True, null=True)  # Meaning for idioms and phrases
     author = models.CharField(max_length=255, blank=True, null=True)  # Optional field for author or source
-    exams = models.ManyToManyField(ExamName, blank=True)  # Many-to-many relationship for exams
-    subjects = models.ManyToManyField(Subject, blank=True)  # Many-to-many relationship for subjects
-    areas = models.ManyToManyField(Area, blank=True)  # Many-to-many relationship for areas
-    parts = models.ManyToManyField(PartName, blank=True)  # Many-to-many relationship for parts
-    chapters = models.ManyToManyField(ChapterName, blank=True)  # Many-to-many relationship for chapters
-    topics = models.ManyToManyField(TopicName, blank=True)  # Many-to-many relationship for topics
+    exams = models.ManyToManyField('ExamName', blank=True)
+    subjects = models.ManyToManyField('Subject', blank=True)
+    areas = models.ManyToManyField('Area', blank=True)
+    parts = models.ManyToManyField('PartName', blank=True)
+    chapters = models.ManyToManyField('ChapterName', blank=True)
+    topics = models.ManyToManyField('TopicName', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  # Track who created the entry
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,  # Use the custom user model defined in settings
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pending')
+    staff_approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        related_name='staff_approved_quotes', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True
+    )
+    admin_approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        related_name='admin_approved_quotes', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True
+    )
+    rejected_reason = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.get_type_display()}: {self.content[:50]}..."

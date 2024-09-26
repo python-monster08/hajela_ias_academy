@@ -25,6 +25,12 @@ urlpatterns = [
     path('get-topics/', views.get_topics, name='get_topics'),
     path('get-chapters/', views.get_chapters, name='get_chapters'),
 
+    path('get-subjects-list/', views.get_subjects_list, name='get_subjects_list'),
+    path('get-areas-list/', views.get_areas_list, name='get_areas_list'),
+    path('get-parts-list/', views.get_parts_list, name='get_parts_list'),
+    path('get-topics-list/', views.get_topics_list, name='get_topics_list'),
+    path('get-chapters-list/', views.get_chapters_list, name='get_chapters_list'),
+
     path('view-questions/', views.view_questions, name='view_questions'),
 
     path('add-quote-idiom-phrase/', views.add_quote_idiom_phrase, name='add_quote_idiom_phrase'),

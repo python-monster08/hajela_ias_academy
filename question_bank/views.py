@@ -452,35 +452,35 @@ def upload_file(request):
 
 
 
-# def get_subjects(request):
-#     exam_id = request.GET.get('exam_id')
-#     subjects = Subject.objects.filter(exam_id=exam_id).values('id', 'name')
-#     return JsonResponse({'subjects': list(subjects)})
+def get_subjects(request):
+    exam_id = request.GET.get('exam_id')
+    subjects = Subject.objects.filter(exam_id=exam_id).values('id', 'name')
+    return JsonResponse({'subjects': list(subjects)})
 
-# def get_areas(request):
-#     subject_id = request.GET.get('subject_id')
-#     areas = Area.objects.filter(subject_id=subject_id).values('id', 'name')
-#     return JsonResponse({'areas': list(areas)})
+def get_areas(request):
+    subject_id = request.GET.get('subject_id')
+    areas = Area.objects.filter(subject_id=subject_id).values('id', 'name')
+    return JsonResponse({'areas': list(areas)})
 
-# def get_parts(request):
-#     area_id = request.GET.get('area_id')
-#     parts = PartName.objects.filter(area_id=area_id).values('id', 'name')
-#     return JsonResponse({'parts': list(parts)})
-
-
-# def get_chapters(request):
-#     part_id = request.GET.get('part_id')
-#     chapeters = ChapterName.objects.filter(part_id=part_id).values('id', 'name')  # Typo: 'chapeters' should be 'chapters'
-#     return JsonResponse({'chapters': list(chapeters)})  # Also change to 'chapters'
+def get_parts(request):
+    area_id = request.GET.get('area_id')
+    parts = PartName.objects.filter(area_id=area_id).values('id', 'name')
+    return JsonResponse({'parts': list(parts)})
 
 
-# def get_topics(request):
-#     chapter_id = request.GET.get('chapter_id')
-#     topics = TopicName.objects.filter(chapter_id=chapter_id).values('id', 'name')
-#     return JsonResponse({'topics': list(topics)})
+def get_chapters(request):
+    part_id = request.GET.get('part_id')
+    chapeters = ChapterName.objects.filter(part_id=part_id).values('id', 'name')  # Typo: 'chapeters' should be 'chapters'
+    return JsonResponse({'chapters': list(chapeters)})  # Also change to 'chapters'
+
+
+def get_topics(request):
+    chapter_id = request.GET.get('chapter_id')
+    topics = TopicName.objects.filter(chapter_id=chapter_id).values('id', 'name')
+    return JsonResponse({'topics': list(topics)})
 
 # Get subjects for multiple exams
-def get_subjects(request):
+def get_subjects_list(request):
     exam_ids = request.GET.getlist('exam_ids[]')  # Capture multiple exam IDs
     print("exam_ids", exam_ids)  # Check if the exam_ids list is being captured correctly
     subjects = Subject.objects.filter(exam_id__in=exam_ids).values('id', 'name')
@@ -488,22 +488,22 @@ def get_subjects(request):
     return JsonResponse({'subjects': list(subjects)})
 
 
-def get_areas(request):
+def get_areas_list(request):
     subject_ids = request.GET.getlist('subject_ids[]')  # Capture multiple subject IDs
     areas = Area.objects.filter(subject_id__in=subject_ids).values('id', 'name')
     return JsonResponse({'areas': list(areas)})
 
-def get_parts(request):
+def get_parts_list(request):
     area_ids = request.GET.getlist('area_ids[]')  # Capture multiple area IDs
     parts = PartName.objects.filter(area_id__in=area_ids).values('id', 'name')
     return JsonResponse({'parts': list(parts)})
 
-def get_chapters(request):
+def get_chapters_list(request):
     part_ids = request.GET.getlist('part_ids[]')  # Capture multiple part IDs
     chapters = ChapterName.objects.filter(part_id__in=part_ids).values('id', 'name')
     return JsonResponse({'chapters': list(chapters)})
 
-def get_topics(request):
+def get_topics_list(request):
     chapter_ids = request.GET.getlist('chapter_ids[]')  # Capture multiple chapter IDs
     topics = TopicName.objects.filter(chapter_id__in=chapter_ids).values('id', 'name')
     return JsonResponse({'topics': list(topics)})
@@ -555,9 +555,13 @@ def add_simple_type_question(request):
             correct_answer_description=request.POST.get('correct_answer_description', ''),
             exam_name=exam_name,  # Saving the name of the exam
             exam_year=exam_year,
+            language=request.POST.get('language', ''),
+            script=request.POST.get('script', ''),
+
             marks=float(request.POST.get('marks', 0.0)),
             negative_marks=float(request.POST.get('negative_marks', 0.0)),
             degree_of_difficulty=request.POST.get('degree_of_difficulty', ''),
+            evergreen_index=request.POST.get('evergreen_index', ''),
             subject_name=subject_name,  # Saving the name of the subject
             area_name=area_name,  # Saving the name of the area
             part_name=part_name,  # Saving the name of the part

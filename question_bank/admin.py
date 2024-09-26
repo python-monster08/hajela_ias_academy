@@ -9,7 +9,7 @@ class QuestionBankAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Basic Information', {
-            'fields': ('type_of_question', 'exam_name', 'exam_stage', 'exam_year', 'language', 'script', 'marks', 'negative_marks', 'degree_of_difficulty', 'question_sub_type')
+            'fields': ('type_of_question', 'exam_name', 'exam_stage', 'exam_year', 'language', 'script', 'evergreen_index','marks', 'negative_marks', 'degree_of_difficulty', 'question_sub_type')
         }),
         ('Question Details', {
             'fields': ('question_number', 'question_part', 'reason', 'assertion', 'question_part_first', 'question_part_third')
@@ -121,7 +121,7 @@ class TopicNameAdmin(admin.ModelAdmin):
 # Admin for QuoteIdiomPhrase
 @admin.register(QuoteIdiomPhrase)
 class QuoteIdiomPhraseAdmin(admin.ModelAdmin):
-    list_display = ('type', 'content', 'get_exams', 'get_subjects', 'get_areas', 'get_parts', 'get_chapters', 'get_topics', 'created_at')
+    list_display = ('type', 'status', 'content', 'get_exams', 'get_subjects', 'get_areas', 'get_parts', 'get_chapters', 'get_topics', 'created_at')
     search_fields = ('content', 'author', 'exams__name', 'subjects__name', 'areas__name', 'parts__name', 'chapters__name', 'topics__name')
     list_filter = ('type', 'exams', 'subjects', 'areas', 'parts', 'chapters')
     date_hierarchy = 'created_at'
