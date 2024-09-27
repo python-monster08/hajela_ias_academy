@@ -517,74 +517,167 @@ def add_simple_type_question(request):
     exam_names = ExamName.objects.all()
 
     if request.method == 'POST':
-        # Extract form data
-        exam_id = request.POST.get('exam_name')
-        subject_id = request.POST.get('subject_name')
-        area_id = request.POST.get('area_name')
-        part_id = request.POST.get('part_name')
-        chapter_id = request.POST.get('chapter_name')  # Extract chapter name
-        topic_id = request.POST.get('topic_name')
+        # Extract basic form data (for non-dynamic fields)
+        language = request.POST.get('language')
+        script = request.POST.get('script')
+        question_part_first = request.POST.get('question_part_first')
+        answer_option_a = request.POST.get('answer_option_a')
+        answer_option_b = request.POST.get('answer_option_b')
+        answer_option_c = request.POST.get('answer_option_c')
+        answer_option_d = request.POST.get('answer_option_d')
 
-        # Fetch the actual names from the related models
-        exam_name = ExamName.objects.get(id=exam_id).name if exam_id else ''
-        subject_name = Subject.objects.get(id=subject_id).name if subject_id else ''
-        area_name = Area.objects.get(id=area_id).name if area_id else ''
-        part_name = PartName.objects.get(id=part_id).name if part_id else ''
-        chapter_name = ChapterName.objects.get(id=chapter_id).name if chapter_id else ''  # Get chapter name
+        # Extract the Degree of Difficulty and Evergreen Index
+        degree_of_difficulty = request.POST.get('degree_of_difficulty')
+        evergreen_index = request.POST.get('evergreen_index')
 
-        # Handle topic name (can be selected from dropdown or manually added)
-        topic_name = ''
-        if topic_id == 'other':
-            new_topic_name = request.POST.get('new_topic_name', '')
-            if new_topic_name:
-                # Ensure the chapter_id is provided when creating a new topic
-                topic, created = TopicName.objects.get_or_create(name=new_topic_name, chapter_id=chapter_id)
-                topic_name = topic.name
-        else:
-            topic_name = TopicName.objects.get(id=topic_id).name if topic_id else ''
+        # Initialize a list to store question objects (for each dynamic "Other Details" set)
+        questions = []
 
-        exam_year = request.POST.get('exam_year', None)
-        if not exam_year:
-            exam_year = None
+        # Loop through the dynamic "Other Details" sets
+        for index in range(len(request.POST.getlist('exam_name[]'))):
+            exam_id = request.POST.getlist('exam_name[]')[index]
+            subject_id = request.POST.getlist('subject_name[]')[index]
+            area_id = request.POST.getlist('area_name[]')[index]
+            part_id = request.POST.getlist('part_name[]')[index]
+            chapter_id = request.POST.getlist('chapter_name[]')[index]
+            topic_id = request.POST.getlist('topic_name[]')[index]
 
-        # Initialize the QuestionBank object with the names, not the IDs
-        question = QuestionBank(
-            question_sub_type=request.POST.get('questionType', 'simple_type'),
-            question_part=request.POST.get('question_part_first', ''),
-            correct_answer_choice=request.POST.get('correct_answer_choice', ''),
-            correct_answer_description=request.POST.get('correct_answer_description', ''),
-            exam_name=exam_name,  # Saving the name of the exam
-            exam_year=exam_year,
-            language=request.POST.get('language', ''),
-            script=request.POST.get('script', ''),
+            # Fetch the actual names from the related models
+            exam_name = ExamName.objects.get(id=exam_id).name if exam_id else ''
+            subject_name = Subject.objects.get(id=subject_id).name if subject_id else ''
+            area_name = Area.objects.get(id=area_id).name if area_id else ''
+            part_name = PartName.objects.get(id=part_id).name if part_id else ''
+            chapter_name = ChapterName.objects.get(id=chapter_id).name if chapter_id else ''
 
-            marks=float(request.POST.get('marks', 0.0)),
-            negative_marks=float(request.POST.get('negative_marks', 0.0)),
-            degree_of_difficulty=request.POST.get('degree_of_difficulty', ''),
-            evergreen_index=request.POST.get('evergreen_index', ''),
-            subject_name=subject_name,  # Saving the name of the subject
-            area_name=area_name,  # Saving the name of the area
-            part_name=part_name,  # Saving the name of the part
-            chapter_name=chapter_name,  # Saving the name of the chapter
-            topic_name=topic_name,  # Saving the name of the topic
-            answer_option_a=request.POST.get('answer_option_a', ''),
-            answer_option_b=request.POST.get('answer_option_b', ''),
-            answer_option_c=request.POST.get('answer_option_c', ''),
-            answer_option_d=request.POST.get('answer_option_d', ''),
-            created_by = request.user  # Assign the logged-in user
-        )
+            # Handle topic name (selected from dropdown or manually added)
+            topic_name = ''
+            if topic_id == 'other':
+                new_topic_name = request.POST.getlist('new_topic_name[]')[index]
+                if new_topic_name:
+                    topic, created = TopicName.objects.get_or_create(name=new_topic_name, chapter_id=chapter_id)
+                    topic_name = topic.name
+            else:
+                topic_name = TopicName.objects.get(id=topic_id).name if topic_id else ''
 
-        # Save the question to the database
-        question.save()
+            exam_year = request.POST.getlist('exam_year[]')[index] or None
+            marks = float(request.POST.getlist('marks[]')[index])
+            negative_marks = float(request.POST.getlist('negative_marks[]')[index])
 
-        messages.success(request, 'Simple Type Question has been added successfully!')
-        return redirect('add-simple-type-question')  # Redirect back to the form
+            # Initialize the QuestionBank object for each dynamic set
+            question = QuestionBank(
+                question_sub_type='simple_type',
+                question_part=question_part_first,
+                correct_answer_choice=request.POST.get('correct_answer_choice', ''),
+                correct_answer_description=request.POST.get('correct_answer_description', ''),
+                exam_name=exam_name,
+                exam_year=exam_year,
+                language=language,
+                script=script,
+                marks=marks,
+                negative_marks=negative_marks,
+                subject_name=subject_name,
+                area_name=area_name,
+                part_name=part_name,
+                chapter_name=chapter_name,
+                topic_name=topic_name,
+                degree_of_difficulty=degree_of_difficulty,  # New field
+                evergreen_index=evergreen_index,  # New field
+                answer_option_a=answer_option_a,
+                answer_option_b=answer_option_b,
+                answer_option_c=answer_option_c,
+                answer_option_d=answer_option_d,
+                created_by=request.user  # Assign the logged-in user
+            )
+
+            # Add to the list of questions
+            questions.append(question)
+
+        # Save all questions in one go
+        QuestionBank.objects.bulk_create(questions)
+
+        messages.success(request, 'Simple Type Question(s) have been added successfully!')
+        return redirect('add-simple-type-question')
 
     context = {
         'exam_names': exam_names,
     }
-
     return render(request, 'question_bank/add_question/simple_type_form.html', context)
+
+
+
+
+# def add_simple_type_question(request):
+#     exam_names = ExamName.objects.all()
+
+#     if request.method == 'POST':
+#         # Extract form data
+#         exam_id = request.POST.get('exam_name')
+#         subject_id = request.POST.get('subject_name')
+#         area_id = request.POST.get('area_name')
+#         part_id = request.POST.get('part_name')
+#         chapter_id = request.POST.get('chapter_name')  # Extract chapter name
+#         topic_id = request.POST.get('topic_name')
+
+#         # Fetch the actual names from the related models
+#         exam_name = ExamName.objects.get(id=exam_id).name if exam_id else ''
+#         subject_name = Subject.objects.get(id=subject_id).name if subject_id else ''
+#         area_name = Area.objects.get(id=area_id).name if area_id else ''
+#         part_name = PartName.objects.get(id=part_id).name if part_id else ''
+#         chapter_name = ChapterName.objects.get(id=chapter_id).name if chapter_id else ''  # Get chapter name
+
+#         # Handle topic name (can be selected from dropdown or manually added)
+#         topic_name = ''
+#         if topic_id == 'other':
+#             new_topic_name = request.POST.get('new_topic_name', '')
+#             if new_topic_name:
+#                 # Ensure the chapter_id is provided when creating a new topic
+#                 topic, created = TopicName.objects.get_or_create(name=new_topic_name, chapter_id=chapter_id)
+#                 topic_name = topic.name
+#         else:
+#             topic_name = TopicName.objects.get(id=topic_id).name if topic_id else ''
+
+#         exam_year = request.POST.get('exam_year', None)
+#         if not exam_year:
+#             exam_year = None
+
+#         # Initialize the QuestionBank object with the names, not the IDs
+#         question = QuestionBank(
+#             question_sub_type=request.POST.get('questionType', 'simple_type'),
+#             question_part=request.POST.get('question_part_first', ''),
+#             correct_answer_choice=request.POST.get('correct_answer_choice', ''),
+#             correct_answer_description=request.POST.get('correct_answer_description', ''),
+#             exam_name=exam_name,  # Saving the name of the exam
+#             exam_year=exam_year,
+#             language=request.POST.get('language', ''),
+#             script=request.POST.get('script', ''),
+
+#             marks=float(request.POST.get('marks', 0.0)),
+#             negative_marks=float(request.POST.get('negative_marks', 0.0)),
+#             degree_of_difficulty=request.POST.get('degree_of_difficulty', ''),
+#             evergreen_index=request.POST.get('evergreen_index', ''),
+#             subject_name=subject_name,  # Saving the name of the subject
+#             area_name=area_name,  # Saving the name of the area
+#             part_name=part_name,  # Saving the name of the part
+#             chapter_name=chapter_name,  # Saving the name of the chapter
+#             topic_name=topic_name,  # Saving the name of the topic
+#             answer_option_a=request.POST.get('answer_option_a', ''),
+#             answer_option_b=request.POST.get('answer_option_b', ''),
+#             answer_option_c=request.POST.get('answer_option_c', ''),
+#             answer_option_d=request.POST.get('answer_option_d', ''),
+#             created_by = request.user  # Assign the logged-in user
+#         )
+
+#         # Save the question to the database
+#         question.save()
+
+#         messages.success(request, 'Simple Type Question has been added successfully!')
+#         return redirect('add-simple-type-question')  # Redirect back to the form
+
+#     context = {
+#         'exam_names': exam_names,
+#     }
+
+#     return render(request, 'question_bank/add_question/simple_type_form.html', context)
 
 # ************************* Create Simple Type Question End *********************************************
 
