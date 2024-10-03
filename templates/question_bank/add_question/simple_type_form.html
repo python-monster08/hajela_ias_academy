@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load custom_tags %}
+{% block custom_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock custom_css %}
 
 {% block title %}Add Simple Type Question - Hajela's IAS Academy (HIA){% endblock %}
 
@@ -25,6 +28,450 @@
                     <form id="simpleTypeForm" method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
 
+                        <!-- Question Type Selection -->
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <h5 class="text-primary mb-3">Choose Question Type</h5>
+                                <div class="mb-3">
+                                    <a href="{% url 'add-simple-type-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-simple-type-question' %}active{% endif %}">Simple Type</a>
+
+                                    <a href="{% url 'add-r-and-a-type-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-r-and-a-type-question' %}active{% endif %}">R & A</a>
+
+                                    <a href="{% url 'add-list-type-1-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-list-type-1-question' %}active{% endif %}">List-I</a>
+
+                                    <a href="{% url 'add-list-type-2-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-list-type-2-question' %}active{% endif %}">List-II</a>
+
+                                    <a href="{% url 'add-true-and-false-type-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-true-and-false-type-question' %}active{% endif %}">True & False</a>
+
+                                    <a href="{% url 'add-fill-in-the-blank-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-fill-in-the-blank-question' %}active{% endif %}">Fill in the Blank</a>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="questionType" value="simple_type">
+                        <!-- Language and Script Fields -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="language" name="language" required>
+                                        <option value="">Select Language</option>
+                                        <option value="English">English</option>
+                                        <option value="Hindi">Hindi</option>
+                                    </select>
+                                    <label for="language">Language</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="script" name="script" required>
+                                        <option value="">Select Script</option>
+                                        <option value="Latin">Latin</option>
+                                        <option value="Devanagari">Devanagari</option>
+                                    </select>
+                                    <label for="script">Script</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Question Part -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-12 mb-3">
+                                <label for="question_part_first" class="text-primary fw-bold">Question Part First</label>
+                                <div class="form-floating">
+                                    <textarea class="form-control" name="question_part_first" id="question_part_first" placeholder="Question Part First" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Options for MCQ -->
+                        <div id="optionsSection" class="col-md-12 mb-4">
+                            <label class="form-label text-primary fw-bold">Options</label>
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" name="answer_option_a" placeholder="Option a" aria-label="Option a" required>
+                            </div>
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" name="answer_option_b" placeholder="Option b" aria-label="Option b" required>
+                            </div>
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" name="answer_option_c" placeholder="Option c" aria-label="Option c" required>
+                            </div>
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" name="answer_option_d" placeholder="Option d" aria-label="Option d" required>
+                            </div>
+                        </div>
+
+                        <!-- Correct Answer and Answer Description -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6 mb-4">
+                                <div class="form-floating">
+                                    <select class="form-select" id="correctAnswer" name="correct_answer_choice" required>
+                                        <option value="">Select the correct answer</option>
+                                        <option value="a">Option a</option>
+                                        <option value="b">Option b</option>
+                                        <option value="c">Option c</option>
+                                        <option value="d">Option d</option>
+                                    </select>
+                                    <label for="correctAnswer">Correct Answer</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <div class="form-floating">
+                                    <textarea class="form-control" id="answerDescription" name="correct_answer_description" placeholder="Answer Description"></textarea>
+                                    <label for="answerDescription">Answer Description</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Other Details -->
+                        <div class="row g-3">
+                            <div class="col-md-6 mb-4">
+                                <label for="examName" class="form-label">Exam Name(s)</label>
+                                <select class="form-select" id="examName" name="exam_name[]" multiple="multiple" required>
+                                    {% for exam in exam_names %}
+                                        <option value="{{ exam.id }}">{{ exam.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <label for="subjectName" class="form-label">Subject Name(s)</label>
+                                <select class="form-select" id="subjectName" name="subject_name[]" multiple="multiple"></select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <label for="areaName" class="form-label">Area Name(s)</label>
+                                <select class="form-select" id="areaName" name="area_name[]" multiple="multiple"></select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <label for="partName" class="form-label">Part Name(s)</label>
+                                <select class="form-select" id="partName" name="part_name[]" multiple="multiple"></select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <label for="chapterName" class="form-label">Chapter Name(s)</label>
+                                <select class="form-select" id="chapterName" name="chapter_name[]" multiple="multiple"></select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <label for="topicName" class="form-label">Topic Name(s)</label>
+                                <select class="form-select" id="topicName" name="topic_name[]" multiple="multiple" required>
+                                    {% for topic in topics %}
+                                        <option value="{{ topic.id }}">{{ topic.name }}</option>
+                                    {% endfor %}
+                                    <option value="other">Other (Add Manually)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4" id="manual_topic" style="display: none;">
+                                <input type="text" class="form-control" name="new_topic_name" id="new_topic_name" placeholder="Enter new topic">
+                            </div>
+                            
+                            <!-- New or PYQs -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="newOrPyq" name="new_or_pyq" required>  <!-- Remove '[]' -->
+                                        <option value="">Select New or PYQs</option>
+                                        <option value="new">New</option>
+                                        <option value="pyq">PYQs</option>
+                                    </select>
+                                    <label for="newOrPyq">New or PYQs</label>
+                                </div>
+                            </div>
+
+                            <!-- Exam Year -->
+                            <div class="col-md-6 examYearFieldContainer" id="examYearField" style="display:none;">
+                                <div class="form-floating">
+                                    <input type="number" class="form-control" id="year" name="exam_year" placeholder="Year">
+                                    <label for="year">Year</label>
+                                </div>
+                            </div>
+
+
+                            <!-- Marks -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="marks" name="marks" required>  <!-- Remove '[]' -->
+                                        <option value="">Select Marks</option>
+                                        <option value="0.5">0.5</option>
+                                        <option value="1.0">1.0</option>
+                                        <option value="1.5">1.5</option>
+                                        <option value="2.0">2.0</option>
+                                        <option value="2.5">2.5</option>
+                                        <option value="3.0">3.0</option>
+                                    </select>
+                                    <label for="marks">Marks</label>
+                                </div>
+                            </div>
+
+                            <!-- Negative Marks -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="negativeMarks" name="negative_marks" required>  <!-- Remove '[]' -->
+                                        <option value="">Select Negative Marks</option>
+                                        <option value="1.0">1.0</option>
+                                        <option value="0.5">0.5</option>
+                                        <option value="0.33">0.33</option>
+                                        <option value="0.25">0.25</option>
+                                        <option value="0.2">0.2</option>
+                                        <option value="0">0</option>
+                                    </select>
+                                    <label for="negativeMarks">Negative Marks</label>
+                                </div>
+                            </div>
+
+
+                            <!-- Degree of Difficulty -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="degreeOfDifficulty" name="degree_of_difficulty" required>
+                                        <option value="">Select Degree of Difficulty</option>
+                                        {% for i in 10|to_range %}
+                                            <option value="{{ i }}">{{ i }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label for="degreeOfDifficulty">Degree of Difficulty</label>
+                                </div>
+                            </div>
+
+                            <!-- Evergreen Index -->
+                            <div class="col-md-12 d-flex justify-content-between align-items-center">
+                                <div class="col-md-6 form-floating">
+                                    <select class="form-select" id="evergreenIndex" name="evergreen_index" required>
+                                        <option value="">Select Evergreen Index</option>
+                                        {% for i in 10|to_range %}
+                                            <option value="{{ i }}">{{ i }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label for="evergreenIndex">Evergreen Index</label>
+                                </div>
+                                <div>
+                                    <button type="button" class="btn btn-outline-danger remove-field" style="display:none;">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+
+
+                        <!-- Submit Button -->
+                        <div class="col-12 mt-3">
+                            <button class="btn btn-primary w-100 py-3" type="submit">Submit Question</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Simple Type Question Form End -->
+{% endblock content %}
+
+{% block custom_js %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Initialize select2 for dropdowns
+        $('#examName, #subjectName, #areaName, #partName, #chapterName, #topicName').select2({
+            placeholder: "Select or search",
+            allowClear: true
+        });
+    
+        // Handle Exam Name selection
+        $('#examName').on('change', function() {
+            let examIds = $(this).val();
+            if (examIds.length > 0) {
+                let queryString = examIds.map(id => `exam_ids[]=${id}`).join('&');
+                fetch(`/question-bank/get-subjects-list/?${queryString}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        let subjectSelect = $('#subjectName');
+                        subjectSelect.empty().append('<option value="">Select Subject Name</option>');
+                        data.subjects.forEach(subject => {
+                            subjectSelect.append(`<option value="${subject.id}">${subject.name}</option>`);
+                        });
+                        subjectSelect.trigger('change'); // Trigger change to refresh select2
+                    })
+                    .catch(error => console.error('Error fetching subjects:', error));
+            }
+        });
+    
+        // Handle Subject Name selection to fetch Area Name(s)
+        $('#subjectName').on('change', function() {
+            let subjectIds = $(this).val();
+            if (subjectIds.length > 0) {
+                let queryString = subjectIds.map(id => `subject_ids[]=${id}`).join('&');
+                fetch(`/question-bank/get-areas-list/?${queryString}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        let areaSelect = $('#areaName');
+                        areaSelect.empty().append('<option value="">Select Area Name</option>');
+                        data.areas.forEach(area => {
+                            areaSelect.append(`<option value="${area.id}">${area.name}</option>`);
+                        });
+                        areaSelect.trigger('change'); // Trigger change to refresh select2
+                    })
+                    .catch(error => console.error('Error fetching areas:', error));
+            }
+        });
+    
+        // Handle Area Name selection to fetch Part Name(s)
+        $('#areaName').on('change', function() {
+            let areaIds = $(this).val();
+            if (areaIds.length > 0) {
+                let queryString = areaIds.map(id => `area_ids[]=${id}`).join('&');
+                fetch(`/question-bank/get-parts-list/?${queryString}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        let partSelect = $('#partName');
+                        partSelect.empty().append('<option value="">Select Part Name</option>');
+                        data.parts.forEach(part => {
+                            partSelect.append(`<option value="${part.id}">${part.name}</option>`);
+                        });
+                        partSelect.trigger('change'); // Trigger change to refresh select2
+                    })
+                    .catch(error => console.error('Error fetching parts:', error));
+            }
+        });
+    
+        // Handle Part Name selection to fetch Chapter Name(s)
+        $('#partName').on('change', function() {
+            let partIds = $(this).val();
+            if (partIds.length > 0) {
+                let queryString = partIds.map(id => `part_ids[]=${id}`).join('&');
+                fetch(`/question-bank/get-chapters-list/?${queryString}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        let chapterSelect = $('#chapterName');
+                        chapterSelect.empty().append('<option value="">Select Chapter Name</option>');
+                        data.chapters.forEach(chapter => {
+                            chapterSelect.append(`<option value="${chapter.id}">${chapter.name}</option>`);
+                        });
+                        chapterSelect.trigger('change'); // Trigger change to refresh select2
+                    })
+                    .catch(error => console.error('Error fetching chapters:', error));
+            }
+        });
+    
+        // Handle Chapter Name selection to fetch Topic Name(s)
+        $('#chapterName').on('change', function() {
+            let chapterIds = $(this).val();
+            if (chapterIds.length > 0) {
+                let queryString = chapterIds.map(id => `chapter_ids[]=${id}`).join('&');
+                fetch(`/question-bank/get-topics-list/?${queryString}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        let topicSelect = $('#topicName');
+                        topicSelect.empty().append('<option value="">Select Topic Name</option>');
+                        data.topics.forEach(topic => {
+                            topicSelect.append(`<option value="${topic.id}">${topic.name}</option>`);
+                        });
+                        topicSelect.append('<option value="other">Other (Add manually)</option>'); // Add the "Other" option
+                    })
+                    .catch(error => console.error('Error fetching topics:', error));
+            }
+        });
+    
+        // Show "Add manually" input when "Other" is selected
+        $('#topicName').on('change', function() {
+            let selectedValues = $(this).val();
+            if (selectedValues && selectedValues.includes('other')) {
+                $('#manual_topic').show(); // Show the input field for manual topic entry
+            } else {
+                $('#manual_topic').hide(); // Hide the input field if "Other" is not selected
+                $('#new_topic_name').val(''); // Clear the manual input field
+            }
+        });
+    
+        // Handle the display of exam year field based on the selection of new or PYQ
+        function handleNewOrPyqDropdown(newOrPyqDropdown) {
+            newOrPyqDropdown.addEventListener('change', function() {
+                const selectedValue = this.value;  // Fetch the selected value
+                const examYearField = document.getElementById('examYearField');  // Target the exam year field container
+
+                if (selectedValue === 'pyq') {
+                    examYearField.style.display = 'block';  // Show the exam year field if "PYQs" is selected
+                } else {
+                    examYearField.style.display = 'none';   // Hide it if "New" is selected
+                    examYearField.querySelector('input').value = '';  // Clear the year input field
+                }
+            });
+        }
+
+        // Apply the event listener to the NewOrPyq dropdown in the form
+        const newOrPyqDropdown = document.getElementById('newOrPyq');
+        if (newOrPyqDropdown) {
+            handleNewOrPyqDropdown(newOrPyqDropdown);
+        }
+    
+        // Language and Script Selection Logic
+        document.getElementById('language').addEventListener('change', function() {
+            let language = this.value;
+            let scriptSelect = document.getElementById('script');
+    
+            scriptSelect.innerHTML = '<option value="">Select Script</option>'; // Reset script options
+    
+            if (language === 'English') {
+                scriptSelect.innerHTML += '<option value="Latin">Latin</option>';
+            } else if (language === 'Hindi') {
+                scriptSelect.innerHTML += '<option value="Latin">Latin</option>';
+                scriptSelect.innerHTML += '<option value="Devanagari">Devanagari</option>';
+            }
+        });
+    });
+    
+</script>
+{% endblock custom_js %}
+
+
+
+
+{% comment %} {% extends 'base.html' %}
+{% load static %}
+{% load custom_tags %}
+
+{% block title %}Add Simple Type Question - Hajela's IAS Academy (HIA){% endblock %}
+
+{% block content %}
+    <!-- Simple Type Question Form Start -->
+    <div class="container-xxl py-5">
+        <div class="container">
+            {% if messages %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+            <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+                <h6 class="section-title bg-white text-center text-primary px-3">Add Simple Type Question</h6>
+                <h1 class="mb-5">Fill in the details to add a new simple type question</h1>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-12 wow fadeInUp" data-wow-delay="0.5s">
+                    <form id="simpleTypeForm" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Question Type Selection -->
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <h5 class="text-primary mb-3">Choose Question Type</h5>
+                                <div class="mb-3">
+                                    <a href="{% url 'add-simple-type-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-simple-type-question' %}active{% endif %}">Simple Type</a>
+
+                                    <a href="{% url 'add-r-and-a-type-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-r-and-a-type-question' %}active{% endif %}">R & A</a>
+
+                                    <a href="{% url 'add-list-type-1-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-list-type-1-question' %}active{% endif %}">List-I</a>
+
+                                    <a href="{% url 'add-list-type-2-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-list-type-2-question' %}active{% endif %}">List-II</a>
+
+                                    <a href="{% url 'add-true-and-false-type-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-true-and-false-type-question' %}active{% endif %}">True & False</a>
+
+                                    <a href="{% url 'add-fill-in-the-blank-question' %}" class="btn btn-outline-primary {% if request.resolver_match.url_name == 'add-fill-in-the-blank-question' %}active{% endif %}">Fill in the Blank</a>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="questionType" value="simple_type">
                         <!-- Language and Script Fields -->
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
@@ -424,8 +871,7 @@
         }
     });
 </script>
-{% endblock custom_js %}
-
+{% endblock custom_js %} {% endcomment %}
 
 
 <!--******************************* Without Dynamic More Details code working *************************************************-->

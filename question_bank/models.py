@@ -2,7 +2,7 @@ from django.db import models
 from django.urls import reverse
 from django.contrib.auth.models import User  # Import the User model
 from django.conf import settings
-
+from django.utils import timezone
 
 class ExamName(models.Model):
     name = models.CharField(max_length=255)
@@ -78,7 +78,15 @@ class QuestionBank(models.Model):
     )
     # Question Information Fields 
     type_of_question = models.CharField(max_length=100, default='mcq1')
-    exam_name = models.CharField(max_length=100)
+    
+    # Change CharField to ManyToManyField to allow multiple selections
+    exam_name = models.ManyToManyField('ExamName', related_name='questions')
+    subject_name = models.ManyToManyField('Subject', related_name='questions')
+    area_name = models.ManyToManyField('Area', related_name='questions')
+    part_name = models.ManyToManyField('PartName', related_name='questions')
+    chapter_name = models.ManyToManyField('ChapterName', related_name='questions', blank=True)
+    topic_name = models.ManyToManyField('TopicName', related_name='questions', blank=True)
+
     exam_stage = models.CharField(max_length=100, blank=True, null=True)
     exam_year = models.IntegerField(blank=True, null=True)
     language = models.CharField(max_length=100, default='', blank=True, null=True)
@@ -131,20 +139,13 @@ class QuestionBank(models.Model):
 
     # Extra Information Field
     image = models.ImageField(upload_to='Question Images', blank=True, null=True)
-    subject_name = models.CharField(max_length=100)
-    area_name = models.CharField(max_length=100)
-    part_name = models.CharField(max_length=100)
-    chapter_name = models.CharField(max_length=100, null=True, blank=True)
-    topic_name = models.CharField(max_length=255, null=True, blank=True)
-    
-    # New fields based on the table headings in the image
-    # Table Header Fields
+
+    # Table Data Fields
     table_head_a = models.CharField(max_length=100, null=True, blank=True)
     table_head_b = models.CharField(max_length=100, null=True, blank=True)
     table_head_c = models.CharField(max_length=100, null=True, blank=True)
     table_head_d = models.CharField(max_length=100, null=True, blank=True)
     
-    # Table Data Fields
     head_a_data1 = models.CharField(max_length=100, null=True, blank=True)
     head_a_data2 = models.CharField(max_length=100, null=True, blank=True)
     head_a_data3 = models.CharField(max_length=100, null=True, blank=True)
@@ -174,12 +175,14 @@ class QuestionBank(models.Model):
                 self.question_number = 1
         super().save(*args, **kwargs)
 
-
     def __str__(self):
         return f"Question {self.question_number} - {self.exam_name} {self.exam_year}"
 
 
 class InputSuggestion(models.Model):
+    language = models.CharField(max_length=100, default='', blank=True, null=True)
+    script = models.TextField(blank=True, null=True)
+    evergreen_index = models.PositiveIntegerField(default=5, null=True, blank=True)  # New Evergreen Index field
     brief_description = models.TextField()  # Short description field
     details = models.TextField()  # New field to store detailed explanation
     question_video = models.FileField(upload_to='input_suggestion/videos/', blank=True, null=True)
@@ -335,3 +338,27 @@ class QuoteIdiomPhrase(models.Model):
 
     def __str__(self):
         return f"{self.get_type_display()}: {self.content[:50]}..."
+
+
+
+class Report(models.Model):
+    REPORT_TYPE_CHOICES = (
+        ('this_week', 'This Week Report'),
+        ('earlier', 'Earlier Report'),
+    )
+    report_type = models.CharField(max_length=20, choices=REPORT_TYPE_CHOICES)
+    report_date = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    total_questions = models.IntegerField(default=0)
+    total_phrases = models.IntegerField(default=0)
+    total_suggestions = models.IntegerField(default=0)
+    simple_type_count = models.IntegerField(default=0)
+    list_1_type_count = models.IntegerField(default=0)
+    list_2_type_count = models.IntegerField(default=0)
+    ra_type_count = models.IntegerField(default=0)
+    true_false_type_count = models.IntegerField(default=0)
+    fill_blank_count = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.get_report_type_display()} - {self.report_date}"
+

@@ -13,7 +13,15 @@
                 <div class="col-lg-12 mb-4">
                     <div class="card">
                         <div class="card-header">
-                            <h4>Question {{ question.question_number }}: {{ question.exam_name }} - {{ question.exam_year }}</h4>
+                            <h4>Question {{ question.question_number }}: 
+                                {% for exam in question.exam_name.all %}
+                                    {{ exam.name }}{% if not forloop.last %}, {% endif %}
+                                {% empty %}
+                                    No exams assigned
+                                {% endfor %}
+                                - {{ question.exam_year }}
+                            </h4>
+                            
                         </div>
                         <div class="card-body">
 
@@ -48,11 +56,32 @@
                                 <p><strong>First Part:</strong> {{ question.question_part_first }}</p>
 
                                 <ol type="1">
-                                    <li>{{ question.list_1_row1 }}</li>
-                                    <li>{{ question.list_1_row2 }}</li>
-                                    <li>{{ question.list_1_row3 }}</li>
-                                    <li>{{ question.list_1_row4 }}</li>
+                                    {% if question.list_1_row1 %}
+                                        <li>{{ question.list_1_row1 }}</li>
+                                    {% endif %}
+                                    {% if question.list_1_row2 %}
+                                        <li>{{ question.list_1_row2 }}</li>
+                                    {% endif %}
+                                    {% if question.list_1_row3 %}
+                                        <li>{{ question.list_1_row3 }}</li>
+                                    {% endif %}
+                                    {% if question.list_1_row4 %}
+                                        <li>{{ question.list_1_row4 }}</li>
+                                    {% endif %}
+                                    {% if question.list_1_row5 %}
+                                        <li>{{ question.list_1_row5 }}</li>
+                                    {% endif %}
+                                    {% if question.list_1_row6 %}
+                                        <li>{{ question.list_1_row6 }}</li>
+                                    {% endif %}
+                                    {% if question.list_1_row7 %}
+                                        <li>{{ question.list_1_row7 }}</li>
+                                    {% endif %}
+                                    {% if question.list_1_row8 %}
+                                        <li>{{ question.list_1_row8 }}</li>
+                                    {% endif %}
                                 </ol>
+                                
 
                                 <p><strong> {{ question.question_part_third }} </strong></p>
 
@@ -126,16 +155,72 @@
                                     <p><strong>Marks:</strong> {{ question.marks }}</p>
                                     <p><strong>Negative Marks:</strong> {{ question.negative_marks }}</p>
                                     <p><strong>Degree of Difficulty:</strong> {{ question.degree_of_difficulty }}</p>
+                                    <p><strong>Evergreen Index:</strong> {{ question.evergreen_index }}</p>
                                     <p><strong>Question Sub Type:</strong> {{ question.get_question_sub_type_display }}</p>
                                     <p><strong>Created At:</strong> {{ question.created_at }}</p>
+                                    <p><strong>Created By:</strong> {{ question.created_by }}</p>
                                 </div>
                                 <div class="col-md-6">
-                                    <p><strong>Subject Name:</strong> {{ question.subject_name }}</p>
-                                    <p><strong>Area Name:</strong> {{ question.area_name }}</p>
-                                    <p><strong>Part Name:</strong> {{ question.part_name }}</p>
-                                    <p><strong>Chapter Name:</strong> {{ question.chapter_name }}</p>
-                                    <p><strong>Topic Name:</strong> {{ question.topic_name }}</p>
+                                    <!-- Loop through exam_name ManyToManyField -->
+                                        {% for exam in question.exam_name.all %}
+                                            <h5>Exam: {{ exam.name }}</h5>
+
+                                            <!-- Display related ManyToManyField data for each exam -->
+                                            <p><strong>Subject Name(s):</strong>
+                                                {% if question.subject_name.all %}
+                                                    {% for subject in question.subject_name.all %}
+                                                        {{ subject.name }}{% if not forloop.last %}, {% endif %}
+                                                    {% empty %}
+                                                        No subjects assigned.
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </p>
+
+                                            <p><strong>Area Name(s):</strong>
+                                                {% if question.area_name.all %}
+                                                    {% for area in question.area_name.all %}
+                                                        {{ area.name }}{% if not forloop.last %}, {% endif %}
+                                                    {% empty %}
+                                                        No areas assigned.
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </p>
+
+                                            <p><strong>Part Name(s):</strong>
+                                                {% if question.part_name.all %}
+                                                    {% for part in question.part_name.all %}
+                                                        {{ part.name }}{% if not forloop.last %}, {% endif %}
+                                                    {% empty %}
+                                                        No parts assigned.
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </p>
+
+                                            <p><strong>Chapter Name(s):</strong>
+                                                {% if question.chapter_name.all %}
+                                                    {% for chapter in question.chapter_name.all %}
+                                                        {{ chapter.name }}{% if not forloop.last %}, {% endif %}
+                                                    {% empty %}
+                                                        No chapters assigned.
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </p>
+
+                                            <p><strong>Topic Name(s):</strong>
+                                                {% if question.topic_name.all %}
+                                                    {% for topic in question.topic_name.all %}
+                                                        {{ topic.name }}{% if not forloop.last %}, {% endif %}
+                                                    {% empty %}
+                                                        No topics assigned.
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </p>
+
+                                            <hr> <!-- Separate each exam and its related data -->
+                                    {% endfor %}
                                 </div>
+                                
+                                                         
                             </div>
 
                         </div>

@@ -26,6 +26,30 @@
                         {% csrf_token %}
 
                         <input type="hidden" name="questionType" value="descriptive_type">
+                        <!-- Language and Script Fields -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="language" name="language" required>
+                                        <option value="">Select Language</option>
+                                        <option value="English">English</option>
+                                        <option value="Hindi">Hindi</option>
+                                    </select>
+                                    <label for="language">Language</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="script" name="script" required>
+                                        <option value="">Select Script</option>
+                                        <option value="Latin">Latin</option>
+                                        <option value="Devanagari">Devanagari</option>
+                                    </select>
+                                    <label for="script">Script</label>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="row g-3">
                             <div class="col-md-12 mb-3">
@@ -289,6 +313,20 @@
                 });
                 topicSelect.innerHTML += '<option value="other">Other (Add manually)</option>';
             });
+    });
+
+    document.getElementById('language').addEventListener('change', function() {
+        let language = this.value;
+        let scriptSelect = document.getElementById('script');
+
+        scriptSelect.innerHTML = '<option value="">Select Script</option>';
+
+        if (language === 'English') {
+            scriptSelect.innerHTML += '<option value="Latin">Latin</option>';
+        } else if (language === 'Hindi') {
+            scriptSelect.innerHTML += '<option value="Latin">Latin</option>';
+            scriptSelect.innerHTML += '<option value="Devanagari">Devanagari</option>';
+        }
     });
 </script>
 

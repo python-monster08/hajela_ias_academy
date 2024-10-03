@@ -36,4 +36,12 @@ urlpatterns = [
     path('add-quote-idiom-phrase/', views.add_quote_idiom_phrase, name='add_quote_idiom_phrase'),
     path('quotes-idioms-phrases/', views.quotes_idioms_phrases_view, name='quotes_idioms_phrases'),
     path('dashboard/analytics/', views.analytics_dashboard, name='analytics_dashboard'),  # Analytics dashboard
+    path('new-dashboard/', views.new_dashboard_view, name='new_dashboard_view'),  # Analytics dashboard
+
+    # path('export/this_week/csv/', views.export_this_week_csv, name='export_this_week_csv'),
+    # path('export/this_week/pdf/', views.export_this_week_pdf, name='export_this_week_pdf'),
+    # path('export/earlier/csv/', views.export_earlier_csv, name='export_earlier_csv'),
+    # path('export/earlier/pdf/', views.export_earlier_pdf, name='export_earlier_pdf'),
+    path('generate_this_week_csv/', views.generate_this_week_csv, name='generate_this_week_csv'),
+    path('generate_earlier_week_csv/', views.generate_earlier_week_csv, name='generate_earlier_week_csv'),
 ]

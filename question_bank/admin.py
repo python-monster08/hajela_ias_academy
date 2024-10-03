@@ -1,15 +1,22 @@
 from django.contrib import admin
 from .models import QuestionBank, InputSuggestion, InputSuggestionImage, InputSuggestionDocument, ExamName, Subject, Area, PartName,ChapterName ,TopicName, QuoteIdiomPhrase
 
+from django.contrib import admin
+from question_bank.models import QuestionBank
+
+from django.contrib import admin
+from question_bank.models import QuestionBank, Report
+
 class QuestionBankAdmin(admin.ModelAdmin):
-    list_display = ('created_at', 'created_by','question_number', 'exam_name', 'exam_year', 'type_of_question', 'question_sub_type', 'marks')
-    list_filter = ('exam_name', 'exam_year', 'type_of_question', 'question_sub_type')
-    list_filter = ('exam_name', 'exam_year', 'type_of_question', 'degree_of_difficulty')
+    list_display = ('created_at', 'created_by', 'question_number', 'get_exam_names', 'exam_year', 'type_of_question', 'question_sub_type', 'marks')
+    search_fields = ('exam_name', 'subject_name', 'area_name', 'part_name', 'chapter_name', 'topic_name', 'question_part_first', 'correct_answer_choice')
+    list_filter = ('exam_name', 'exam_year', 'type_of_question', 'degree_of_difficulty', 'subject_name', 'area_name', 'part_name', 'chapter_name', 'topic_name')
+    date_hierarchy = 'created_at'
     ordering = ('exam_year', 'exam_name', 'question_number')
 
     fieldsets = (
         ('Basic Information', {
-            'fields': ('type_of_question', 'exam_name', 'exam_stage', 'exam_year', 'language', 'script', 'evergreen_index','marks', 'negative_marks', 'degree_of_difficulty', 'question_sub_type')
+            'fields': ('type_of_question', 'exam_name', 'exam_stage', 'exam_year', 'language', 'script', 'evergreen_index', 'marks', 'negative_marks', 'degree_of_difficulty', 'question_sub_type')
         }),
         ('Question Details', {
             'fields': ('question_number', 'question_part', 'reason', 'assertion', 'question_part_first', 'question_part_third')
@@ -28,7 +35,7 @@ class QuestionBankAdmin(admin.ModelAdmin):
             'fields': ('correct_answer_choice', 'correct_answer_description')
         }),
         ('Extra Information', {
-            'fields': ('image', 'subject_name', 'area_name', 'part_name', 'chapter_name', 'topic_name')
+            'fields': ('image', 'subject_name', 'area_name', 'part_name', 'chapter_name', 'topic_name', 'created_by')
         }),
         ('Table Data', {
             'fields': (
@@ -40,6 +47,38 @@ class QuestionBankAdmin(admin.ModelAdmin):
             )
         }),
     )
+
+    # Custom methods to display related data in list_display
+    def get_exam_names(self, obj):
+        return obj.exam_name
+    
+    get_exam_names.short_description = 'Exams'
+
+    def get_subject_names(self, obj):
+        return obj.subject_name
+    
+    get_subject_names.short_description = 'Subjects'
+
+    def get_area_names(self, obj):
+        return obj.area_name
+    
+    get_area_names.short_description = 'Areas'
+
+    def get_part_names(self, obj):
+        return obj.part_name
+    
+    get_part_names.short_description = 'Parts'
+
+    def get_chapter_names(self, obj):
+        return obj.chapter_name
+    
+    get_chapter_names.short_description = 'Chapters'
+
+    def get_topic_names(self, obj):
+        return obj.topic_name
+    
+    get_topic_names.short_description = 'Topics'
+
 
 admin.site.register(QuestionBank, QuestionBankAdmin)
 
@@ -62,7 +101,7 @@ class InputSuggestionAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (None, {
-            'fields': ('brief_description', 'details', 'exam_name', 'subject_name', 'area_name', 'part_name', 'topic_name')
+            'fields': ('language', 'script', 'evergreen_index', 'brief_description', 'details', 'exam_name', 'subject_name', 'area_name', 'part_name', 'topic_name')
         }),
         ('Media & Links', {
             'fields': ('question_video', 'question_link')
@@ -161,3 +200,7 @@ class QuoteIdiomPhraseAdmin(admin.ModelAdmin):
         return ", ".join([topic.name for topic in obj.topics.all()])
     
     get_topics.short_description = 'Topics'  # Display name for the column
+
+
+
+admin.site.register(Report)
