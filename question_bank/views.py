@@ -2,9 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.core.files.storage import FileSystemStorage
 from django.contrib import messages
 import pandas as pd
-from .models import QuestionBank,InputSuggestion,InputSuggestionImage, InputSuggestionDocument, ExamName, Subject, Area, PartName, ChapterName
+from .models import QuestionBank,InputSuggestion,InputSuggestionImage, InputSuggestionDocument, ExamName, Subject, Area, PartName, ChapterName,TopicName, QuoteIdiomPhrase
 from django.db.models import Max
-from .forms import UploadFileForm
+from .forms import UploadFileForm, InputSuggestionForm
 import os
 from datetime import datetime
 import io
@@ -18,33 +18,32 @@ from docx.shared import Pt
 from django.http import FileResponse, HttpResponse
 from PIL import Image as PILImage
 from django.utils.text import slugify
-from io import BytesIO
 from django.conf import settings
 from django.http import HttpResponseServerError
 from django.http import JsonResponse
-from .models import Subject, Area, PartName, TopicName, QuoteIdiomPhrase
-from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count
+from django.db.models import Count, Value, Q
 import json
-import plotly.express as px
-import plotly.graph_objects as go
+# import plotly.express as px
+# import plotly.graph_objects as go
 from django.utils import timezone
 from datetime import timedelta
 from django.db import transaction
 from accounts.models import User
 from django.db import models  
 import csv
-import os
 from io import StringIO, BytesIO
 from django.http import HttpResponse
-from django.utils import timezone
 from django.core.files.base import ContentFile
-from django.conf import settings
 from reportlab.pdfgen import canvas
 from .models import Report
 from weasyprint import HTML
 from django.template.loader import render_to_string
+from django.db.models.functions import Concat
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
 # ************************* Generate Test Word file Start *********************************************
 
 def clean_text(text):
@@ -498,9 +497,7 @@ def get_topics(request):
 # Get subjects for multiple exams
 def get_subjects_list(request):
     exam_ids = request.GET.getlist('exam_ids[]')  # Capture multiple exam IDs
-    print("exam_ids", exam_ids)  # Check if the exam_ids list is being captured correctly
     subjects = Subject.objects.filter(exam_id__in=exam_ids).values('id', 'name')
-    print("subjects", subjects)  # Check if subjects are being fetched correctly
     return JsonResponse({'subjects': list(subjects)})
 
 
@@ -641,172 +638,6 @@ def add_simple_type_question(request):
     })
 
 
-# def add_simple_type_question(request):
-#     exam_names = ExamName.objects.all()
-
-#     if request.method == 'POST':
-#         # Extract basic form data (for non-dynamic fields)
-#         language = request.POST.get('language')
-#         script = request.POST.get('script')
-#         question_part_first = request.POST.get('question_part_first')
-#         answer_option_a = request.POST.get('answer_option_a')
-#         answer_option_b = request.POST.get('answer_option_b')
-#         answer_option_c = request.POST.get('answer_option_c')
-#         answer_option_d = request.POST.get('answer_option_d')
-
-#         # Extract the Degree of Difficulty and Evergreen Index
-#         degree_of_difficulty = request.POST.get('degree_of_difficulty')
-#         evergreen_index = request.POST.get('evergreen_index')
-
-#         # Initialize a list to store question objects (for each dynamic "Other Details" set)
-#         questions = []
-
-#         # Loop through the dynamic "Other Details" sets
-#         for index in range(len(request.POST.getlist('exam_name[]'))):
-#             exam_id = request.POST.getlist('exam_name[]')[index]
-#             subject_id = request.POST.getlist('subject_name[]')[index]
-#             area_id = request.POST.getlist('area_name[]')[index]
-#             part_id = request.POST.getlist('part_name[]')[index]
-#             chapter_id = request.POST.getlist('chapter_name[]')[index]
-#             topic_id = request.POST.getlist('topic_name[]')[index]
-
-#             # Fetch the actual names from the related models
-#             exam_name = ExamName.objects.get(id=exam_id).name if exam_id else ''
-#             subject_name = Subject.objects.get(id=subject_id).name if subject_id else ''
-#             area_name = Area.objects.get(id=area_id).name if area_id else ''
-#             part_name = PartName.objects.get(id=part_id).name if part_id else ''
-#             chapter_name = ChapterName.objects.get(id=chapter_id).name if chapter_id else ''
-
-#             # Handle topic name (selected from dropdown or manually added)
-#             topic_name = ''
-#             if topic_id == 'other':
-#                 new_topic_name = request.POST.getlist('new_topic_name[]')[index]
-#                 if new_topic_name:
-#                     topic, created = TopicName.objects.get_or_create(name=new_topic_name, chapter_id=chapter_id)
-#                     topic_name = topic.name
-#             else:
-#                 topic_name = TopicName.objects.get(id=topic_id).name if topic_id else ''
-
-#             exam_year = request.POST.getlist('exam_year[]')[index] or None
-#             marks = float(request.POST.getlist('marks[]')[index])
-#             negative_marks = float(request.POST.getlist('negative_marks[]')[index])
-
-#             # Initialize the QuestionBank object for each dynamic set
-#             question = QuestionBank(
-#                 question_sub_type=request.POST.get('questionType', 'simple_type'),
-#                 question_part=question_part_first,
-#                 correct_answer_choice=request.POST.get('correct_answer_choice', ''),
-#                 correct_answer_description=request.POST.get('correct_answer_description', ''),
-#                 exam_name=exam_name,
-#                 exam_year=exam_year,
-#                 language=language,
-#                 script=script,
-#                 marks=marks,
-#                 negative_marks=negative_marks,
-#                 subject_name=subject_name,
-#                 area_name=area_name,
-#                 part_name=part_name,
-#                 chapter_name=chapter_name,
-#                 topic_name=topic_name,
-#                 degree_of_difficulty=degree_of_difficulty,  # New field
-#                 evergreen_index=evergreen_index,  # New field
-#                 answer_option_a=answer_option_a,
-#                 answer_option_b=answer_option_b,
-#                 answer_option_c=answer_option_c,
-#                 answer_option_d=answer_option_d,
-#                 created_by=request.user  # Assign the logged-in user
-#             )
-
-#             # Add to the list of questions
-#             questions.append(question)
-
-#         # Save all questions in one go
-#         QuestionBank.objects.bulk_create(questions)
-
-#         messages.success(request, 'Simple Type Question(s) have been added successfully!')
-#         return redirect('add-simple-type-question')
-
-#     context = {
-#         'exam_names': exam_names,
-#     }
-#     return render(request, 'question_bank/add_question/simple_type_form.html', context)
-
-
-
-
-# def add_simple_type_question(request):
-#     exam_names = ExamName.objects.all()
-
-#     if request.method == 'POST':
-#         # Extract form data
-#         exam_id = request.POST.get('exam_name')
-#         subject_id = request.POST.get('subject_name')
-#         area_id = request.POST.get('area_name')
-#         part_id = request.POST.get('part_name')
-#         chapter_id = request.POST.get('chapter_name')  # Extract chapter name
-#         topic_id = request.POST.get('topic_name')
-
-#         # Fetch the actual names from the related models
-#         exam_name = ExamName.objects.get(id=exam_id).name if exam_id else ''
-#         subject_name = Subject.objects.get(id=subject_id).name if subject_id else ''
-#         area_name = Area.objects.get(id=area_id).name if area_id else ''
-#         part_name = PartName.objects.get(id=part_id).name if part_id else ''
-#         chapter_name = ChapterName.objects.get(id=chapter_id).name if chapter_id else ''  # Get chapter name
-
-#         # Handle topic name (can be selected from dropdown or manually added)
-#         topic_name = ''
-#         if topic_id == 'other':
-#             new_topic_name = request.POST.get('new_topic_name', '')
-#             if new_topic_name:
-#                 # Ensure the chapter_id is provided when creating a new topic
-#                 topic, created = TopicName.objects.get_or_create(name=new_topic_name, chapter_id=chapter_id)
-#                 topic_name = topic.name
-#         else:
-#             topic_name = TopicName.objects.get(id=topic_id).name if topic_id else ''
-
-#         exam_year = request.POST.get('exam_year', None)
-#         if not exam_year:
-#             exam_year = None
-
-#         # Initialize the QuestionBank object with the names, not the IDs
-#         question = QuestionBank(
-#             question_sub_type=request.POST.get('questionType', 'simple_type'),
-#             question_part=request.POST.get('question_part_first', ''),
-#             correct_answer_choice=request.POST.get('correct_answer_choice', ''),
-#             correct_answer_description=request.POST.get('correct_answer_description', ''),
-#             exam_name=exam_name,  # Saving the name of the exam
-#             exam_year=exam_year,
-#             language=request.POST.get('language', ''),
-#             script=request.POST.get('script', ''),
-
-#             marks=float(request.POST.get('marks', 0.0)),
-#             negative_marks=float(request.POST.get('negative_marks', 0.0)),
-#             degree_of_difficulty=request.POST.get('degree_of_difficulty', ''),
-#             evergreen_index=request.POST.get('evergreen_index', ''),
-#             subject_name=subject_name,  # Saving the name of the subject
-#             area_name=area_name,  # Saving the name of the area
-#             part_name=part_name,  # Saving the name of the part
-#             chapter_name=chapter_name,  # Saving the name of the chapter
-#             topic_name=topic_name,  # Saving the name of the topic
-#             answer_option_a=request.POST.get('answer_option_a', ''),
-#             answer_option_b=request.POST.get('answer_option_b', ''),
-#             answer_option_c=request.POST.get('answer_option_c', ''),
-#             answer_option_d=request.POST.get('answer_option_d', ''),
-#             created_by = request.user  # Assign the logged-in user
-#         )
-
-#         # Save the question to the database
-#         question.save()
-
-#         messages.success(request, 'Simple Type Question has been added successfully!')
-#         return redirect('add-simple-type-question')  # Redirect back to the form
-
-#     context = {
-#         'exam_names': exam_names,
-#     }
-
-#     return render(request, 'question_bank/add_question/simple_type_form.html', context)
-
 # ************************* Create Simple Type Question End *********************************************
 
 
@@ -918,84 +749,6 @@ def add_r_and_a_type_question(request):
     return render(request, 'question_bank/add_question/r_and_a_type_form.html', context)
 
 
-# def add_r_and_a_type_question(request):
-#     # Fetch all the required data for dropdowns
-#     exam_names = ExamName.objects.all()
-
-#     if request.method == 'POST':
-#         # Extract form data
-#         exam_id = request.POST.get('exam_name')
-#         subject_id = request.POST.get('subject_name')
-#         area_id = request.POST.get('area_name')
-#         part_id = request.POST.get('part_name')
-#         chapter_id = request.POST.get('chapter_name')  # Extract chapter name
-#         topic_id = request.POST.get('topic_name')
-
-#         # Fetch the actual names from the related models
-#         exam_name = ExamName.objects.get(id=exam_id).name if exam_id else ''
-#         subject_name = Subject.objects.get(id=subject_id).name if subject_id else ''
-#         area_name = Area.objects.get(id=area_id).name if area_id else ''
-#         part_name = PartName.objects.get(id=part_id).name if part_id else ''
-#         chapter_name = ChapterName.objects.get(id=chapter_id).name if chapter_id else ''  # Get chapter name
-
-#         # Handle topic name (can be selected from dropdown or manually added)
-#         topic_name = ''
-#         if topic_id == 'other':
-#             new_topic_name = request.POST.get('new_topic_name', '')
-#             if new_topic_name:
-#                 # Ensure the chapter_id is provided when creating a new topic
-#                 topic, created = TopicName.objects.get_or_create(name=new_topic_name, chapter_id=chapter_id)
-#                 topic_name = topic.name
-#         else:
-#             topic_name = TopicName.objects.get(id=topic_id).name if topic_id else ''
-        
-#         exam_year = request.POST.get('exam_year', None)
-#         if not exam_year:
-#             exam_year = None
-
-
-#         # Initialize the QuestionBank object
-#         question = QuestionBank(
-#             question_sub_type=request.POST.get('questionType', 'r_and_a_type'),
-#             question_part_first=request.POST.get('question_part_first', ''),
-#             reason=request.POST.get('reason', ''),
-#             assertion=request.POST.get('assertion', ''),
-#             question_part_third= request.POST.get('question_part_third', ''),
-#             correct_answer_choice=request.POST.get('correct_answer_choice', ''),
-#             correct_answer_description=request.POST.get('correct_answer_description', ''),
-#             exam_name=exam_name, # Saving the name of the exam
-#             exam_year=exam_year, # Saving the year for pyqs
-#             language = request.POST.get('language'),
-#             script = request.POST.get('script'),
-#             marks=float(request.POST.get('marks', 0.0)),
-#             negative_marks=float(request.POST.get('negative_marks', 0.0)),
-#             degree_of_difficulty=request.POST.get('degree_of_difficulty', ''),
-#             evergreen_index = request.POST.get('evergreen_index'),
-#             subject_name=subject_name, # Saving the name of the subject
-#             area_name=area_name, # Saving the name of the area
-#             part_name=part_name, # Saving the name of the part
-#             chapter_name=chapter_name,  # Saving the name of the chapter
-#             topic_name=topic_name, # Saving the name of the topic
-#             answer_option_a=request.POST.get('answer_option_a', ''),
-#             answer_option_b=request.POST.get('answer_option_b', ''),
-#             answer_option_c=request.POST.get('answer_option_c', ''),
-#             answer_option_d=request.POST.get('answer_option_d', ''),
-#             created_by = request.user  # Assign the logged-in user
-#         )
-
-#         # Save the question to the database
-#         question.save()
-
-#         messages.success(request, 'R & A Type Question has been added successfully!')
-#         return redirect('add-r-and-a-type-question')  # Redirect back to the form
-
-#     # Pass data to the form for dynamic dropdowns
-#     context = {
-#         'exam_names': exam_names,
-#     }
-
-#     return render(request, 'question_bank/add_question/r_and_a_type_form.html', context)
-
 # ************************* Create R and A Type Question End *********************************************
 
 
@@ -1099,90 +852,6 @@ def add_list_type_1_question(request):
     return render(request, 'question_bank/add_question/list_type_1_form.html', context)
 
 
-
-# def add_list_type_1_question(request):
-#     # Fetch all the required data for dropdowns
-#     exam_names = ExamName.objects.all()
- 
-
-#     if request.method == 'POST':
-#         # Extract form data
-#         exam_id = request.POST.get('exam_name')
-#         subject_id = request.POST.get('subject_name')
-#         area_id = request.POST.get('area_name')
-#         part_id = request.POST.get('part_name')
-#         chapter_id = request.POST.get('chapter_name')  # Extract chapter name
-#         topic_id = request.POST.get('topic_name')
-
-#         # Fetch the actual names from the related models
-#         exam_name = ExamName.objects.get(id=exam_id).name if exam_id else ''
-#         subject_name = Subject.objects.get(id=subject_id).name if subject_id else ''
-#         area_name = Area.objects.get(id=area_id).name if area_id else ''
-#         part_name = PartName.objects.get(id=part_id).name if part_id else ''
-#         chapter_name = ChapterName.objects.get(id=chapter_id).name if chapter_id else ''  # Get chapter name
-
-#         # Handle topic name (can be selected from dropdown or manually added)
-#         topic_name = ''
-#         if topic_id == 'other':
-#             new_topic_name = request.POST.get('new_topic_name', '')
-#             if new_topic_name:
-#                 # Ensure the chapter_id is provided when creating a new topic
-#                 topic, created = TopicName.objects.get_or_create(name=new_topic_name, chapter_id=chapter_id)
-#                 topic_name = topic.name
-#         else:
-#             topic_name = TopicName.objects.get(id=topic_id).name if topic_id else ''
-        
-#         exam_year = request.POST.get('exam_year', None)
-#         if not exam_year:
-#             exam_year = None
-
-#         # Initialize the QuestionBank object
-#         question = QuestionBank(
-#             question_sub_type=request.POST.get('questionType', 'list_type_1'),
-#             question_part_first=request.POST.get('question_part_first', ''),
-#             correct_answer_choice=request.POST.get('correct_answer_choice', ''),
-#             correct_answer_description=request.POST.get('correct_answer_description', ''),
-#             exam_name=exam_name,
-#             exam_year=exam_year,  # Set to None if empty
-#             language = request.POST.get('language'),
-#             script = request.POST.get('script'),
-#             marks=float(request.POST.get('marks', 0.0)),
-#             negative_marks=float(request.POST.get('negative_marks', 0.0)),
-#             degree_of_difficulty=request.POST.get('degree_of_difficulty', ''),
-#             evergreen_index = request.POST.get('evergreen_index'),
-#             subject_name=subject_name,
-#             area_name=area_name,
-#             part_name=part_name,
-#             chapter_name=chapter_name,  # Saving the name of the chapter
-#             topic_name=topic_name,
-#             list_1_row1=request.POST.get('list_1_row1', ''),
-#             list_1_row2=request.POST.get('list_1_row2', ''),
-#             list_1_row3=request.POST.get('list_1_row3', ''),
-#             list_1_row4=request.POST.get('list_1_row4', ''),
-#             list_1_row5=request.POST.get('list_1_row5', ''),
-#             list_1_row6=request.POST.get('list_1_row6', ''),
-#             list_1_row7=request.POST.get('list_1_row7', ''),
-#             list_1_row8=request.POST.get('list_1_row8', ''),
-#             question_part_third=request.POST.get('question_part_third', ''),
-#             answer_option_a=request.POST.get('answer_option_a', ''),
-#             answer_option_b=request.POST.get('answer_option_b', ''),
-#             answer_option_c=request.POST.get('answer_option_c', ''),
-#             answer_option_d=request.POST.get('answer_option_d', ''),
-#             created_by = request.user  # Assign the logged-in user
-#         )
-
-#         # Save the question to the database
-#         question.save()
-
-#         messages.success(request, 'List-I Type Question has been added successfully!')
-#         return redirect('add-list-type-1-question')  # Redirect back to the form
-
-#     # Pass data to the form for dynamic dropdowns
-#     context = {
-#         'exam_names': exam_names,
-#     }
-
-#     return render(request, 'question_bank/add_question/list_type_1_form.html', context)
 
 # ************************* Create List-I Type Question End *********************************************
 
@@ -1292,97 +961,6 @@ def add_list_type_2_question(request):
     return render(request, 'question_bank/add_question/list_type_2_form.html', context)
 
 
-
-
-# def add_list_type_2_question(request):
-#     # Fetch all the required data for dropdowns
-#     exam_names = ExamName.objects.all()
-
-#     if request.method == 'POST':
-#         # Extract form data
-#         exam_id = request.POST.get('exam_name')
-#         subject_id = request.POST.get('subject_name')
-#         area_id = request.POST.get('area_name')
-#         part_id = request.POST.get('part_name')
-#         chapter_id = request.POST.get('chapter_name')  # Extract chapter name
-#         topic_id = request.POST.get('topic_name')
-
-#         # Fetch the actual names from the related models
-#         exam_name = ExamName.objects.get(id=exam_id).name if exam_id else ''
-#         subject_name = Subject.objects.get(id=subject_id).name if subject_id else ''
-#         area_name = Area.objects.get(id=area_id).name if area_id else ''
-#         part_name = PartName.objects.get(id=part_id).name if part_id else ''
-#         chapter_name = ChapterName.objects.get(id=chapter_id).name if chapter_id else ''  # Get chapter name
-
-#         # Handle topic name (can be selected from dropdown or manually added)
-#         topic_name = ''
-#         if topic_id == 'other':
-#             new_topic_name = request.POST.get('new_topic_name', '')
-#             if new_topic_name:
-#                 # Ensure the chapter_id is provided when creating a new topic
-#                 topic, created = TopicName.objects.get_or_create(name=new_topic_name, chapter_id=chapter_id)
-#                 topic_name = topic.name
-#         else:
-#             topic_name = TopicName.objects.get(id=topic_id).name if topic_id else ''
-        
-#         exam_year = request.POST.get('exam_year', None)
-#         if not exam_year:
-#             exam_year = None
-
-
-#         # Initialize the QuestionBank object
-#         question = QuestionBank(
-#             type_of_question='mcq1',
-#             question_sub_type=request.POST.get('questionType', 'list_type_2'),
-#             question_part_first=request.POST.get('question_part_first', ''),
-#             correct_answer_choice=request.POST.get('correct_answer_choice', ''),
-#             correct_answer_description=request.POST.get('correct_answer_description', ''),
-#             exam_name=exam_name,
-#             exam_year=exam_year,  # Set to None if empty
-#             language = request.POST.get('language'),
-#             script = request.POST.get('script'),
-#             marks=float(request.POST.get('marks', 0.0)),
-#             negative_marks=float(request.POST.get('negative_marks', 0.0)),
-#             degree_of_difficulty=request.POST.get('degree_of_difficulty', ''),
-#             evergreen_index = request.POST.get('evergreen_index'),
-#             subject_name=subject_name,
-#             area_name=area_name,
-#             part_name=part_name,
-#             chapter_name=chapter_name,  # Saving the name of the chapter
-#             topic_name=topic_name,
-#             list_1_name=request.POST.get('list_1_name', ''),
-#             list_2_name=request.POST.get('list_2_name', ''),
-#             list_1_row1=request.POST.get('list_1_row1', ''),
-#             list_2_row1=request.POST.get('list_2_row1', ''),
-#             list_1_row2=request.POST.get('list_1_row2', ''),
-#             list_2_row2=request.POST.get('list_2_row2', ''),
-#             list_1_row3=request.POST.get('list_1_row3', ''),
-#             list_2_row3=request.POST.get('list_2_row3', ''),
-#             list_1_row4=request.POST.get('list_1_row4', ''),
-#             list_2_row4=request.POST.get('list_2_row4', ''),
-#             list_1_row5=request.POST.get('list_1_row5', ''),
-#             list_2_row5=request.POST.get('list_2_row5', ''),
-#             question_part_third=request.POST.get('question_part_third', ''),
-#             answer_option_a=request.POST.get('answer_option_a', ''),
-#             answer_option_b=request.POST.get('answer_option_b', ''),
-#             answer_option_c=request.POST.get('answer_option_c', ''),
-#             answer_option_d=request.POST.get('answer_option_d', ''),
-#             created_by = request.user  # Assign the logged-in user
-#         )
-
-#         # Save the question to the database
-#         question.save()
-
-#         messages.success(request, 'List-II Type Question has been added successfully!')
-#         return redirect('add-list-type-2-question')  # Redirect back to the form
-
-#     # Pass data to the form for dynamic dropdowns
-#     context = {
-#         'exam_names': exam_names,
-#     }
-
-#     return render(request, 'question_bank/add_question/list_type_2_form.html', context)
-
 # ************************* Create List-II Type Question End *********************************************
 
 
@@ -1473,78 +1051,6 @@ def add_true_and_false_type_question(request):
     }
 
     return render(request, 'question_bank/add_question/true_false_type_form.html', context)
-
-# def add_true_and_false_type_question(request):
-#     # Fetch all the required data for dropdowns
-#     exam_names = ExamName.objects.all()
-
-#     if request.method == 'POST':
-#         # Extract form data
-#         exam_id = request.POST.get('exam_name')
-#         subject_id = request.POST.get('subject_name')
-#         area_id = request.POST.get('area_name')
-#         part_id = request.POST.get('part_name')
-#         chapter_id = request.POST.get('chapter_name')  # Extract chapter name
-#         topic_id = request.POST.get('topic_name')
-
-#         # Fetch the actual names from the related models
-#         exam_name = ExamName.objects.get(id=exam_id).name if exam_id else ''
-#         subject_name = Subject.objects.get(id=subject_id).name if subject_id else ''
-#         area_name = Area.objects.get(id=area_id).name if area_id else ''
-#         part_name = PartName.objects.get(id=part_id).name if part_id else ''
-#         chapter_name = ChapterName.objects.get(id=chapter_id).name if chapter_id else ''  # Get chapter name
-
-#         # Handle topic name (can be selected from dropdown or manually added)
-#         topic_name = ''
-#         if topic_id == 'other':
-#             new_topic_name = request.POST.get('new_topic_name', '')
-#             if new_topic_name:
-#                 # Ensure the chapter_id is provided when creating a new topic
-#                 topic, created = TopicName.objects.get_or_create(name=new_topic_name, chapter_id=chapter_id)
-#                 topic_name = topic.name
-#         else:
-#             topic_name = TopicName.objects.get(id=topic_id).name if topic_id else ''
-        
-#         exam_year = request.POST.get('exam_year', None)
-#         if not exam_year:
-#             exam_year = None
-
-#         # Initialize the QuestionBank object with True/False options
-#         question = QuestionBank(
-#             question_sub_type=request.POST.get('questionType', 'true_and_false_type'),
-#             question_part=request.POST.get('question_part_first', ''),
-#             correct_answer_choice=request.POST.get('correct_answer_choice', ''),
-#             correct_answer_description=request.POST.get('correct_answer_description', ''),
-#             exam_name=exam_name,
-#             exam_year=exam_year,
-#             language = request.POST.get('language'),
-#             script = request.POST.get('script'),
-#             marks=float(request.POST.get('marks', 0.0)),
-#             negative_marks=float(request.POST.get('negative_marks', 0.0)),
-#             degree_of_difficulty=request.POST.get('degree_of_difficulty', ''),
-#             evergreen_index = request.POST.get('evergreen_index'),
-#             subject_name=subject_name,
-#             area_name=area_name,
-#             part_name=part_name,
-#             chapter_name=chapter_name,  # Saving the name of the chapter
-#             topic_name = topic_name,
-#             answer_option_a="True",
-#             answer_option_b="False",
-#             created_by = request.user  # Assign the logged-in user
-#         )
-
-#         # Save the question to the database
-#         question.save()
-
-#         messages.success(request, 'True & False Type Question has been added successfully!')
-#         return redirect('add-true-and-false-type-question')  # Redirect back to the form
-
-#     # Pass data to the form for dynamic dropdowns
-#     context = {
-#         'exam_names': exam_names,
-#     }
-
-#     return render(request, 'question_bank/add_question/true_false_type_form.html', context)
 
 # ************************* Create True and False Type Question End *********************************************
 
@@ -1637,169 +1143,53 @@ def add_fill_in_the_blank_question(request):
 
 
 
-# def add_fill_in_the_blank_question(request):
-#     # Fetch all required data for dropdowns
-#     exam_names = ExamName.objects.all()
-
-#     if request.method == 'POST':
-#         # Extract form data
-#         exam_id = request.POST.get('exam_name')
-#         subject_id = request.POST.get('subject_name')
-#         area_id = request.POST.get('area_name')
-#         part_id = request.POST.get('part_name')
-#         chapter_id = request.POST.get('chapter_name')  # Extract chapter name
-#         topic_id = request.POST.get('topic_name')
-
-#         # Fetch the actual names from the related models
-#         exam_name = ExamName.objects.get(id=exam_id).name if exam_id else ''
-#         subject_name = Subject.objects.get(id=subject_id).name if subject_id else ''
-#         area_name = Area.objects.get(id=area_id).name if area_id else ''
-#         part_name = PartName.objects.get(id=part_id).name if part_id else ''
-#         chapter_name = ChapterName.objects.get(id=chapter_id).name if chapter_id else ''  # Get chapter name
-
-#         # Handle topic name (can be selected from dropdown or manually added)
-#         topic_name = ''
-#         if topic_id == 'other':
-#             new_topic_name = request.POST.get('new_topic_name', '')
-#             if new_topic_name:
-#                 # Ensure the chapter_id is provided when creating a new topic
-#                 topic, created = TopicName.objects.get_or_create(name=new_topic_name, chapter_id=chapter_id)
-#                 topic_name = topic.name
-#         else:
-#             topic_name = TopicName.objects.get(id=topic_id).name if topic_id else ''
-        
-#         exam_year = request.POST.get('exam_year', None)
-#         if not exam_year:
-#             exam_year = None
-
-#         # Initialize the QuestionBank object
-#         question = QuestionBank(
-#             question_sub_type=request.POST.get('questionType', 'fill_in_the_blank_type'),
-#             question_part=request.POST.get('question_part_first', ''),
-#             correct_answer_choice=request.POST.get('correct_answer_choice', ''),
-#             correct_answer_description=request.POST.get('correct_answer_description', ''),
-#             exam_name=exam_name,
-#             exam_year=exam_year,  # Set to None if empty
-#             language = request.POST.get('language'),
-#             script = request.POST.get('script'),
-#             marks=float(request.POST.get('marks', 0.0)),
-#             negative_marks=float(request.POST.get('negative_marks', 0.0)),
-#             degree_of_difficulty=request.POST.get('degree_of_difficulty', ''),
-#             evergreen_index = request.POST.get('evergreen_index'),
-#             subject_name=subject_name,
-#             area_name=area_name,
-#             part_name=part_name,
-#             chapter_name=chapter_name,  # Saving the name of the chapter
-#             topic_name=topic_name,
-#             answer_option_a=request.POST.get('answer_option_a', ''),
-#             answer_option_b=request.POST.get('answer_option_b', ''),
-#             answer_option_c=request.POST.get('answer_option_c', ''),
-#             answer_option_d=request.POST.get('answer_option_d', ''),
-#             created_by = request.user  # Assign the logged-in user
-#         )
-
-#         # Save the question to the database
-#         question.save()
-
-#         # Display a success message and redirect back to the form
-#         messages.success(request, 'Fill in the Blank Question has been added successfully!')
-#         return redirect('add-fill-in-the-blank-question')
-
-#     # Pass data to the form for dynamic dropdowns
-#     context = {
-#         'exam_names': exam_names,
-#     }
-
-#     return render(request, 'question_bank/add_question/fill_in_the_blank_form.html', context)
-
-
+@login_required
 def add_input_suggestion(request):
     # Fetch all required data for dropdowns
     exam_names = ExamName.objects.all()
     try:
         if request.method == 'POST':
-            # Extract form data
-            exam_id = request.POST.get('exam_name')
-            subject_id = request.POST.get('subject_name')
-            area_id = request.POST.get('area_name')
-            part_id = request.POST.get('part_name')
-            chapter_id = request.POST.get('chapter_name')  # Extract chapter name
-            topic_id = request.POST.get('topic_name')
+            # Initialize the form with POST data and uploaded files
+            form = InputSuggestionForm(request.POST, request.FILES)
+            
+            if form.is_valid():
+                # Save the form but don’t commit to the database yet
+                suggestion = form.save(commit=False)
+                suggestion.created_by = request.user  # Set the logged-in user
+                
+                # Save the form to commit many-to-many relationships after initial save
+                suggestion.save()
 
-            # Fetch the actual names from the related models
-            exam_name = ExamName.objects.get(id=exam_id).name if exam_id else ''
-            subject_name = Subject.objects.get(id=subject_id).name if subject_id else ''
-            area_name = Area.objects.get(id=area_id).name if area_id else ''
-            part_name = PartName.objects.get(id=part_id).name if part_id else ''
-            chapter_name = ChapterName.objects.get(id=chapter_id).name if chapter_id else ''  # Get chapter name
+                # Handle file uploads for images
+                if 'question_images' in request.FILES:
+                    for image in request.FILES.getlist('question_images'):
+                        InputSuggestionImage.objects.create(question=suggestion, image=image)
 
-            # Handle topic name (can be selected from dropdown or manually added)
-            topic_name = ''
-            if topic_id == 'other':
-                new_topic_name = request.POST.get('new_topic_name', '')
-                if new_topic_name:
-                    # Ensure the chapter_id is provided when creating a new topic
-                    topic, created = TopicName.objects.get_or_create(name=new_topic_name, chapter_id=chapter_id)
-                    topic_name = topic.name
-            else:
-                topic_name = TopicName.objects.get(id=topic_id).name if topic_id else ''
+                # Handle file uploads for documents
+                if 'question_documents' in request.FILES:
+                    for document in request.FILES.getlist('question_documents'):
+                        InputSuggestionDocument.objects.create(question=suggestion, document=document)
 
-            # Extract the main form data
-            brief_description = request.POST.get('brief_description')
-            details = request.POST.get('details')
-            question_video = request.FILES.get('question_video')
-            question_link = request.POST.get('question_link')
-            other_text = request.POST.get('other_text')
-
-            # Create and save the InputSuggestion object
-            suggestion = InputSuggestion(
-                language = request.POST.get('language'),
-                script = request.POST.get('script'),
-                evergreen_index = request.POST.get('evergreen_index'),
-                brief_description=brief_description,
-                details=details,
-                question_video=question_video,
-                question_link=question_link,
-                other_text=other_text,
-                exam_name=exam_name,
-                subject_name=subject_name,
-                area_name=area_name,
-                part_name=part_name,
-                chapter_name=chapter_name,  # Saving the name of the chapter
-                topic_name=topic_name,
-                created_by = request.user  # Assign the logged-in user
-            )
-            suggestion.save()
-
-            # Handle file uploads for images
-            if 'question_images' in request.FILES:
-                for image in request.FILES.getlist('question_images'):
-                    InputSuggestionImage.objects.create(question=suggestion, image=image)
-
-            # Handle file uploads for documents
-            if 'question_documents' in request.FILES:
-                for document in request.FILES.getlist('question_documents'):
-                    InputSuggestionDocument.objects.create(question=suggestion, document=document)
-
-            # Display success message and redirect
-            messages.success(request, 'Input Suggestion has been added successfully!')
-            return redirect('input-suggestion-list')
+                # Display success message and redirect
+                messages.success(request, 'Input Suggestion has been added successfully!')
+                return redirect('input-suggestion-list')
         
     except Exception as e:
-        # Return the exact error message
         return HttpResponse(f"Error: {str(e)}")
-    # Pass data to the form for dynamic dropdowns
+
     context = {
         'exam_names': exam_names,
+        'form': InputSuggestionForm()  # Passing the form with CKEditor widget enabled
     }
     
     return render(request, 'question_bank/add_input_suggestion.html', context)
 
 
+
+
 def view_input_suggestion(request):
     # Fetch all DescriptiveTypeQuestion entries
     questions = InputSuggestion.objects.all()
-    print(questions)
 
     context = {
         'questions': questions
@@ -1833,98 +1223,6 @@ def view_questions(request):
     return render(request, 'question_bank/add_question/view_questions.html', context)
 
 
-# def add_quote_idiom_phrase(request):
-#     if request.method == 'POST':
-#         type = request.POST.get('type')
-#         content = request.POST.get('content')
-#         meaning = request.POST.get('meaning')  # Get the meaning field from the form
-#         author = request.POST.get('author', '')  # Optional
-#         exam_id = request.POST.get('exam_name')
-#         subject_id = request.POST.get('subject_name')
-#         area_id = request.POST.get('area_name')
-#         part_id = request.POST.get('part_name')
-#         chapter_id = request.POST.get('chapter_name')
-#         topic_name = request.POST.get('topic_name')
-#         new_topic_name = request.POST.get('new_topic_name')
-
-#         # Handle new topic creation
-#         if topic_name == 'other' and new_topic_name:
-#             topic = TopicName.objects.create(name=new_topic_name, chapter_id=chapter_id)
-#         else:
-#             topic = TopicName.objects.get(id=topic_name)
-
-#         # Save the form data
-#         QuoteIdiomPhrase.objects.create(
-#             type=type,
-#             content=content,
-#             meaning=meaning if type in ['idiom', 'phrase'] else '',  # Only save meaning for idioms and phrases
-#             author=author,
-#             exam_id=exam_id,
-#             subject_id=subject_id,
-#             area_id=area_id,
-#             part_id=part_id,
-#             chapter_id=chapter_id,
-#             topic=topic.name
-#         )
-#         # Display success message and redirect
-#         messages.success(request, 'Your Quote, Idiom, Phrase has been added successfully!')
-#         return redirect('add_quote_idiom_phrase')  # Redirect to the same page after submission
-
-#     # Fetch exam names for the form
-#     exam_names = ExamName.objects.all()
-
-#     return render(request, 'question_bank/add_quote_idiom_phrase.html', {'exam_names': exam_names})
-
-
-# def add_quote_idiom_phrase(request):
-#     if request.method == 'POST':
-#         type = request.POST.get('type')
-#         content = request.POST.get('content')
-#         meaning = request.POST.get('meaning')  # Get the meaning field from the form
-#         author = request.POST.get('author', '')  # Optional
-#         exam_id = request.POST.get('exam_name')
-#         subject_id = request.POST.get('subject_name')
-#         area_id = request.POST.get('area_name')
-#         part_id = request.POST.get('part_name')
-#         chapter_id = request.POST.get('chapter_name')
-#         topic_ids = request.POST.getlist('topic_name')  # Get the list of selected topics
-#         new_topic_name = request.POST.get('new_topic_name')
-
-#         # Filter out 'other' from topic_ids
-#         topic_ids = [topic_id for topic_id in topic_ids if topic_id != 'other']
-
-#         # Create a new QuoteIdiomPhrase entry
-#         new_entry = QuoteIdiomPhrase.objects.create(
-#             type=type,
-#             content=content,
-#             meaning=meaning if type in ['idiom', 'phrase'] else '',  # Only save meaning for idioms and phrases
-#             author=author,
-#             exam_id=exam_id,
-#             subject_id=subject_id,
-#             area_id=area_id,
-#             part_id=part_id,
-#             chapter_id=chapter_id,
-#             created_by=request.user
-#         )
-
-#         # Handle new topic creation if 'new_topic_name' is provided
-#         if new_topic_name:
-#             new_topic = TopicName.objects.create(name=new_topic_name, chapter_id=chapter_id)
-#             new_entry.topics.add(new_topic)  # Add the newly created topic to the entry
-
-#         # Add selected topics (if any) to the entry
-#         if topic_ids:
-#             selected_topics = TopicName.objects.filter(id__in=topic_ids)
-#             new_entry.topics.add(*selected_topics)  # Add all selected topics to the entry
-
-#         # Display success message and redirect
-#         messages.success(request, 'Your Quote, Idiom, Phrase has been added successfully!')
-#         return redirect('add_quote_idiom_phrase')
-
-#     # Fetch exam names for the form
-#     exam_names = ExamName.objects.all()
-
-#     return render(request, 'question_bank/add_quote_idiom_phrase.html', {'exam_names': exam_names})
 
 def add_quote_idiom_phrase(request):
     if request.method == 'POST':
@@ -1995,67 +1293,6 @@ def add_quote_idiom_phrase(request):
     exam_names = ExamName.objects.all()
     return render(request, 'question_bank/add_quote_idiom_phrase.html', {'exam_names': exam_names})
 
-# def add_quote_idiom_phrase(request):
-#     if request.method == 'POST':
-#         # Get all form data
-#         type = request.POST.get('type')
-#         content = request.POST.get('content')
-#         meaning = request.POST.get('meaning', '')  # Optional meaning field
-#         author = request.POST.get('author', '')  # Optional author field
-#         exam_ids = request.POST.getlist('exam_name[]')  # Get multiple exam IDs
-#         subject_ids = request.POST.getlist('subject_name[]')  # Get multiple subject IDs
-#         area_ids = request.POST.getlist('area_name[]')  # Get multiple area IDs
-#         part_ids = request.POST.getlist('part_name[]')  # Get multiple part IDs
-#         chapter_ids = request.POST.getlist('chapter_name[]')  # Get multiple chapter IDs
-#         topic_ids = request.POST.getlist('topic_name[]')  # Get multiple topic IDs
-#         new_topic_name = request.POST.get('new_topic_name', '')  # New topic name if manually entered
-
-#         # Create the QuoteIdiomPhrase instance
-#         new_entry = QuoteIdiomPhrase.objects.create(
-#             type=type,
-#             content=content,
-#             meaning=meaning if type in ['idiom', 'phrase'] else '',  # Add meaning only for idioms or phrases
-#             author=author,  # Add author if provided
-#             created_by=request.user
-#         )
-
-#         # Handle ManyToMany fields after creating the instance
-#         if exam_ids:
-#             exams = ExamName.objects.filter(id__in=exam_ids)
-#             new_entry.exams.set(exams)
-
-#         if subject_ids:
-#             subjects = Subject.objects.filter(id__in=subject_ids)
-#             new_entry.subjects.set(subjects)
-
-#         if area_ids:
-#             areas = Area.objects.filter(id__in=area_ids)
-#             new_entry.areas.set(areas)
-
-#         if part_ids:
-#             parts = PartName.objects.filter(id__in=part_ids)
-#             new_entry.parts.set(parts)
-
-#         if chapter_ids:
-#             chapters = ChapterName.objects.filter(id__in=chapter_ids)
-#             new_entry.chapters.set(chapters)
-
-#         if new_topic_name:
-#             new_topic = TopicName.objects.create(name=new_topic_name)
-#             new_entry.topics.add(new_topic)
-
-#         if topic_ids:
-#             selected_topics = TopicName.objects.filter(id__in=topic_ids)
-#             new_entry.topics.add(*selected_topics)
-            
-
-#         # Display success message and redirect
-#         messages.success(request, 'Your Quote, Idiom, or Phrase has been added successfully!')
-#         return redirect('add_quote_idiom_phrase')
-
-#     # Fetch all exam names for the form
-#     exam_names = ExamName.objects.all()
-#     return render(request, 'question_bank/add_quote_idiom_phrase.html', {'exam_names': exam_names})
 
 
 
@@ -2070,79 +1307,70 @@ def quotes_idioms_phrases_view(request):
     })
 
 
-# def analytics_dashboard(request):
-#     # QuestionBank Analytics
-#     total_questions = QuestionBank.objects.count()
-#     questions_by_user = QuestionBank.objects.values('created_by__username').annotate(total=Count('id')).order_by('-total')
-#     question_type_distribution = QuestionBank.objects.values('question_sub_type').annotate(total=Count('id'))
-#     question_per_month = QuestionBank.objects.extra(select={'month': "strftime('%%Y-%%m', created_at)"}).values('month').annotate(total=Count('id')).order_by('-month')
 
-#     # InputSuggestion Analytics
-#     total_suggestions = InputSuggestion.objects.count()
-#     suggestions_by_user = InputSuggestion.objects.values('created_by__username').annotate(total=Count('id')).order_by('-total')
-#     suggestions_per_month = InputSuggestion.objects.extra(select={'month': "strftime('%%Y-%%m', created_at)"}).values('month').annotate(total=Count('id')).order_by('-month')
 
-#     # QuoteIdiomPhrase Analytics
-#     total_quotes = QuoteIdiomPhrase.objects.count()
-#     quotes_by_user = QuoteIdiomPhrase.objects.values('created_by__username').annotate(total=Count('id')).order_by('-total')
-#     quote_type_distribution = QuoteIdiomPhrase.objects.values('type').annotate(total=Count('id'))
-#     quotes_per_month = QuoteIdiomPhrase.objects.extra(select={'month': "strftime('%%Y-%%m', created_at)"}).values('month').annotate(total=Count('id')).order_by('-month')
-
-#     context = {
-#         # QuestionBank Stats
-#         'total_questions': total_questions,
-#         'questions_by_user': questions_by_user,
-#         'question_type_distribution': question_type_distribution,
-#         'question_per_month': question_per_month,
-        
-#         # InputSuggestion Stats
-#         'total_suggestions': total_suggestions,
-#         'suggestions_by_user': suggestions_by_user,
-#         'suggestions_per_month': suggestions_per_month,
-
-#         # QuoteIdiomPhrase Stats
-#         'total_quotes': total_quotes,
-#         'quotes_by_user': quotes_by_user,
-#         'quote_type_distribution': quote_type_distribution,
-#         'quotes_per_month': quotes_per_month,
-#     }
-
-#     return render(request, 'question_bank/analytics_dashboard.html', context)
 
 def analytics_dashboard(request):
-    # Count total questions added by users
-    total_questions_per_user = QuestionBank.objects.values('created_by__username').annotate(total=Count('id'))
+    # Filter and annotate data for users with questions, suggestions, or quote/phrase/idiom entries
+    users_data = User.objects.annotate(
+        user_name=Concat('first_name', Value(' '), 'last_name'),
+        total_input_suggestions=Count('inputsuggestion', filter=Q(inputsuggestion__isnull=False)),
+        total_questions=Count('questionbank', filter=Q(questionbank__isnull=False)),
+        simple_type_count=Count('questionbank', filter=Q(questionbank__question_sub_type='simple_type')),
+        list1_type_count=Count('questionbank', filter=Q(questionbank__question_sub_type='list_type_1')),
+        list2_type_count=Count('questionbank', filter=Q(questionbank__question_sub_type='list_type_2')),
+        ra_type_count=Count('questionbank', filter=Q(questionbank__question_sub_type='r_and_a_type')),
+        true_false_type_count=Count('questionbank', filter=Q(questionbank__question_sub_type='true_and_false_type')),
+        fill_blank_type_count=Count('questionbank', filter=Q(questionbank__question_sub_type='fill_in_the_blank_type')),
+        phrases_uploaded=Count('quoteidiomphrase', filter=Q(quoteidiomphrase__type='phrase')),
+        idioms_uploaded=Count('quoteidiomphrase', filter=Q(quoteidiomphrase__type='idiom')),
+        quotes_uploaded=Count('quoteidiomphrase', filter=Q(quoteidiomphrase__type='quote')),
+    ).filter(
+        Q(total_input_suggestions__gt=0) | 
+        Q(total_questions__gt=0) | 
+        Q(phrases_uploaded__gt=0) |
+        Q(idioms_uploaded__gt=0) | 
+        Q(quotes_uploaded__gt=0)
+    ).values_list(
+        'user_name', 'email', 'total_input_suggestions', 'total_questions', 
+        'simple_type_count', 'list1_type_count', 'list2_type_count',
+        'ra_type_count', 'true_false_type_count', 'fill_blank_type_count',
+        'phrases_uploaded', 'idioms_uploaded', 'quotes_uploaded',
+        named=True
+    )
+    # Prepare data for charts
+    users = [user.user_name for user in users_data]
+    emails = [user.email for user in users_data]
+    suggestion_counts = [user.total_input_suggestions for user in users_data]
+    question_counts = [user.total_questions for user in users_data]
+    simple_counts = [user.simple_type_count for user in users_data]
+    list1_counts = [user.list1_type_count for user in users_data]
+    list2_counts = [user.list2_type_count for user in users_data]
+    ra_counts = [user.ra_type_count for user in users_data]
+    true_false_counts = [user.true_false_type_count for user in users_data]
+    fill_blank_counts = [user.fill_blank_type_count for user in users_data]
+    phrase_counts = [user.phrases_uploaded for user in users_data]
+    idiom_counts = [user.idioms_uploaded for user in users_data]
+    quote_counts = [user.quotes_uploaded for user in users_data]
 
-    # Count total suggestions added by users
-    total_suggestions_per_user = InputSuggestion.objects.values('created_by__username').annotate(total=Count('id'))
-
-    # Count total quotes added by users
-    total_quotes_per_user = QuoteIdiomPhrase.objects.values('created_by__username').annotate(total=Count('id'))
-
-    # Prepare data for chart (Example: Total Questions Per User)
-    users = [entry['created_by__username'] for entry in total_questions_per_user]
-    question_counts = [entry['total'] for entry in total_questions_per_user]
-
-    # Prepare data for chart (Example: Total Suggestions Per User)
-    suggestion_counts = [entry['total'] for entry in total_suggestions_per_user]
-
-    # Prepare data for chart (Example: Total Quotes Per User)
-    quote_counts = [entry['total'] for entry in total_quotes_per_user]
-
-    # Using Plotly for server-side charts (Optional)
-    fig = px.bar(x=users, y=question_counts, labels={'x': 'User', 'y': 'Total Questions Added'})
-    chart = fig.to_html(full_html=False)
-
-    # Pass data to the template for client-side rendering via Chart.js
     context = {
         'users': json.dumps(users),
-        'question_counts': json.dumps(question_counts),
+        'emails': json.dumps(emails),
         'suggestion_counts': json.dumps(suggestion_counts),
+        'question_counts': json.dumps(question_counts),
+        'simple_counts': json.dumps(simple_counts),
+        'list1_counts': json.dumps(list1_counts),
+        'list2_counts': json.dumps(list2_counts),
+        'ra_counts': json.dumps(ra_counts),
+        'true_false_counts': json.dumps(true_false_counts),
+        'fill_blank_counts': json.dumps(fill_blank_counts),
+        'phrase_counts': json.dumps(phrase_counts),
+        'idiom_counts': json.dumps(idiom_counts),
         'quote_counts': json.dumps(quote_counts),
-        'chart': chart,  # Plotly chart HTML
     }
 
     return render(request, 'question_bank/analytics_dashboard.html', context)
+
 
 @login_required
 def new_dashboard_view(request):

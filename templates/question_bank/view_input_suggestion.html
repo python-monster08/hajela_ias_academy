@@ -1,32 +1,62 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}{{ question.question_statement|truncatewords:5 }} - Hajela's IAS Academy (HIA){% endblock %}
+{% block title %}{{ question.brief_description|truncatewords:5 }} - Hajela's IAS Academy (HIA){% endblock %}
 
 {% block content %}
     <div class="container py-5">
         <!-- Blog Post Header -->
         <div class="text-center mb-5">
-            <h3>{{ question.brief_description|truncatewords:5 }}</h3>
-        </div>
-        <div class="text-center mb-5">
-            <p>{{ question.details }}</p>
+            <h3>{{ question.brief_description }}</h3>
         </div>
         
         <!-- Blog Post Content -->
         <div class="row">
             <div class="col-lg-8">
+                <div class="mb-5">
+                    <p>{{ question.details|safe }}</p>
+                </div>
+                
                 <!-- Exam, Subject, and Other Details -->
+            <hr/>
                 <div class="mb-4">
-                    <h3>Exam: {{ question.exam_name }}</h3>
-                    <h4>Subject: {{ question.subject_name }}</h4>
-                    <p>Area: {{ question.area_name }}</p>
-                    {% if question.part_name %}
-                        <p>Part: {{ question.part_name }}</p>
-                    {% endif %}
-                    {% if question.topic_name %}
-                        <p>Topic: {{ question.topic_name }}</p>
-                    {% endif %}
-                    <p>{{ question.other_text }}</p>
+                    <p class="card-text">
+                        <strong>Exam:</strong>
+                        {% if question.exam_name.all %}
+                            {{ question.exam_name.all|join:", " }}
+                        {% else %}
+                            No Exam specified.
+                        {% endif %}
+                        <br>
+                    
+                        <strong>Subject:</strong>
+                        {% if question.subject_name.all %}
+                            {{ question.subject_name.all|join:", " }}
+                        {% else %}
+                            No Subject specified.
+                        {% endif %}
+                        <br>
+                    
+                        <strong>Area:</strong>
+                        {% if question.area_name.all %}
+                            {{ question.area_name.all|join:", " }}
+                        {% else %}
+                            No Area specified.
+                        {% endif %}
+                        <br>
+                    
+                        {% if question.part_name.exists %}
+                            <strong>Part:</strong>
+                            {{ question.part_name.all|join:", " }}
+                            <br>
+                        {% endif %}
+                    
+                        {% if question.topic_name.exists %}
+                            <strong>Topic:</strong>
+                            {{ question.topic_name.all|join:", " }}
+                            <br>
+                        {% endif %}
+                    </p>
+
                 </div>
 
                 <!-- Link to Resources -->
@@ -79,7 +109,6 @@
                         {% endfor %}
                     </ul>
                 {% endif %}
-
                 
             </div>
 

@@ -2,7 +2,6 @@ from django.db import models
 from django.urls import reverse
 from django.contrib.auth.models import User  # Import the User model
 from django.conf import settings
-from django.utils import timezone
 
 class ExamName(models.Model):
     name = models.CharField(max_length=255)
@@ -44,16 +43,7 @@ class ChapterName(models.Model):
         return f"{self.name} ({self.part.name} - {self.part.area.name} - {self.part.area.subject.name})"
 
 
-# # Updated Model: TopicName now refers to ChapterName
-# class TopicName(models.Model):
-#     name = models.CharField(max_length=255)
-#     # part = models.ForeignKey(PartName, on_delete=models.CASCADE, related_name='topics')
-#     chapter = models.ForeignKey(ChapterName, on_delete=models.CASCADE, related_name='topics', null=True, blank=True)
-
-#     def __str__(self):
-#         return f"{self.name} ({self.chapter.name} - {self.chapter.part.name})"
-
-
+# New Model: TopicName refers to ChapterName
 class TopicName(models.Model):
     name = models.CharField(max_length=255)
     chapter = models.ForeignKey(ChapterName, on_delete=models.CASCADE, related_name='topics', null=True, blank=True)
@@ -66,7 +56,7 @@ class TopicName(models.Model):
 
 
 
-
+# Question Bank Model that store the all type of question data
 class QuestionBank(models.Model):
     QUESTION_TYPES = (
         ('simple_type', 'Simple Type'),
@@ -178,31 +168,34 @@ class QuestionBank(models.Model):
     def __str__(self):
         return f"Question {self.question_number} - {self.exam_name} {self.exam_year}"
 
-
+# Input Suggestion Model
 class InputSuggestion(models.Model):
     language = models.CharField(max_length=100, default='', blank=True, null=True)
     script = models.TextField(blank=True, null=True)
-    evergreen_index = models.PositiveIntegerField(default=5, null=True, blank=True)  # New Evergreen Index field
-    brief_description = models.TextField()  # Short description field
-    details = models.TextField()  # New field to store detailed explanation
+    evergreen_index = models.PositiveIntegerField(default=5, null=True, blank=True)
+    brief_description = models.TextField()
+    details = models.TextField()  # TinyMCE will handle this as rich text
     question_video = models.FileField(upload_to='input_suggestion/videos/', blank=True, null=True)
-    question_link = models.URLField(max_length=255,blank=True, null=True)
+    question_link = models.URLField(max_length=255, blank=True, null=True)
     other_text = models.TextField(blank=True, null=True)
-    exam_name = models.CharField(max_length=255)
-    subject_name = models.CharField(max_length=255)
-    area_name = models.CharField(max_length=255)
-    chapter_name = models.CharField(max_length=255, blank=True, null=True)
-    part_name = models.CharField(max_length=255, blank=True, null=True)
-    topic_name = models.CharField(max_length=255, blank=True, null=True)
+
+    # Many-to-Many relationships with unique related names
+    exam_name = models.ManyToManyField('ExamName', related_name='input_suggestions')
+    subject_name = models.ManyToManyField('Subject', related_name='input_suggestions')
+    area_name = models.ManyToManyField('Area', related_name='input_suggestions')
+    part_name = models.ManyToManyField('PartName', related_name='input_suggestions')
+    chapter_name = models.ManyToManyField('ChapterName', related_name='input_suggestions', blank=True)
+    topic_name = models.ManyToManyField('TopicName', related_name='input_suggestions', blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
 
-
     def __str__(self):
         return self.brief_description[:50]
-    # Add this method
+
     def get_absolute_url(self):
         return reverse('view-input-suggestion', args=[str(self.id)])
+    
 
 class InputSuggestionImage(models.Model):
     question = models.ForeignKey(InputSuggestion, related_name='images', on_delete=models.CASCADE)
@@ -212,79 +205,6 @@ class InputSuggestionImage(models.Model):
 class InputSuggestionDocument(models.Model):
     question = models.ForeignKey(InputSuggestion, related_name='documents', on_delete=models.CASCADE)
     document = models.FileField(upload_to='input_suggestion/documents/')
-
-
-# class QuoteIdiomPhrase(models.Model):
-#     TYPE_CHOICES = (
-#         ('quote', 'Quote'),
-#         ('idiom', 'Idiom'),
-#         ('phrase', 'Phrase'),
-#     )
-
-#     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
-#     content = models.TextField()
-#     meaning = models.TextField(blank=True, null=True)  # Add a meaning field for idioms and phrases
-#     author = models.CharField(max_length=255, blank=True, null=True)  # Optional field for author or source
-#     exam = models.ForeignKey(ExamName, on_delete=models.SET_NULL, null=True, blank=True)
-#     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True)
-#     area = models.ForeignKey(Area, on_delete=models.SET_NULL, null=True, blank=True)
-#     part = models.ForeignKey(PartName, on_delete=models.SET_NULL, null=True, blank=True)
-#     chapter = models.ForeignKey(ChapterName, on_delete=models.SET_NULL, null=True, blank=True)
-#     topic = models.CharField(max_length=255, blank=True, null=True)  # Manually added or selected topic
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  # Track who created the question
-
-#     def __str__(self):
-#         return f"{self.get_type_display()}: {self.content[:50]}..."
-
-
-
-# class QuoteIdiomPhrase(models.Model):
-#     TYPE_CHOICES = (
-#         ('quote', 'Quote'),
-#         ('idiom', 'Idiom'),
-#         ('phrase', 'Phrase'),
-#     )
-
-#     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
-#     content = models.TextField()
-#     meaning = models.TextField(blank=True, null=True)  # Meaning for idioms and phrases
-#     author = models.CharField(max_length=255, blank=True, null=True)  # Optional field for author or source
-#     exam = models.ForeignKey(ExamName, on_delete=models.SET_NULL, null=True, blank=True)
-#     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True)
-#     area = models.ForeignKey(Area, on_delete=models.SET_NULL, null=True, blank=True)
-#     part = models.ForeignKey(PartName, on_delete=models.SET_NULL, null=True, blank=True)
-#     chapter = models.ForeignKey(ChapterName, on_delete=models.SET_NULL, null=True, blank=True)
-#     topics = models.ManyToManyField(TopicName)  # Many-to-many relationship for topics
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  # Track who created the entry
-
-#     def __str__(self):
-#         return f"{self.get_type_display()}: {self.content[:50]}..."
-
-
-# class QuoteIdiomPhrase(models.Model):
-#     TYPE_CHOICES = (
-#         ('quote', 'Quote'),
-#         ('idiom', 'Idiom'),
-#         ('phrase', 'Phrase'),
-#     )
-
-#     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
-#     content = models.TextField()
-#     meaning = models.TextField(blank=True, null=True)  # Meaning for idioms and phrases
-#     author = models.CharField(max_length=255, blank=True, null=True)  # Optional field for author or source
-#     exams = models.ManyToManyField(ExamName, blank=True)  # Many-to-many relationship for exams
-#     subjects = models.ManyToManyField(Subject, blank=True)  # Many-to-many relationship for subjects
-#     areas = models.ManyToManyField(Area, blank=True)  # Many-to-many relationship for areas
-#     parts = models.ManyToManyField(PartName, blank=True)  # Many-to-many relationship for parts
-#     chapters = models.ManyToManyField(ChapterName, blank=True)  # Many-to-many relationship for chapters
-#     topics = models.ManyToManyField(TopicName, blank=True)  # Many-to-many relationship for topics
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
-
-#     def __str__(self):
-#         return f"{self.get_type_display()}: {self.content[:50]}..."
 
 
 class QuoteIdiomPhrase(models.Model):

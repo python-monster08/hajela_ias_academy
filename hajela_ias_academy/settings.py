@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'main_app',   # Your app where main application is implemented
     'accounts',  # Your app where login system is implemented
     'question_bank',  # Your app where question bank system is implemented
+    'tinymce',
 ]
 
 MIDDLEWARE = [

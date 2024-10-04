@@ -1,178 +1,151 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Analytics Dashboard - Hajela's IAS Academy{% endblock %}
+
 {% block content %}
 <div class="container py-5">
-    <h2>Analytics Dashboard</h2>
+    <div class="text-center mb-5">
+        <h1>Analytics Dashboard</h1>
+        <p class="lead">Overview of Questions, Suggestions, and Contributions by Users</p>
+    </div>
 
-    <!-- Chart.js Example -->
     <div class="row">
-        <div class="col-md-6">
-            <h4>Total Questions Added by User</h4>
-            <canvas id="questionChart"></canvas>
+        <!-- Bar Chart for Total Input Suggestions per User -->
+        <div class="col-md-6 mb-4">
+            <h3 class="text-center">Total Input Suggestions per User</h3>
+            <canvas id="suggestionsBarChart" height="200"></canvas>
         </div>
-        <div class="col-md-6">
-            <h4>Total Suggestions Added by User</h4>
-            <canvas id="suggestionChart"></canvas>
-        </div>
-        <div class="col-md-6">
-            <h4>Total Quotes Added by User</h4>
-            <canvas id="quoteChart"></canvas>
+
+        <!-- Stacked Bar Chart for Questions Uploaded per User by Type -->
+        <div class="col-md-6 mb-4">
+            <h3 class="text-center">Questions Uploaded per User by Type</h3>
+            <canvas id="questionsTypeStackedChart" height="200"></canvas>
         </div>
     </div>
 
-    <!-- Plotly Chart Example -->
-    <h4>Plotly Bar Chart of Questions Added</h4>
-    <div>
-        {{ chart|safe }}  <!-- This will render the Plotly bar chart -->
+    <div class="row mt-5">
+        <!-- Bar Chart for Phrases, Idioms, and Quotes per User -->
+        <div class="col-md-6">
+            <h3 class="text-center">Phrases, Idioms, and Quotes per User</h3>
+            <canvas id="phrasesIdiomsQuotesBarChart" height="200"></canvas>
+        </div>
     </div>
 </div>
+{% endblock %}
 
-<!-- Load Chart.js -->
+{% block custom_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
-    // Prepare data for Chart.js (Total Questions Added by User)
-    var questionCtx = document.getElementById('questionChart').getContext('2d');
-    var questionChart = new Chart(questionCtx, {
+    // Parse data passed from the view
+    const users = JSON.parse('{{ users|safe }}');
+    const emails = JSON.parse('{{ emails|safe }}');
+    const suggestionCounts = JSON.parse('{{ suggestion_counts|safe }}');
+    const questionCounts = JSON.parse('{{ question_counts|safe }}');
+    const simpleCounts = JSON.parse('{{ simple_counts|safe }}');
+    const list1Counts = JSON.parse('{{ list1_counts|safe }}');
+    const list2Counts = JSON.parse('{{ list2_counts|safe }}');
+    const raCounts = JSON.parse('{{ ra_counts|safe }}');
+    const trueFalseCounts = JSON.parse('{{ true_false_counts|safe }}');
+    const fillBlankCounts = JSON.parse('{{ fill_blank_counts|safe }}');
+    const phraseCounts = JSON.parse('{{ phrase_counts|safe }}');
+    const idiomCounts = JSON.parse('{{ idiom_counts|safe }}');
+    const quoteCounts = JSON.parse('{{ quote_counts|safe }}');
+
+    // Bar Chart for Total Input Suggestions per User
+    const suggestionsBarChartCtx = document.getElementById('suggestionsBarChart').getContext('2d');
+    new Chart(suggestionsBarChartCtx, {
         type: 'bar',
         data: {
-            labels: {{ users|safe }},
+            labels: users,
             datasets: [{
-                label: 'Total Questions',
-                data: {{ question_counts|safe }},
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                label: 'Input Suggestions Uploaded',
+                data: suggestionCounts,
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
                 borderColor: 'rgba(75, 192, 192, 1)',
                 borderWidth: 1
             }]
         },
         options: {
+            responsive: true,
+            //maintainAspectRatio: false,
             scales: {
-                y: {
-                    beginAtZero: true
+                y: { beginAtZero: true }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `Email: ${emails[context.dataIndex]}, Suggestions: ${context.raw}`;
+                        }
+                    }
                 }
             }
         }
     });
 
-    // Prepare data for Chart.js (Total Suggestions Added by User)
-    var suggestionCtx = document.getElementById('suggestionChart').getContext('2d');
-    var suggestionChart = new Chart(suggestionCtx, {
+    // Stacked Bar Chart for Questions Uploaded per User by Type
+    const questionsTypeStackedChartCtx = document.getElementById('questionsTypeStackedChart').getContext('2d');
+    new Chart(questionsTypeStackedChartCtx, {
         type: 'bar',
         data: {
-            labels: {{ users|safe }},
-            datasets: [{
-                label: 'Total Suggestions',
-                data: {{ suggestion_counts|safe }},
-                backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                borderColor: 'rgba(153, 102, 255, 1)',
-                borderWidth: 1
-            }]
+            labels: users,
+            datasets: [
+                { label: 'Simple Type', data: simpleCounts, backgroundColor: 'rgba(255, 99, 132, 0.6)' },
+                { label: 'List I Type', data: list1Counts, backgroundColor: 'rgba(75, 192, 192, 0.6)' },
+                { label: 'List II Type', data: list2Counts, backgroundColor: 'rgba(153, 102, 255, 0.6)' },
+                { label: 'R & A Type', data: raCounts, backgroundColor: 'rgba(255, 206, 86, 0.6)' },
+                { label: 'True & False', data: trueFalseCounts, backgroundColor: 'rgba(54, 162, 235, 0.6)' },
+                { label: 'Fill in the Blank', data: fillBlankCounts, backgroundColor: 'rgba(201, 203, 207, 0.6)' }
+            ]
         },
         options: {
+            responsive: true,
+            //maintainAspectRatio: false,
             scales: {
-                y: {
-                    beginAtZero: true
+                x: { stacked: true },
+                y: { stacked: true, beginAtZero: true }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `Email: ${emails[context.dataIndex]}, ${context.dataset.label}: ${context.raw}`;
+                        }
+                    }
                 }
             }
         }
     });
 
-    // Prepare data for Chart.js (Total Quotes Added by User)
-    var quoteCtx = document.getElementById('quoteChart').getContext('2d');
-    var quoteChart = new Chart(quoteCtx, {
+    // Bar Chart for Phrases, Idioms, and Quotes per User
+    const phrasesIdiomsQuotesBarChartCtx = document.getElementById('phrasesIdiomsQuotesBarChart').getContext('2d');
+    new Chart(phrasesIdiomsQuotesBarChartCtx, {
         type: 'bar',
         data: {
-            labels: {{ users|safe }},
-            datasets: [{
-                label: 'Total Quotes',
-                data: {{ quote_counts|safe }},
-                backgroundColor: 'rgba(255, 159, 64, 0.2)',
-                borderColor: 'rgba(255, 159, 64, 1)',
-                borderWidth: 1
-            }]
+            labels: users,
+            datasets: [
+                { label: 'Phrases', data: phraseCounts, backgroundColor: 'rgba(255, 99, 132, 0.6)' },
+                { label: 'Idioms', data: idiomCounts, backgroundColor: 'rgba(153, 102, 255, 0.6)' },
+                { label: 'Quotes', data: quoteCounts, backgroundColor: 'rgba(255, 206, 86, 0.6)' }
+            ]
         },
         options: {
+            responsive: true,
+            //maintainAspectRatio: false,
             scales: {
-                y: {
-                    beginAtZero: true
+                y: { beginAtZero: true }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `Email: ${emails[context.dataIndex]}, ${context.dataset.label}: ${context.raw}`;
+                        }
+                    }
                 }
             }
         }
     });
 </script>
 {% endblock %}
-
-
-
-{% comment %} {% extends "base.html" %}
-{% block content %}
-<div class="container">
-    <h1>Analytics Dashboard</h1>
-
-    <!-- Total Statistics -->
-    <h2>Total Data</h2>
-    <ul>
-        <li><strong>Total Questions:</strong> {{ total_questions }}</li>
-        <li><strong>Total Suggestions:</strong> {{ total_suggestions }}</li>
-        <li><strong>Total Quotes/Idioms/Phrases:</strong> {{ total_quotes }}</li>
-    </ul>
-
-    <!-- Questions by User -->
-    <h2>Questions Added by User</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>User</th>
-                <th>Total Questions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for user_data in questions_by_user %}
-            <tr>
-                <td>{{ user_data.created_by__username }}</td>
-                <td>{{ user_data.total }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <!-- Question Type Distribution -->
-    <h2>Question Type Distribution</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Question Type</th>
-                <th>Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for question_type in question_type_distribution %}
-            <tr>
-                <td>{{ question_type.question_sub_type }}</td>
-                <td>{{ question_type.total }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <!-- Questions Added Per Month -->
-    <h2>Questions Added Per Month</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Month</th>
-                <th>Total Questions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for month_data in question_per_month %}
-            <tr>
-                <td>{{ month_data.month }}</td>
-                <td>{{ month_data.total }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <!-- Similar sections for InputSuggestion and QuoteIdiomPhrase -->
-</div>
-{% endblock %} {% endcomment %}

@@ -5,208 +5,231 @@
 {% block title %}Add descriptive type questions - Hajela's IAS Academy (HIA){% endblock %}
 
 {% block content %}
-    <!-- Simple Type Question Form Start -->
-    <div class="container-xxl py-5">
-        <div class="container">
-            {% if messages %}
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {% for message in messages %}
-                        {{ message }}
-                    {% endfor %}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endif %}
-            <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
-                <h6 class="section-title bg-white text-center text-primary px-3">Add Input Suggestion</h6>
-                <h1 class="mb-5">Fill in the details to add a new input suggestion</h1>
+<div class="container-xxl py-5">
+    <div class="container">
+        {% if messages %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-            <div class="row g-4">
-                <div class="col-lg-12 wow fadeInUp" data-wow-delay="0.5s">
-                    <form id="simpleTypeForm" method="POST" enctype="multipart/form-data">
-                        {% csrf_token %}
-
-                        <input type="hidden" name="questionType" value="descriptive_type">
-                        <!-- Language and Script Fields -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <select class="form-select" id="language" name="language" required>
-                                        <option value="">Select Language</option>
-                                        <option value="English">English</option>
-                                        <option value="Hindi">Hindi</option>
-                                    </select>
-                                    <label for="language">Language</label>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <select class="form-select" id="script" name="script" required>
-                                        <option value="">Select Script</option>
-                                        <option value="Latin">Latin</option>
-                                        <option value="Devanagari">Devanagari</option>
-                                    </select>
-                                    <label for="script">Script</label>
-                                </div>
+        {% endif %}
+        <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+            <h6 class="section-title bg-white text-center text-primary px-3">Add Input Suggestion</h6>
+            <h1 class="mb-5">Fill in the details to add a new input suggestion</h1>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-12 wow fadeInUp" data-wow-delay="0.5s">
+                <form id="inputSuggestionForm" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="questionType" value="descriptive_type">
+                    
+                    <!-- Language and Script Fields -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <select class="form-select" id="language" name="language" required>
+                                    <option value="">Select Language</option>
+                                    <option value="English">English</option>
+                                    <option value="Hindi">Hindi</option>
+                                </select>
+                                <label for="language">Language</label>
                             </div>
                         </div>
 
-                        <div class="row g-3">
-                            <div class="col-md-12 mb-3">
-                                <label for="brief_description">Brief Description</label>
-                                <div class="form-floating">
-                                    <textarea class="form-control" name="brief_description" id="brief_description" placeholder="Enter the full question statement" required></textarea>
-                                </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <select class="form-select" id="script" name="script" required>
+                                    <option value="">Select Script</option>
+                                    <option value="Latin">Latin</option>
+                                    <option value="Devanagari">Devanagari</option>
+                                </select>
+                                <label for="script">Script</label>
                             </div>
                         </div>
-                       
-                        <div class="row g-3">
-                            <div class="col-md-12 mb-3">
-                                <label for="details">Details</label>
-                                <div class="form-floating">
-                                    <textarea class="form-control" name="details" id="details" placeholder="Enter the details" required style="height: 327px;"></textarea>
-                                </div>
+                    </div>
+
+                    <!-- Brief Description -->
+                    <div class="row g-3">
+                        <div class="col-md-12 mb-3">
+                            <label for="brief_description">Brief Description</label>
+                            <div class="form-floating">
+                                <textarea class="form-control" name="brief_description" id="brief_description" placeholder="Enter the brief description" required></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Details with TinyMCE -->
+                    <div class="row g-3">
+                        <div class="col-md-12 mb-3">
+                            <label for="details">Details</label>
+                            <div class="form-floating">
+                                <textarea class="form-control" name="details" id="id_details" placeholder="Enter the details"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+
+                    <!-- File Uploads for Images, Documents, and Videos -->
+                    <div class="row g-3">
+                        <div class="col-md-12 mb-3">
+                            <label for="question_images" class="form-label">Upload Images</label>
+                            <input class="form-control" type="file" id="question_images" name="question_images" accept="image/*" multiple>
+                            <div id="imageFileNames"></div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-12 mb-3">
+                            <label for="question_documents" class="form-label">Upload Documents (.pdf, .doc, .docx, .pptx)</label>
+                            <input class="form-control" type="file" id="question_documents" name="question_documents" accept=".pdf,.doc,.docx,.pptx" multiple>
+                            <div id="documentFileNames"></div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-12 mb-3">
+                            <label for="question_video" class="form-label">Upload Video File</label>
+                            <input class="form-control" type="file" id="question_video" name="question_video" accept="video/*">
+                            <div id="videoFileName"></div>
+                        </div>
+                    </div>
+
+                    <!-- Link Field -->
+                    <div class="row g-3">
+                        <div class="col-md-12 mb-3">
+                            <div class="form-floating">
+                                <input type="url" class="form-control" id="question_link" name="question_link" placeholder="Enter link to resources or reference materials">
+                                <label for="question_link">Link to Resources</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Other Text Field -->
+                    <div class="row g-3">
+                        <div class="col-md-12 mb-3">
+                            <label for="other_text">Other Text</label>
+                            <div class="form-floating">
+                                <textarea class="form-control" name="other_text" id="other_text" placeholder="Other Question"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Fields for Exam, Subject, Area, Part, Chapter, Topic -->
+                    <!-- Common Fields -->
+                    <div class="row g-3">
+                        <label class="form-label">Other Details</label>
+                        <!-- Dynamic Fields (Exam, Subject, Area, etc.) -->
+                        <div class="col-md-6 mb-4">
+                            <div class="form-floating">
+                                <select class="form-select" id="examName" name="exam_name" required>
+                                    <option value="">Select Exam Name</option>
+                                    {% for exam in exam_names %}
+                                        <option value="{{ exam.id }}">{{ exam.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label for="examName">Exam Name</label>
                             </div>
                         </div>
 
-                        <!-- Image Upload -->
-                        <div class="row g-3">
-                            <div class="col-md-12 mb-3">
-                                <label for="question_images" class="form-label">Upload Images</label>
-                                <input class="form-control" type="file" id="question_images" name="question_images" accept="image/*" multiple>
-                                <!-- Container to display the image file names -->
-                                <div id="imageFileNames"></div>
+                        <div class="col-md-6 mb-4">
+                            <div class="form-floating">
+                                <select class="form-select" id="subjectName" name="subject_name" required>
+                                    <option value="">Select Subject Name</option>
+                                </select>
+                                <label for="subjectName">Subject Name</label>
                             </div>
                         </div>
 
-                        <!-- Document Upload -->
-                        <div class="row g-3">
-                            <div class="col-md-12 mb-3">
-                                <label for="question_documents" class="form-label">Upload Documents (.pdf,.doc,.docx,.pptx)</label>
-                                <input class="form-control" type="file" id="question_documents" name="question_documents" accept=".pdf,.doc,.docx,.pptx" multiple>
-                                <!-- Container to display the document file names -->
-                                <div id="documentFileNames"></div>
+                        <div class="col-md-6 mb-4">
+                            <div class="form-floating">
+                                <select class="form-select" id="areaName" name="area_name" required>
+                                    <option value="">Select Area Name</option>
+                                </select>
+                                <label for="areaName">Area Name</label>
                             </div>
                         </div>
 
-
-                        <!-- Video Upload -->
-                        <div class="row g-3">
-                            <div class="col-md-12 mb-3">
-                                <label for="question_video" class="form-label">Upload Video File</label>
-                                <input class="form-control" type="file" id="question_video" name="question_video" accept="video/*">
-                                <!-- Container to display the video file name -->
-                                <div id="videoFileName"></div>
+                        <div class="col-md-6 mb-4">
+                            <div class="form-floating">
+                                <select class="form-select" id="partName" name="part_name">
+                                    <option value="">Select Part Name</option>
+                                </select>
+                                <label for="partName">Part Name</label>
                             </div>
                         </div>
 
-
-                        <!-- Link Field -->
-                        <div class="row g-3">
-                            <div class="col-md-12 mb-3">
-                                <div class="form-floating">
-                                    <input type="url" class="form-control" id="question_link" name="question_link" placeholder="Enter link to resources or reference materials">
-                                    <label for="question_link">Link to Resources</label>
-                                </div>
+                        <!-- Dynamic Chapter Name -->
+                        <div class="col-md-6 mb-4">
+                            <div class="form-floating">
+                                <select class="form-select" id="chapterName" name="chapter_name">
+                                    <option value="">Select Chapter Name</option>
+                                </select>
+                                <label for="chapterName">Chapter Name</label>
                             </div>
                         </div>
 
-                        <!-- Common Fields -->
-                        <div class="row g-3">
-                            <div class="col-md-12 mb-3">
-                                <label for="other_text">Other Text</label>
-                                <div class="form-floating">
-                                    <textarea class="form-control" name="other_text" id="other_text" placeholder="Other Question"></textarea>
-                                </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="form-floating">
+                                <select class="form-select" id="topicName" name="topic_name">
+                                    <option value="">Select Topic Name</option>
+                                    <option value="other">Other (Add manually)</option>
+                                </select>
+                                <label for="topicName">Topic Name</label>
                             </div>
                         </div>
 
-                        <!-- Common Fields -->
-                        <div class="row g-3">
-                            <label class="form-label">Other Details</label>
-                            <!-- Dynamic Fields (Exam, Subject, Area, etc.) -->
-                            <div class="col-md-6 mb-4">
-                                <div class="form-floating">
-                                    <select class="form-select" id="examName" name="exam_name" required>
-                                        <option value="">Select Exam Name</option>
-                                        {% for exam in exam_names %}
-                                            <option value="{{ exam.id }}">{{ exam.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                    <label for="examName">Exam Name</label>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6 mb-4">
-                                <div class="form-floating">
-                                    <select class="form-select" id="subjectName" name="subject_name" required>
-                                        <option value="">Select Subject Name</option>
-                                    </select>
-                                    <label for="subjectName">Subject Name</label>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6 mb-4">
-                                <div class="form-floating">
-                                    <select class="form-select" id="areaName" name="area_name" required>
-                                        <option value="">Select Area Name</option>
-                                    </select>
-                                    <label for="areaName">Area Name</label>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6 mb-4">
-                                <div class="form-floating">
-                                    <select class="form-select" id="partName" name="part_name">
-                                        <option value="">Select Part Name</option>
-                                    </select>
-                                    <label for="partName">Part Name</label>
-                                </div>
-                            </div>
-
-                            <!-- Dynamic Chapter Name -->
-                            <div class="col-md-6 mb-4">
-                                <div class="form-floating">
-                                    <select class="form-select" id="chapterName" name="chapter_name">
-                                        <option value="">Select Chapter Name</option>
-                                    </select>
-                                    <label for="chapterName">Chapter Name</label>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6 mb-4">
-                                <div class="form-floating">
-                                    <select class="form-select" id="topicName" name="topic_name">
-                                        <option value="">Select Topic Name</option>
-                                        <option value="other">Other (Add manually)</option>
-                                    </select>
-                                    <label for="topicName">Topic Name</label>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6 mb-4" id="manual_topic" style="display: none;">
-                                <div class="form-floating">
-                                    <input type="text" class="form-control" name="new_topic_name"  id="new_topic_name" placeholder="Enter new topic">
-                                    <label for="new_topic_name">Add New Topic</label>
-                                </div>
-                            </div>
-                            <!-- Submit Button -->
-                            <div class="col-12">
-                                <button class="btn btn-primary w-100 py-3" type="submit">Submit Question</button>
+                        <div class="col-md-6 mb-4" id="manual_topic" style="display: none;">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" name="new_topic_name"  id="new_topic_name" placeholder="Enter new topic">
+                                <label for="new_topic_name">Add New Topic</label>
                             </div>
                         </div>
-                    </form>
-                </div>
+                        <!-- Submit Button -->
+                        <div class="col-12">
+                            <button class="btn btn-primary w-100 py-3" type="submit">Submit Question</button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-    <!-- Simple Type Question Form End -->
+</div>
 {% endblock content %}
 
 {% block custom_js %}
-<!-- JavaScript to handle file input and display file names -->
+<!-- TinyMCE Script in Head -->
+<script src="https://cdn.tiny.cloud/1/saukooviojvp52q7oshlnh0ngfmq561txiih3i9cetd05dj3/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+
 <script>
-    document.getElementById('question_images').addEventListener('change', function() {
+    tinymce.init({
+        selector: '#id_details',
+        plugins: [
+            'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
+            'checklist', 'mediaembed', 'casechange', 'export', 'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable', 'advcode', 'editimage', 'advtemplate', 'ai', 'mentions', 'tinycomments', 'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 'markdown',
+        ],
+        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+        tinycomments_mode: 'embedded',
+        tinycomments_author: 'Author name',
+        mergetags_list: [
+            { value: 'First.Name', title: 'First Name' },
+            { value: 'Email', title: 'Email' },
+        ],
+        ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
+    });
+
+    // Form validation
+    document.getElementById('inputSuggestionForm').addEventListener('submit', function(event) {
+        const editorContent = tinymce.get('id_details').getContent();
+        if (!editorContent.trim()) {
+            event.preventDefault();
+            alert('Please fill in the details field.');
+            tinymce.get('id_details').focus();
+        }
+    });
+
+      document.getElementById('question_images').addEventListener('change', function() {
         var imageFileNamesDiv = document.getElementById('imageFileNames');
         imageFileNamesDiv.innerHTML = ''; // Clear previous file names
         Array.from(this.files).forEach(function(file) {
@@ -329,5 +352,4 @@
         }
     });
 </script>
-
 {% endblock custom_js %}

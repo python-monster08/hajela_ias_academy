@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container py-5">
     <div class="text-center mb-5">
-        <h1>All Descriptive Type Question</h1>
+        <h1>All Descriptive Type Questions</h1>
         <p class="lead">Explore all the questions available</p>
     </div>
 
@@ -19,20 +19,54 @@
                         <img src="{{ question.images.first.image.url }}" class="card-img-top" alt="Image">
                     {% else %}
                         <img src="{% static 'assets/img/thumbnail.jpeg' %}" class="card-img-top" alt="Default Image" height="200px">
-
                     {% endif %}
                     
                     <div class="card-body">
                         <!-- Question Title -->
-                        <h5 class="card-title">{{ question.question_statement|truncatewords:10 }}</h5>
+                        <h5 class="card-title">{{ question.brief_description|truncatewords:20 }}</h5>
                         
-                        <!-- Short details -->
+                        <!-- Other Details (M2M relationships) -->
                         <p class="card-text">
-                            Exam: {{ question.exam_name }}<br>
-                            Subject: {{ question.subject_name }}<br>
-                            Area: {{ question.area_name }}<br>
+                            <strong>Exam:</strong>
+                            {% if question.exam_name.all %}
+                                {{ question.exam_name.all|join:", " }}
+                            {% else %}
+                                No Exam specified.
+                            {% endif %}
+                            <br>
+                        
+                            <strong>Subject:</strong>
+                            {% if question.subject_name.all %}
+                                {{ question.subject_name.all|join:", " }}
+                            {% else %}
+                                No Subject specified.
+                            {% endif %}
+                            <br>
+                        
+                            <strong>Area:</strong>
+                            {% if question.area_name.all %}
+                                {{ question.area_name.all|join:", " }}
+                            {% else %}
+                                No Area specified.
+                            {% endif %}
+                            <br>
+                        
+                            {% if question.part_name.exists %}
+                                <strong>Part:</strong>
+                                {{ question.part_name.all|join:", " }}
+                                <br>
+                            {% endif %}
+                        
+                            {% if question.topic_name.exists %}
+                                <strong>Topic:</strong>
+                                {{ question.topic_name.all|join:", " }}
+                                <br>
+                            {% endif %}
+                        
+                            <!-- Additional Text -->
                             {{ question.other_text|truncatewords:10 }}
                         </p>
+                        
                     </div>
                     
                     <!-- Card Footer with link to detailed view -->

@@ -8,7 +8,7 @@ from django.contrib import admin
 from question_bank.models import QuestionBank, Report
 
 class QuestionBankAdmin(admin.ModelAdmin):
-    list_display = ('created_at', 'created_by', 'question_number', 'get_exam_names', 'exam_year', 'type_of_question', 'question_sub_type', 'marks')
+    list_display = ('id','created_at', 'created_by', 'question_number', 'get_exam_names', 'exam_year', 'type_of_question', 'question_sub_type', 'marks')
     search_fields = ('exam_name', 'subject_name', 'area_name', 'part_name', 'chapter_name', 'topic_name', 'question_part_first', 'correct_answer_choice')
     list_filter = ('exam_name', 'exam_year', 'type_of_question', 'degree_of_difficulty', 'subject_name', 'area_name', 'part_name', 'chapter_name', 'topic_name')
     date_hierarchy = 'created_at'
@@ -93,28 +93,50 @@ class InputSuggestionDocumentInline(admin.TabularInline):
 
 @admin.register(InputSuggestion)
 class InputSuggestionAdmin(admin.ModelAdmin):
-    list_display = ('brief_description', 'exam_name', 'subject_name', 'created_at')
-    search_fields = ('brief_description', 'exam_name', 'subject_name', 'area_name', 'part_name', 'topic_name')
+    list_display = ('brief_description', 'created_at')
+    search_fields = ('brief_description', 'exam_name__name', 'subject_name__name', 'area_name__name', 'part_name__name', 'topic_name__name')
     list_filter = ('exam_name', 'subject_name', 'created_at')
 
     inlines = [InputSuggestionImageInline, InputSuggestionDocumentInline]
 
     fieldsets = (
         (None, {
-            'fields': ('language', 'script', 'evergreen_index', 'brief_description', 'details', 'exam_name', 'subject_name', 'area_name', 'part_name', 'topic_name')
+            'fields': (
+                'language', 
+                'script', 
+                'evergreen_index', 
+                'brief_description', 
+                'details', 
+                'exam_name', 
+                'subject_name', 
+                'area_name', 
+                'part_name', 
+                'chapter_name',  # Included chapter_name as it's in the model
+                'topic_name'
+            )
         }),
         ('Media & Links', {
             'fields': ('question_video', 'question_link')
         }),
         ('Additional Information', {
-            'fields': ('other_text',)
+            'fields': ('other_text', 'created_by')
         }),
     )
 
-    # To display images and documents in the admin view
     def view_on_site(self, obj):
-        return obj.get_absolute_url()  # If you have a view for this object
+        return obj.get_absolute_url()  # Allows viewing on site if there's a corresponding view
 
+    # To handle display of many-to-many fields in list view
+    def get_exam_name(self, obj):
+        return ", ".join([exam.name for exam in obj.exam_name.all()])
+    get_exam_name.short_description = 'Exam Name'
+
+    def get_subject_name(self, obj):
+        return ", ".join([subject.name for subject in obj.subject_name.all()])
+    get_subject_name.short_description = 'Subject Name'
+
+    list_display = ('brief_description', 'get_exam_name', 'get_subject_name', 'created_at', 'created_by')
+    
 @admin.register(InputSuggestionImage)
 class InputSuggestionImageAdmin(admin.ModelAdmin):
     list_display = ('question', 'image')
