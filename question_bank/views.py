@@ -3,44 +3,33 @@ from django.core.files.storage import FileSystemStorage
 from django.contrib import messages
 import pandas as pd
 from .models import QuestionBank,InputSuggestion,InputSuggestionImage, InputSuggestionDocument, ExamName, Subject, Area, PartName, ChapterName,TopicName, QuoteIdiomPhrase
-from django.db.models import Max
+from django.db.models import Max, Count, Value, Q
 from .forms import UploadFileForm, InputSuggestionForm
 import os
 from datetime import datetime
-import io
 from docx import Document
 from docx.shared import Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from PIL import Image as PILImage
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Pt
 from django.http import FileResponse, HttpResponse
 from PIL import Image as PILImage
-from django.utils.text import slugify
-from django.conf import settings
-from django.http import HttpResponseServerError
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count, Value, Q
 import json
-# import plotly.express as px
-# import plotly.graph_objects as go
 from django.utils import timezone
 from datetime import timedelta
 from django.db import transaction
 from accounts.models import User
-from django.db import models  
 import csv
-from io import StringIO, BytesIO
+from io import BytesIO
 from django.http import HttpResponse
-from django.core.files.base import ContentFile
-from reportlab.pdfgen import canvas
 from .models import Report
-from weasyprint import HTML
 from django.template.loader import render_to_string
 from django.db.models.functions import Concat
 from django.contrib.auth import get_user_model
+from django.conf import settings
 
 User = get_user_model()
 
@@ -162,11 +151,26 @@ def add_options_and_answers(document, question):
         document.add_paragraph(f"Created By: {clean_text(created_by_str)}")
 
 
-
 # ************************* Generate Test Word file End *********************************************
 
 
 # ************************* Generate Clas Plus Word file Start *********************************************
+
+import re
+
+def clean_text(text):
+    """Utility function to clean and format text by removing extra newlines and spaces."""
+    if not text:
+        return ''
+    # Strip leading and trailing spaces
+    text = text.strip()
+    # Replace multiple newlines or newline + spaces with a single space
+    text = re.sub(r'\s*\n\s*', ' ', text)
+    # Ensure no multiple spaces remain after replacements
+    text = re.sub(r'\s+', ' ', text)
+    return text
+
+
 
 def set_no_border(cell):
     tc = cell._element
@@ -182,7 +186,8 @@ def set_no_border(cell):
 def generate_questions_document(request):
     try:
         # Setup directory and document file to save generated Word file
-        base_dir = r'E:/Kamlesh Projects/hajeka_Ias_academy-1.0.0/hajela_ias_academy/media/word_file'
+        # base_dir = r'E:/Kamlesh Projects/hajeka_Ias_academy-1.0.0/hajela_ias_academy/media/word_file'
+        base_dir = os.path.join(settings.MEDIA_ROOT, 'word_file')
         os.makedirs(base_dir, exist_ok=True)
         today = datetime.today().strftime('%Y-%m-%d')
         file_name = f'class_plus_questions_{today}.docx'
@@ -196,15 +201,33 @@ def generate_questions_document(request):
 
             # Handle question text or assertion and reason
             if question.question_part and question.question_part.strip():
-                question_text = question.question_part
+                # If question_part exists and is not empty, use it
+                question_text = clean_text(question.question_part)
             else:
-                question_text = (question.question_part_first or '') + "\n" + (question.question_part_third or '')
+                # If question_part is empty, construct the text using question_part_first, assertion, reason, and question_part_third
+                question_text = (
+                    clean_text(question.question_part_first or '') + "\n" + 
+                    ("Assertion (A): " + clean_text(question.assertion) if question.assertion else '') + "\n" + 
+                    ("Reason (R): " + clean_text(question.reason) if question.reason else '') + "\n" + 
+                    clean_text(question.question_part_third or '')
+                )
+
+
 
             # Add question info to the main table
             q_row = table.add_row().cells
             q_row[0].text = 'Question'
 
-            if question.list_1_name and question.list_2_name:
+            if question.question_sub_type == 'list_type_1':
+                # Handle list_i_selection_text or list-I type questions
+                q_row[1].text = f"{clean_text((question.question_part_first) or '')}\n"
+                options_format = "\n".join([
+                    f"{i}. {getattr(question, f'list_1_row{i}', '')}" for i in range(1, 9)
+                    if getattr(question, f'list_1_row{i}', '')
+                ])
+                q_row[1].text += options_format  + "\n" + clean_text((question.question_part_third) or '')
+
+            elif question.list_1_name and question.list_2_name:
                 # Create a sub-table to handle complex question structures
                 sub_table = document.add_table(rows=1, cols=2)
                 sub_table.style = 'Table Grid'
@@ -237,7 +260,7 @@ def generate_questions_document(request):
                 # Clear the original cell content, insert question text and sub-table
                 q_row[1]._element.clear_content()
                 p = q_row[1].paragraphs[0] if q_row[1].paragraphs else q_row[1].add_paragraph()
-                p.add_run((question.question_part_first or '') + "\n")
+                p.add_run((clean_text(question.question_part_first) or '') + "\n")
                 q_row[1]._element.append(sub_table._element)
 
                 # Add 'Codes:' text below the sub-table within the same cell
@@ -255,9 +278,17 @@ def generate_questions_document(request):
             if question.image:
                 image_path = question.image.path
                 pil_img = PILImage.open(image_path)
+                
+                # Check if the image is in 'RGBA' mode (i.e., if it's a PNG with transparency)
+                if pil_img.mode == 'RGBA':
+                    pil_img = pil_img.convert('RGB')  # Convert to 'RGB' mode to discard transparency
+
+                # Save the image in JPEG format regardless of the original format
                 img_io = BytesIO()
-                pil_img.save(img_io, 'JPEG')
-                img_io.seek(0)
+                pil_img.save(img_io, format='JPEG')  # Save as JPEG
+                img_io.seek(0)  # Reset the pointer to the start of the stream
+                
+                # Add the image to the document
                 paragraph = q_row[1].add_paragraph()
                 run = paragraph.add_run()
                 run.add_picture(img_io, width=Inches(1.5))
@@ -308,8 +339,16 @@ def generate_questions_document(request):
 
             # Additional rows for type, options, solution, and marks
             type_row = table.add_row().cells
+            # Setting the type based on question_sub_type
             type_row[0].text = 'Type'
-            type_row[1].text = question.type_of_question
+
+            # Conditional logic to set the correct type text
+            if question.question_sub_type == 'true_and_false_type':
+                type_row[1].text = 'true_false'
+            elif question.question_sub_type == 'fill_in_the_blank_type':
+                type_row[1].text = 'fill_ups'
+            else:
+                type_row[1].text = 'multiple_choice'
             type_row[1].merge(type_row[2])
 
             correct_option_text = ""  # Store text of the correct answer
@@ -329,7 +368,7 @@ def generate_questions_document(request):
 
             solution_row = table.add_row().cells
             solution_row[0].text = 'Solution'
-            solution_row[1].text = correct_option_text
+            solution_row[1].text = clean_text(question.correct_answer_description)
             solution_row[1].merge(solution_row[2])
 
             marks_row = table.add_row().cells
@@ -349,6 +388,195 @@ def generate_questions_document(request):
         return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
 
+
+# def set_no_border(cell):
+#     tc = cell._element
+#     tcPr = tc.get_or_add_tcPr()
+#     tcBorders = OxmlElement('w:tcBorders')
+#     for border_name in ['top', 'left', 'bottom', 'right']:
+#         border = OxmlElement(f'w:{border_name}')
+#         border.set(qn('w:val'), 'nil')
+#         tcBorders.append(border)
+#     tcPr.append(tcBorders)
+
+
+# def generate_questions_document(request):
+#     try:
+#         # Setup directory and document file to save generated Word file
+#         # base_dir = r'E:/Kamlesh Projects/hajeka_Ias_academy-1.0.0/hajela_ias_academy/media/word_file'
+#         base_dir = os.path.join(settings.MEDIA_ROOT, 'word_file')
+#         os.makedirs(base_dir, exist_ok=True)
+#         today = datetime.today().strftime('%Y-%m-%d')
+#         file_name = f'class_plus_questions_{today}.docx'
+#         file_path = os.path.join(base_dir, file_name)
+#         document = Document()
+
+#         for question in QuestionBank.objects.all():
+#             # Create main table for the question and set styles
+#             table = document.add_table(rows=0, cols=3)
+#             table.style = 'Table Grid'
+
+#             # Handle question text or assertion and reason
+#             if question.question_part and question.question_part.strip():
+#                 question_text = question.question_part
+#             else:
+#                 question_text = (question.question_part_first or '') + "\n" + (question.question_part_third or '')
+
+#             # Add question info to the main table
+#             q_row = table.add_row().cells
+#             q_row[0].text = 'Question'
+
+#             if question.list_1_name and question.list_2_name:
+#                 # Create a sub-table to handle complex question structures
+#                 sub_table = document.add_table(rows=1, cols=2)
+#                 sub_table.style = 'Table Grid'
+
+#                 # Apply no border style to all cells in the sub-table as they are created
+#                 for cell in sub_table._cells:
+#                     set_no_border(cell)
+
+#                 # Modify the headers to include the list names as desired
+#                 sub_hdr_cells = sub_table.rows[0].cells
+#                 sub_hdr_cells[0].text = "LIST - I"
+#                 sub_hdr_cells[1].text = "LIST - II"
+
+#                 # Add the list names, if available
+#                 if question.list_1_name:
+#                     sub_hdr_cells[0].text += f"\n({clean_text(question.list_1_name)})"
+#                 if question.list_2_name:
+#                     sub_hdr_cells[1].text += f"\n({clean_text(question.list_2_name)})"
+
+#                 # Populate sub-table with list options
+#                 for i in range(1, 9):
+#                     row_cells = sub_table.add_row().cells
+#                     for cell in row_cells:
+#                         set_no_border(cell)  # Ensure borders are removed for new cells too
+#                     list_1_option = getattr(question, f'list_1_row{i}', '')
+#                     list_2_option = getattr(question, f'list_2_row{i}', '')
+#                     row_cells[0].text = f"{chr(64+i)}. {list_1_option}" if list_1_option else ""
+#                     row_cells[1].text = f"{i}. {list_2_option}" if list_2_option else ""
+
+#                 # Clear the original cell content, insert question text and sub-table
+#                 q_row[1]._element.clear_content()
+#                 p = q_row[1].paragraphs[0] if q_row[1].paragraphs else q_row[1].add_paragraph()
+#                 p.add_run((question.question_part_first or '') + "\n")
+#                 q_row[1]._element.append(sub_table._element)
+
+#                 # Add 'Codes:' text below the sub-table within the same cell
+#                 p = q_row[1].add_paragraph()
+#                 p.add_run("\nCodes:\t A\t B\t C\t D")
+
+#             else:
+#                 # Standard question text handling
+#                 q_row[1].text = question_text
+
+#             # Merging cells for question text and image
+#             q_row[1].merge(q_row[2])
+            
+#             # Handling image insertion if available
+#             if question.image:
+#                 image_path = question.image.path
+#                 pil_img = PILImage.open(image_path)
+                
+#                 # Check if the image is in 'RGBA' mode (i.e., if it's a PNG with transparency)
+#                 if pil_img.mode == 'RGBA':
+#                     pil_img = pil_img.convert('RGB')  # Convert to 'RGB' mode to discard transparency
+
+#                 # Save the image in JPEG format regardless of the original format
+#                 img_io = BytesIO()
+#                 pil_img.save(img_io, format='JPEG')  # Save as JPEG
+#                 img_io.seek(0)  # Reset the pointer to the start of the stream
+                
+#                 # Add the image to the document
+#                 paragraph = q_row[1].add_paragraph()
+#                 run = paragraph.add_run()
+#                 run.add_picture(img_io, width=Inches(1.5))
+
+#             # Table type Questions
+#             # Check for the presence of table_head_* fields and their corresponding data
+#             sub_table = None
+
+#             table_heads = ['table_head_a', 'table_head_b', 'table_head_c', 'table_head_d']
+#             data_fields = [
+#                 [getattr(question, f'head_a_data{j}', None) for j in range(1, 5)],
+#                 [getattr(question, f'head_b_data{j}', None) for j in range(1, 5)],
+#                 [getattr(question, f'head_c_data{j}', None) for j in range(1, 5)],
+#                 [getattr(question, f'head_d_data{j}', None) for j in range(1, 5)]
+#             ]
+
+#             filtered_heads_data = [
+#                 (head, [data for data in datas if data])
+#                 for head, datas in zip(table_heads, data_fields) 
+#                 if getattr(question, head, None) and any(datas)
+#             ]
+
+#             if filtered_heads_data:
+#                 total_rows = 1 + max(len(datas) for _, datas in filtered_heads_data)
+#                 sub_table = document.add_table(rows=total_rows, cols=len(filtered_heads_data))
+#                 sub_table.style = 'Table Grid'
+#                 hdr_cells = sub_table.rows[0].cells
+#                 for idx, (head, _) in enumerate(filtered_heads_data):
+#                     hdr_cells[idx].text = getattr(question, head, "")
+#                     paragraph = hdr_cells[idx].paragraphs[0]
+#                     paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER  # Center-align header text
+
+#                 for col_idx, (head, data_list) in enumerate(filtered_heads_data):
+#                     serial_number = 1
+#                     for row_idx, data in enumerate(data_list):
+#                         cell = sub_table.cell(row_idx + 1, col_idx)
+#                         if head == 'table_head_a':
+#                             cell.text = f"{serial_number}. {data}"
+#                             serial_number += 1
+#                         else:
+#                             cell.text = data
+
+#             if sub_table is not None:
+#                 q_row[1]._element.clear_content()
+#                 p = q_row[1].paragraphs[0] if q_row[1].paragraphs else q_row[1].add_paragraph()
+#                 p.add_run((question_text or '') + "\n")
+#                 q_row[1]._element.append(sub_table._element)
+
+#             # Additional rows for type, options, solution, and marks
+#             type_row = table.add_row().cells
+#             type_row[0].text = 'Type'
+#             type_row[1].text = 'multiple_choice'
+#             type_row[1].merge(type_row[2])
+
+#             correct_option_text = ""  # Store text of the correct answer
+#             valid_options = ['a', 'b', 'c', 'd']  # Include all valid options
+#             correct_answer = question.correct_answer_choice.lower() if question.correct_answer_choice else None  # Safely handle None
+
+#             for opt in valid_options:
+#                 option_text = getattr(question, f"answer_option_{opt}", None)  # Get the option text or None if it doesn't exist
+#                 if option_text:  # Check if the option text is not None
+#                     opt_row = table.add_row().cells
+#                     opt_row[0].text = 'Option'
+#                     opt_row[1].text = f"{opt.upper()}. {option_text}"  # Set the option text
+#                     is_correct = opt == correct_answer  # Determine if this option is correct
+#                     opt_row[2].text = 'correct' if is_correct else 'incorrect'  # Set 'correct' or 'incorrect'
+#                     if is_correct:
+#                         correct_option_text = option_text  # Store the correct option text
+
+#             solution_row = table.add_row().cells
+#             solution_row[0].text = 'Solution'
+#             solution_row[1].text = question.correct_answer_description
+#             solution_row[1].merge(solution_row[2])
+
+#             marks_row = table.add_row().cells
+#             marks_row[0].text = 'Marks'
+#             marks_row[1].text = str(question.marks)
+#             marks_row[2].text = str(question.negative_marks)
+
+#             document.add_paragraph()  # Add space between questions
+
+#         document.save(file_path)
+        
+#         # Return the generated file as a downloadable response
+#         response = FileResponse(open(file_path, 'rb'), as_attachment=True, filename=file_name)
+#         return response
+
+#     except Exception as e:
+#         return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
 # ************************* Generate Clas Plus Word file Start *********************************************
 
