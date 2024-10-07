@@ -182,11 +182,9 @@ def set_no_border(cell):
         tcBorders.append(border)
     tcPr.append(tcBorders)
 
-
 def generate_questions_document(request):
     try:
         # Setup directory and document file to save generated Word file
-        # base_dir = r'E:/Kamlesh Projects/hajeka_Ias_academy-1.0.0/hajela_ias_academy/media/word_file'
         base_dir = os.path.join(settings.MEDIA_ROOT, 'word_file')
         os.makedirs(base_dir, exist_ok=True)
         today = datetime.today().strftime('%Y-%m-%d')
@@ -199,19 +197,26 @@ def generate_questions_document(request):
             table = document.add_table(rows=0, cols=3)
             table.style = 'Table Grid'
 
-            # Handle question text or assertion and reason
-            if question.question_part and question.question_part.strip():
-                # If question_part exists and is not empty, use it
-                question_text = clean_text(question.question_part)
-            else:
-                # If question_part is empty, construct the text using question_part_first, assertion, reason, and question_part_third
+            # Construct the question text
+            # Construct the question text based on question_sub_type
+            if question.question_sub_type == "r_and_a_type":
                 question_text = (
-                    clean_text(question.question_part_first or '') + "\n" + 
-                    ("Assertion (A): " + clean_text(question.assertion) if question.assertion else '') + "\n" + 
-                    ("Reason (R): " + clean_text(question.reason) if question.reason else '') + "\n" + 
+                    clean_text(question.question_part_first or '') + "\n" +
+                    (clean_text(question.assertion) if question.assertion else '') + "\n" +
+                    (clean_text(question.reason) if question.reason else '') + "\n" +
                     clean_text(question.question_part_third or '')
                 )
-
+            else:
+                # Default construction for other question types
+                if question.question_part and question.question_part.strip():
+                    question_text = clean_text(question.question_part)
+                else:
+                    question_text = (
+                        clean_text(question.question_part_first or '') + "\n" +
+                        ("Assertion (A): " + clean_text(question.assertion) if question.assertion else '') + "\n" +
+                        ("Reason (R): " + clean_text(question.reason) if question.reason else '') + "\n" +
+                        clean_text(question.question_part_third or '')
+                    )
 
 
             # Add question info to the main table
@@ -226,38 +231,23 @@ def generate_questions_document(request):
                     if getattr(question, f'list_1_row{i}', '')
                 ])
                 q_row[1].text += options_format  + "\n" + clean_text((question.question_part_third) or '')
-
+            # Handle list type questions with sub-tables
             elif question.list_1_name and question.list_2_name:
-                # Create a sub-table to handle complex question structures
                 sub_table = document.add_table(rows=1, cols=2)
                 sub_table.style = 'Table Grid'
-
-                # Apply no border style to all cells in the sub-table as they are created
-                for cell in sub_table._cells:
-                    set_no_border(cell)
-
-                # Modify the headers to include the list names as desired
                 sub_hdr_cells = sub_table.rows[0].cells
-                sub_hdr_cells[0].text = "LIST - I"
-                sub_hdr_cells[1].text = "LIST - II"
+                sub_hdr_cells[0].text = f"LIST - I\n({clean_text(question.list_1_name)})"
+                sub_hdr_cells[1].text = f"LIST - II\n({clean_text(question.list_2_name)})"
 
-                # Add the list names, if available
-                if question.list_1_name:
-                    sub_hdr_cells[0].text += f"\n({clean_text(question.list_1_name)})"
-                if question.list_2_name:
-                    sub_hdr_cells[1].text += f"\n({clean_text(question.list_2_name)})"
-
-                # Populate sub-table with list options
                 for i in range(1, 9):
-                    row_cells = sub_table.add_row().cells
-                    for cell in row_cells:
-                        set_no_border(cell)  # Ensure borders are removed for new cells too
                     list_1_option = getattr(question, f'list_1_row{i}', '')
                     list_2_option = getattr(question, f'list_2_row{i}', '')
-                    row_cells[0].text = f"{chr(64+i)}. {list_1_option}" if list_1_option else ""
-                    row_cells[1].text = f"{i}. {list_2_option}" if list_2_option else ""
+                    if not list_2_option:
+                        break  # Stop loop if list_2_item is null
+                    row_cells = sub_table.add_row().cells
+                    row_cells[0].text = f"{chr(64+i)}. {list_1_option}"
+                    row_cells[1].text = f"{i}. {list_2_option}"
 
-                # Clear the original cell content, insert question text and sub-table
                 q_row[1]._element.clear_content()
                 p = q_row[1].paragraphs[0] if q_row[1].paragraphs else q_row[1].add_paragraph()
                 p.add_run((clean_text(question.question_part_first) or '') + "\n")
@@ -266,37 +256,32 @@ def generate_questions_document(request):
                 # Add 'Codes:' text below the sub-table within the same cell
                 p = q_row[1].add_paragraph()
                 p.add_run("\nCodes:\t A\t B\t C\t D")
-
             else:
-                # Standard question text handling
                 q_row[1].text = question_text
 
             # Merging cells for question text and image
             q_row[1].merge(q_row[2])
-            
+
             # Handling image insertion if available
             if question.image:
                 image_path = question.image.path
                 pil_img = PILImage.open(image_path)
-                
+
                 # Check if the image is in 'RGBA' mode (i.e., if it's a PNG with transparency)
                 if pil_img.mode == 'RGBA':
                     pil_img = pil_img.convert('RGB')  # Convert to 'RGB' mode to discard transparency
 
                 # Save the image in JPEG format regardless of the original format
                 img_io = BytesIO()
-                pil_img.save(img_io, format='JPEG')  # Save as JPEG
-                img_io.seek(0)  # Reset the pointer to the start of the stream
-                
-                # Add the image to the document
+                pil_img.save(img_io, format='JPEG')
+                img_io.seek(0)
+
+                # Add the image to the document between question_part_first and question_part_third
                 paragraph = q_row[1].add_paragraph()
                 run = paragraph.add_run()
                 run.add_picture(img_io, width=Inches(1.5))
 
-            # Table type Questions
-            # Check for the presence of table_head_* fields and their corresponding data
-            sub_table = None
-
+            # Table-type questions
             table_heads = ['table_head_a', 'table_head_b', 'table_head_c', 'table_head_d']
             data_fields = [
                 [getattr(question, f'head_a_data{j}', None) for j in range(1, 5)],
@@ -307,64 +292,67 @@ def generate_questions_document(request):
 
             filtered_heads_data = [
                 (head, [data for data in datas if data])
-                for head, datas in zip(table_heads, data_fields) 
+                for head, datas in zip(table_heads, data_fields)
                 if getattr(question, head, None) and any(datas)
             ]
 
             if filtered_heads_data:
-                total_rows = 1 + max(len(datas) for _, datas in filtered_heads_data)
-                sub_table = document.add_table(rows=total_rows, cols=len(filtered_heads_data))
+                sub_table = document.add_table(rows=len(filtered_heads_data[0][1]) + 1, cols=len(filtered_heads_data))
                 sub_table.style = 'Table Grid'
                 hdr_cells = sub_table.rows[0].cells
                 for idx, (head, _) in enumerate(filtered_heads_data):
                     hdr_cells[idx].text = getattr(question, head, "")
-                    paragraph = hdr_cells[idx].paragraphs[0]
-                    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER  # Center-align header text
-
                 for col_idx, (head, data_list) in enumerate(filtered_heads_data):
-                    serial_number = 1
                     for row_idx, data in enumerate(data_list):
                         cell = sub_table.cell(row_idx + 1, col_idx)
-                        if head == 'table_head_a':
-                            cell.text = f"{serial_number}. {data}"
-                            serial_number += 1
-                        else:
-                            cell.text = data
-
-            if sub_table is not None:
-                q_row[1]._element.clear_content()
-                p = q_row[1].paragraphs[0] if q_row[1].paragraphs else q_row[1].add_paragraph()
-                p.add_run((question_text or '') + "\n")
+                        cell.text = data
                 q_row[1]._element.append(sub_table._element)
 
-            # Additional rows for type, options, solution, and marks
+            # Adding the Type row based on conditions
             type_row = table.add_row().cells
-            # Setting the type based on question_sub_type
             type_row[0].text = 'Type'
 
-            # Conditional logic to set the correct type text
+            # Set the type text based on the question_sub_type
             if question.question_sub_type == 'true_and_false_type':
                 type_row[1].text = 'true_false'
             elif question.question_sub_type == 'fill_in_the_blank_type':
                 type_row[1].text = 'fill_ups'
             else:
                 type_row[1].text = 'multiple_choice'
+
+            # Merging cells for consistent formatting
             type_row[1].merge(type_row[2])
 
-            correct_option_text = ""  # Store text of the correct answer
-            valid_options = ['a', 'b', 'c', 'd']  # Include all valid options
-            correct_answer = question.correct_answer_choice.lower() if question.correct_answer_choice else None  # Safely handle None
-
+            # Adding options (including for true/false and fill-ups)
+            valid_options = ['a', 'b', 'c', 'd']
+            correct_answer = question.correct_answer_choice.lower() if question.correct_answer_choice else None
             for opt in valid_options:
-                option_text = getattr(question, f"answer_option_{opt}", None)  # Get the option text or None if it doesn't exist
-                if option_text:  # Check if the option text is not None
+                option_text = getattr(question, f"answer_option_{opt}", None)
+                if option_text:
                     opt_row = table.add_row().cells
                     opt_row[0].text = 'Option'
-                    opt_row[1].text = f"{opt.upper()}. {option_text}"  # Set the option text
-                    is_correct = opt == correct_answer  # Determine if this option is correct
-                    opt_row[2].text = 'correct' if is_correct else 'incorrect'  # Set 'correct' or 'incorrect'
-                    if is_correct:
-                        correct_option_text = option_text  # Store the correct option text
+                    opt_row[1].text = f"{opt.upper()}. {option_text}"
+                    opt_row[2].text = 'correct' if opt == correct_answer else 'incorrect'
+
+            if question.question_sub_type == 'fill_in_the_blank_type':
+                option_row = table.add_row().cells
+                option_row[0].text = 'Option'
+                option_row[1].text = question.correct_answer_choice or '___'
+
+            if question.question_sub_type == 'true_and_false_type':
+                answer_row = table.add_row().cells
+                answer_row[0].text = 'Answer'
+
+                # Get the correct answer letter (e.g., 'a', 'b') and fetch the corresponding option text
+                correct_answer_letter = question.correct_answer_choice.lower()  # Get the correct answer letter in lowercase
+                correct_answer_text = getattr(question, f"answer_option_{correct_answer_letter}", None)  # Fetch the text of the correct answer option
+
+                if correct_answer_text:
+                    answer_row[1].text = correct_answer_text  # Set the correct answer option text
+                else:
+                    answer_row[1].text = "Answer not available"  # Fallback in case the option text is missing
+                
+                answer_row[1].merge(answer_row[2])
 
             solution_row = table.add_row().cells
             solution_row[0].text = 'Solution'
@@ -388,200 +376,16 @@ def generate_questions_document(request):
         return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
 
-
-# def set_no_border(cell):
-#     tc = cell._element
-#     tcPr = tc.get_or_add_tcPr()
-#     tcBorders = OxmlElement('w:tcBorders')
-#     for border_name in ['top', 'left', 'bottom', 'right']:
-#         border = OxmlElement(f'w:{border_name}')
-#         border.set(qn('w:val'), 'nil')
-#         tcBorders.append(border)
-#     tcPr.append(tcBorders)
-
-
-# def generate_questions_document(request):
-#     try:
-#         # Setup directory and document file to save generated Word file
-#         # base_dir = r'E:/Kamlesh Projects/hajeka_Ias_academy-1.0.0/hajela_ias_academy/media/word_file'
-#         base_dir = os.path.join(settings.MEDIA_ROOT, 'word_file')
-#         os.makedirs(base_dir, exist_ok=True)
-#         today = datetime.today().strftime('%Y-%m-%d')
-#         file_name = f'class_plus_questions_{today}.docx'
-#         file_path = os.path.join(base_dir, file_name)
-#         document = Document()
-
-#         for question in QuestionBank.objects.all():
-#             # Create main table for the question and set styles
-#             table = document.add_table(rows=0, cols=3)
-#             table.style = 'Table Grid'
-
-#             # Handle question text or assertion and reason
-#             if question.question_part and question.question_part.strip():
-#                 question_text = question.question_part
-#             else:
-#                 question_text = (question.question_part_first or '') + "\n" + (question.question_part_third or '')
-
-#             # Add question info to the main table
-#             q_row = table.add_row().cells
-#             q_row[0].text = 'Question'
-
-#             if question.list_1_name and question.list_2_name:
-#                 # Create a sub-table to handle complex question structures
-#                 sub_table = document.add_table(rows=1, cols=2)
-#                 sub_table.style = 'Table Grid'
-
-#                 # Apply no border style to all cells in the sub-table as they are created
-#                 for cell in sub_table._cells:
-#                     set_no_border(cell)
-
-#                 # Modify the headers to include the list names as desired
-#                 sub_hdr_cells = sub_table.rows[0].cells
-#                 sub_hdr_cells[0].text = "LIST - I"
-#                 sub_hdr_cells[1].text = "LIST - II"
-
-#                 # Add the list names, if available
-#                 if question.list_1_name:
-#                     sub_hdr_cells[0].text += f"\n({clean_text(question.list_1_name)})"
-#                 if question.list_2_name:
-#                     sub_hdr_cells[1].text += f"\n({clean_text(question.list_2_name)})"
-
-#                 # Populate sub-table with list options
-#                 for i in range(1, 9):
-#                     row_cells = sub_table.add_row().cells
-#                     for cell in row_cells:
-#                         set_no_border(cell)  # Ensure borders are removed for new cells too
-#                     list_1_option = getattr(question, f'list_1_row{i}', '')
-#                     list_2_option = getattr(question, f'list_2_row{i}', '')
-#                     row_cells[0].text = f"{chr(64+i)}. {list_1_option}" if list_1_option else ""
-#                     row_cells[1].text = f"{i}. {list_2_option}" if list_2_option else ""
-
-#                 # Clear the original cell content, insert question text and sub-table
-#                 q_row[1]._element.clear_content()
-#                 p = q_row[1].paragraphs[0] if q_row[1].paragraphs else q_row[1].add_paragraph()
-#                 p.add_run((question.question_part_first or '') + "\n")
-#                 q_row[1]._element.append(sub_table._element)
-
-#                 # Add 'Codes:' text below the sub-table within the same cell
-#                 p = q_row[1].add_paragraph()
-#                 p.add_run("\nCodes:\t A\t B\t C\t D")
-
-#             else:
-#                 # Standard question text handling
-#                 q_row[1].text = question_text
-
-#             # Merging cells for question text and image
-#             q_row[1].merge(q_row[2])
-            
-#             # Handling image insertion if available
-#             if question.image:
-#                 image_path = question.image.path
-#                 pil_img = PILImage.open(image_path)
-                
-#                 # Check if the image is in 'RGBA' mode (i.e., if it's a PNG with transparency)
-#                 if pil_img.mode == 'RGBA':
-#                     pil_img = pil_img.convert('RGB')  # Convert to 'RGB' mode to discard transparency
-
-#                 # Save the image in JPEG format regardless of the original format
-#                 img_io = BytesIO()
-#                 pil_img.save(img_io, format='JPEG')  # Save as JPEG
-#                 img_io.seek(0)  # Reset the pointer to the start of the stream
-                
-#                 # Add the image to the document
-#                 paragraph = q_row[1].add_paragraph()
-#                 run = paragraph.add_run()
-#                 run.add_picture(img_io, width=Inches(1.5))
-
-#             # Table type Questions
-#             # Check for the presence of table_head_* fields and their corresponding data
-#             sub_table = None
-
-#             table_heads = ['table_head_a', 'table_head_b', 'table_head_c', 'table_head_d']
-#             data_fields = [
-#                 [getattr(question, f'head_a_data{j}', None) for j in range(1, 5)],
-#                 [getattr(question, f'head_b_data{j}', None) for j in range(1, 5)],
-#                 [getattr(question, f'head_c_data{j}', None) for j in range(1, 5)],
-#                 [getattr(question, f'head_d_data{j}', None) for j in range(1, 5)]
-#             ]
-
-#             filtered_heads_data = [
-#                 (head, [data for data in datas if data])
-#                 for head, datas in zip(table_heads, data_fields) 
-#                 if getattr(question, head, None) and any(datas)
-#             ]
-
-#             if filtered_heads_data:
-#                 total_rows = 1 + max(len(datas) for _, datas in filtered_heads_data)
-#                 sub_table = document.add_table(rows=total_rows, cols=len(filtered_heads_data))
-#                 sub_table.style = 'Table Grid'
-#                 hdr_cells = sub_table.rows[0].cells
-#                 for idx, (head, _) in enumerate(filtered_heads_data):
-#                     hdr_cells[idx].text = getattr(question, head, "")
-#                     paragraph = hdr_cells[idx].paragraphs[0]
-#                     paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER  # Center-align header text
-
-#                 for col_idx, (head, data_list) in enumerate(filtered_heads_data):
-#                     serial_number = 1
-#                     for row_idx, data in enumerate(data_list):
-#                         cell = sub_table.cell(row_idx + 1, col_idx)
-#                         if head == 'table_head_a':
-#                             cell.text = f"{serial_number}. {data}"
-#                             serial_number += 1
-#                         else:
-#                             cell.text = data
-
-#             if sub_table is not None:
-#                 q_row[1]._element.clear_content()
-#                 p = q_row[1].paragraphs[0] if q_row[1].paragraphs else q_row[1].add_paragraph()
-#                 p.add_run((question_text or '') + "\n")
-#                 q_row[1]._element.append(sub_table._element)
-
-#             # Additional rows for type, options, solution, and marks
-#             type_row = table.add_row().cells
-#             type_row[0].text = 'Type'
-#             type_row[1].text = 'multiple_choice'
-#             type_row[1].merge(type_row[2])
-
-#             correct_option_text = ""  # Store text of the correct answer
-#             valid_options = ['a', 'b', 'c', 'd']  # Include all valid options
-#             correct_answer = question.correct_answer_choice.lower() if question.correct_answer_choice else None  # Safely handle None
-
-#             for opt in valid_options:
-#                 option_text = getattr(question, f"answer_option_{opt}", None)  # Get the option text or None if it doesn't exist
-#                 if option_text:  # Check if the option text is not None
-#                     opt_row = table.add_row().cells
-#                     opt_row[0].text = 'Option'
-#                     opt_row[1].text = f"{opt.upper()}. {option_text}"  # Set the option text
-#                     is_correct = opt == correct_answer  # Determine if this option is correct
-#                     opt_row[2].text = 'correct' if is_correct else 'incorrect'  # Set 'correct' or 'incorrect'
-#                     if is_correct:
-#                         correct_option_text = option_text  # Store the correct option text
-
-#             solution_row = table.add_row().cells
-#             solution_row[0].text = 'Solution'
-#             solution_row[1].text = question.correct_answer_description
-#             solution_row[1].merge(solution_row[2])
-
-#             marks_row = table.add_row().cells
-#             marks_row[0].text = 'Marks'
-#             marks_row[1].text = str(question.marks)
-#             marks_row[2].text = str(question.negative_marks)
-
-#             document.add_paragraph()  # Add space between questions
-
-#         document.save(file_path)
-        
-#         # Return the generated file as a downloadable response
-#         response = FileResponse(open(file_path, 'rb'), as_attachment=True, filename=file_name)
-#         return response
-
-#     except Exception as e:
-#         return HttpResponse(f"An error occurred: {str(e)}", status=500)
-
 # ************************* Generate Clas Plus Word file Start *********************************************
 
 
 # ************************* Upload Excel file Start *********************************************
+# Function to safely convert exam years to integers
+def safe_int(value, default=0):
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return default  # Return a default value if conversion fails
 
 def upload_file(request):
     if request.method == 'POST':
@@ -600,7 +404,10 @@ def upload_file(request):
             data = data.fillna({
                 'marks': 0,
                 'negative_marks': 0,
-                'exam_year': 0,
+                'exam_year1': 0,
+                'exam_year2': 0,
+                'exam_year3': 0,
+                'exam_year4': 0,
             }).fillna('')
 
             # Get the maximum question number from the database
@@ -615,25 +422,53 @@ def upload_file(request):
                 while QuestionBank.objects.filter(question_number=str(start_number)).exists():
                     start_number += 1
 
-                try:
-                    exam_year = int(row.get('exam_year', 0))
-                except ValueError:
-                    exam_year = None  # Handle the case where 'exam_year' is not a valid integer
+                # Set the type_of_question based on question_sub_type
+                if row.get('question_sub_type') == 'true_and_false_type':
+                    type_of_question = 'true_false'
+                elif row.get('question_sub_type') == 'fill_in_the_blank_type':
+                    type_of_question = 'fill_ups'
+                else:
+                    type_of_question = 'multiple_choice'
 
-                QuestionBank.objects.create(
+                # Handle multiple exam years using safe_int
+                exam_years = [safe_int(row.get('exam_year1', 0)),
+                              safe_int(row.get('exam_year2', 0)),
+                              safe_int(row.get('exam_year3', 0)),
+                              safe_int(row.get('exam_year4', 0))]
+                
+                # Filter out invalid years (like 0) and use the first valid one
+                exam_year = next((year for year in exam_years if year != 0), 0)
+
+                # Handle evergreen_index
+                evergreen_index = row.get('evergreen_index', 5)  # Default value of 5
+                if evergreen_index == '' or evergreen_index is None:
+                    evergreen_index = 0  # Handle empty or None values
+                else:
+                    evergreen_index = int(evergreen_index)  # Ensure it's an integer
+
+                # Get the ManyToMany fields for ExamName, Subject, Area, PartName, etc.
+                exam_names = ExamName.objects.filter(name__in=[x.strip() for x in row.get('exam_name', '').split(',')])
+                subjects = Subject.objects.filter(name__in=[x.strip() for x in row.get('subject_name', '').split(',')])
+                areas = Area.objects.filter(name__in=[x.strip() for x in row.get('area_name', '').split(',')])
+                parts = PartName.objects.filter(name__in=[x.strip() for x in row.get('part_name', '').split(',')])
+
+                # Create the QuestionBank entry
+                question = QuestionBank.objects.create(
                     question_number=str(start_number),
-                    type_of_question=row.get('question_type', 'multiple_choice'),
-                    exam_name=row.get('exam_name', ''),
+                    type_of_question=type_of_question,
                     exam_stage=row.get('exam_stage', ''),
-                    exam_year=exam_year,
+                    exam_year=exam_year,  # Save the first valid exam year
                     language=row.get('language', ''),
                     script=row.get('script', ''),
+                    evergreen_index=evergreen_index,  # Converted to integer
                     marks=float(row.get('exam_year1_marks', 0)),
                     negative_marks=float(row.get('exam_year1_negative_marks', 0)),
                     degree_of_difficulty=row.get('degree_of_difficulty', ''),
-                    question_sub_type=row.get('question_sub_type', ''),
+                    question_sub_type=row.get('question_sub_type', 'simple_type'),
                     question_part=row.get('question_part', ''),
                     question_part_first=row.get('question_part_first_part', ''),
+                    assertion=row.get('assertion', ''),
+                    reason=row.get('reason', ''),
                     list_1_name=row.get('list_1_name', ''),
                     list_2_name=row.get('list_2_name', ''),
                     list_1_row1=row.get('list_1_row1', ''),
@@ -658,38 +493,131 @@ def upload_file(request):
                     answer_option_c=row.get('answer_option_c', ''),
                     answer_option_d=row.get('answer_option_d', ''),
                     correct_answer_choice=row.get('correct_answer_choice', ''),
-                    correct_answer_description=row.get('correct_answer_description', ''),
-                    subject_name=row.get('subject_name', ''),
-                    area_name=row.get('area_name', ''),
-                    part_name=row.get('part_name', ''),
-                    table_head_a=row.get('table_head_a', ''),
-                    table_head_b=row.get('table_head_b', ''),
-                    table_head_c=row.get('table_head_c', ''),
-                    table_head_d=row.get('table_head_d', ''),
-                    head_a_data1=row.get('head_a_data1', ''),
-                    head_a_data2=row.get('head_a_data2', ''),
-                    head_a_data3=row.get('head_a_data3', ''),
-                    head_a_data4=row.get('head_a_data4', ''),
-                    head_b_data1=row.get('head_b_data1', ''),
-                    head_b_data2=row.get('head_b_data2', ''),
-                    head_b_data3=row.get('head_b_data3', ''),
-                    head_b_data4=row.get('head_b_data4', ''),
-                    head_c_data1=row.get('head_c_data1', ''),
-                    head_c_data2=row.get('head_c_data2', ''),
-                    head_c_data3=row.get('head_c_data3', ''),
-                    head_c_data4=row.get('head_c_data4', ''),
-                    head_d_data1=row.get('head_d_data1', ''),
-                    head_d_data2=row.get('head_d_data2', ''),
-                    head_d_data3=row.get('head_d_data3', ''),
-                    head_d_data4=row.get('head_d_data4', '')
+                    correct_answer_description=row.get('correct_answer_description', '')
                 )
+
+                # ManyToMany relationships
+                question.exam_name.set(exam_names)
+                question.subject_name.set(subjects)
+                question.area_name.set(areas)
+                question.part_name.set(parts)
+
                 start_number += 1
 
             messages.success(request, "File uploaded and data processed successfully!")
             return redirect('upload-file')
     else:
         form = UploadFileForm()
+
     return render(request, 'question_bank/upload.html', {'form': form})
+
+# def upload_file(request):
+#     if request.method == 'POST':
+#         form = UploadFileForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             # Save the uploaded file temporarily
+#             file = request.FILES['file']
+#             fs = FileSystemStorage()
+#             filename = fs.save(file.name, file)
+#             uploaded_file_url = fs.url(filename)
+
+#             # Process the uploaded file
+#             data = pd.read_excel(fs.path(filename))
+
+#             # Replace NaN values with blank strings for text fields and 0 for numeric fields
+#             data = data.fillna({
+#                 'marks': 0,
+#                 'negative_marks': 0,
+#                 'exam_year': 0,
+#             }).fillna('')
+
+#             # Get the maximum question number from the database
+#             max_question_number = QuestionBank.objects.aggregate(Max('question_number'))['question_number__max']
+#             if max_question_number:
+#                 start_number = int(max_question_number) + 1
+#             else:
+#                 start_number = 1
+
+#             # Loop through the rows and create QuestionBank entries
+#             for _, row in data.iterrows():
+#                 while QuestionBank.objects.filter(question_number=str(start_number)).exists():
+#                     start_number += 1
+
+#                 try:
+#                     exam_year = int(row.get('exam_year', 0))
+#                 except ValueError:
+#                     exam_year = None  # Handle the case where 'exam_year' is not a valid integer
+
+#                 QuestionBank.objects.create(
+#                     question_number=str(start_number),
+#                     type_of_question=row.get('question_type', 'multiple_choice'),
+#                     exam_name=row.get('exam_name', ''),
+#                     exam_stage=row.get('exam_stage', ''),
+#                     exam_year=exam_year,
+#                     language=row.get('language', ''),
+#                     script=row.get('script', ''),
+#                     marks=float(row.get('exam_year1_marks', 0)),
+#                     negative_marks=float(row.get('exam_year1_negative_marks', 0)),
+#                     degree_of_difficulty=row.get('degree_of_difficulty', ''),
+#                     question_sub_type=row.get('question_sub_type', ''),
+#                     question_part=row.get('question_part', ''),
+#                     question_part_first=row.get('question_part_first_part', ''),
+#                     list_1_name=row.get('list_1_name', ''),
+#                     list_2_name=row.get('list_2_name', ''),
+#                     list_1_row1=row.get('list_1_row1', ''),
+#                     list_2_row1=row.get('list_2_row1', ''),
+#                     list_1_row2=row.get('list_1_row2', ''),
+#                     list_2_row2=row.get('list_2_row2', ''),
+#                     list_1_row3=row.get('list_1_row3', ''),
+#                     list_2_row3=row.get('list_2_row3', ''),
+#                     list_1_row4=row.get('list_1_row4', ''),
+#                     list_2_row4=row.get('list_2_row4', ''),
+#                     list_1_row5=row.get('list_1_row5', ''),
+#                     list_2_row5=row.get('list_2_row5', ''),
+#                     list_1_row6=row.get('list_1_row6', ''),
+#                     list_2_row6=row.get('list_2_row6', ''),
+#                     list_1_row7=row.get('list_1_row7', ''),
+#                     list_2_row7=row.get('list_2_row7', ''),
+#                     list_1_row8=row.get('list_1_row8', ''),
+#                     list_2_row8=row.get('list_2_row8', ''),
+#                     question_part_third=row.get('question_part_third_part', ''),
+#                     answer_option_a=row.get('answer_option_a', ''),
+#                     answer_option_b=row.get('answer_option_b', ''),
+#                     answer_option_c=row.get('answer_option_c', ''),
+#                     answer_option_d=row.get('answer_option_d', ''),
+#                     correct_answer_choice=row.get('correct_answer_choice', ''),
+#                     correct_answer_description=row.get('correct_answer_description', ''),
+#                     subject_name=row.get('subject_name', ''),
+#                     area_name=row.get('area_name', ''),
+#                     part_name=row.get('part_name', ''),
+#                     table_head_a=row.get('table_head_a', ''),
+#                     table_head_b=row.get('table_head_b', ''),
+#                     table_head_c=row.get('table_head_c', ''),
+#                     table_head_d=row.get('table_head_d', ''),
+#                     head_a_data1=row.get('head_a_data1', ''),
+#                     head_a_data2=row.get('head_a_data2', ''),
+#                     head_a_data3=row.get('head_a_data3', ''),
+#                     head_a_data4=row.get('head_a_data4', ''),
+#                     head_b_data1=row.get('head_b_data1', ''),
+#                     head_b_data2=row.get('head_b_data2', ''),
+#                     head_b_data3=row.get('head_b_data3', ''),
+#                     head_b_data4=row.get('head_b_data4', ''),
+#                     head_c_data1=row.get('head_c_data1', ''),
+#                     head_c_data2=row.get('head_c_data2', ''),
+#                     head_c_data3=row.get('head_c_data3', ''),
+#                     head_c_data4=row.get('head_c_data4', ''),
+#                     head_d_data1=row.get('head_d_data1', ''),
+#                     head_d_data2=row.get('head_d_data2', ''),
+#                     head_d_data3=row.get('head_d_data3', ''),
+#                     head_d_data4=row.get('head_d_data4', '')
+#                 )
+#                 start_number += 1
+
+#             messages.success(request, "File uploaded and data processed successfully!")
+#             return redirect('upload-file')
+#     else:
+#         form = UploadFileForm()
+#     return render(request, 'question_bank/upload.html', {'form': form})
 
 # ************************* Upload Excel file End *********************************************
 

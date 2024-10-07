@@ -8,7 +8,7 @@ from django.contrib import admin
 from question_bank.models import QuestionBank, Report
 
 class QuestionBankAdmin(admin.ModelAdmin):
-    list_display = ('id','created_at', 'created_by', 'question_number', 'get_exam_names', 'exam_year', 'type_of_question', 'question_sub_type', 'marks')
+    list_display = ('id','created_at', 'created_by', 'question_number', 'get_question', 'get_exam_names', 'get_subjects', 'exam_year', 'type_of_question', 'question_sub_type', 'marks')
     search_fields = ('exam_name', 'subject_name', 'area_name', 'part_name', 'chapter_name', 'topic_name', 'question_part_first', 'correct_answer_choice')
     list_filter = ('exam_name', 'exam_year', 'type_of_question', 'degree_of_difficulty', 'subject_name', 'area_name', 'part_name', 'chapter_name', 'topic_name')
     date_hierarchy = 'created_at'
@@ -49,35 +49,47 @@ class QuestionBankAdmin(admin.ModelAdmin):
     )
 
     # Custom methods to display related data in list_display
+    def get_question(self, obj):
+        if obj.question_part_first:
+            return obj.question_part_first
+        else:
+            return obj.question_part
+        
+    # Custom method to display exams in list_display
     def get_exam_names(self, obj):
-        return obj.exam_name
+        return ", ".join([exam.name for exam in obj.exam_name.all()])
     
-    get_exam_names.short_description = 'Exams'
+    get_exam_names.short_description = 'Exams'  # Display name for the column
 
-    def get_subject_names(self, obj):
-        return obj.subject_name
+    # Custom method to display subjects in list_display
+    def get_subjects(self, obj):
+        return ", ".join([subject.name for subject in obj.subject_name.all()])
     
-    get_subject_names.short_description = 'Subjects'
+    get_subjects.short_description = 'Subjects'  # Display name for the column
 
-    def get_area_names(self, obj):
-        return obj.area_name
+    # Custom method to display areas in list_display
+    def get_areas(self, obj):
+        return ", ".join([area.name for area in obj.area_name.all()])
     
-    get_area_names.short_description = 'Areas'
+    get_areas.short_description = 'Areas'  # Display name for the column
 
-    def get_part_names(self, obj):
-        return obj.part_name
+    # Custom method to display parts in list_display
+    def get_parts(self, obj):
+        return ", ".join([part.name for part in obj.part_name.all()])
     
-    get_part_names.short_description = 'Parts'
+    get_parts.short_description = 'Parts'  # Display name for the column
 
-    def get_chapter_names(self, obj):
-        return obj.chapter_name
+    # Custom method to display chapters in list_display
+    def get_chapters(self, obj):
+        return ", ".join([chapter.name for chapter in obj.chapter_name.all()])
     
-    get_chapter_names.short_description = 'Chapters'
+    get_chapters.short_description = 'Chapters'  # Display name for the column
 
-    def get_topic_names(self, obj):
-        return obj.topic_name
+    # Custom method to display topics in list_display
+    def get_topics(self, obj):
+        return ", ".join([topic.name for topic in obj.topic_name.all()])
     
-    get_topic_names.short_description = 'Topics'
+    get_topics.short_description = 'Topics'  # Display name for the column
 
 
 admin.site.register(QuestionBank, QuestionBankAdmin)
